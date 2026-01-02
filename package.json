@@ -1,0 +1,35 @@
+{
+  "name": "server-creator",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@iconify-json/lucide": "^1.2.82",
+    "@iconify-json/simple-icons": "^1.2.63",
+    "@nuxt/ui": "^4.3.0",
+    "@pinia/nuxt": "0.11.3",
+    "@tauri-apps/api": "^2.9.1",
+    "@tauri-apps/plugin-fs": "^2.4.4",
+    "@tauri-apps/plugin-http": "^2.5.4",
+    "@tauri-apps/plugin-shell": "^2.3.3",
+    "nuxt": "^4.2.2",
+    "pinia": "^3.0.4",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.12.1",
+    "@tauri-apps/cli": "^2.9.6",
+    "@types/uuid": "^10.0.0",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.2.1"
+  },
+  "packageManager": "pnpm@10.26.1"
+}
