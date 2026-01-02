@@ -2,6 +2,10 @@
 
 A modern, powerful, and easy-to-use desktop application for creating and managing Minecraft servers. Built with **Tauri 2.0**, **Nuxt 3**, and **TypeScript**.
 
+##  Images
+
+![main menu](https://i.imgur.com/72Pp4cz.png)
+
 ## 🚀 Features
 
 ### 🖥️ Dashboard & Server Management
