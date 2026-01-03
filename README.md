@@ -4,7 +4,11 @@ A modern, powerful, and easy-to-use desktop application for creating and managin
 
 ##  Images
 
-![main menu](https://i.imgur.com/72Pp4cz.png)
+![main menu](https://i.imgur.com/6A74AtV.png)
+![server console](https://i.imgur.com/LVqVzQN.png)
+![server settings](https://i.imgur.com/X4EoS9h.png)
+![server players](https://i.imgur.com/O8R8ILk.png)
+![server tray](https://i.imgur.com/sFD1PTp.png)
 
 ## 🚀 Features
 
