@@ -2,12 +2,12 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "MineDash",
   "version": "0.1.0",
-  "identifier": "pl.makoto.minedash",
+  "identifier": "pl.makotopd.minedash",
   "build": {
     "frontendDist": "../.output/public",
     "devUrl": "http://localhost:3000",
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run generate"
+    "beforeBuildCommand": "pnpm nuxt generate"
   },
   "app": {
     "windows": [
