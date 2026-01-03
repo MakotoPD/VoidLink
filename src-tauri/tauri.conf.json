@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "local-op",
+  "productName": "MineDash",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "pl.makoto.minedash",
   "build": {
     "frontendDist": "../.output/public",
     "devUrl": "http://localhost:3000",
