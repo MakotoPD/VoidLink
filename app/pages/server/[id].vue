@@ -1565,8 +1565,18 @@ async function openServerFolder() {
         const relative = `MineDash/servers/${folder}`
         const docDir = await documentDir()
         const fullPath = await join(docDir, relative)
-        const command = Command.create('run-bat', ['/C', 'start .'], { cwd: fullPath })
-        await command.spawn()
+        
+        // Detect platform
+        const isWindows = navigator.userAgent.includes('Windows')
+        
+        if (isWindows) {
+            const command = Command.create('run-bat', ['/C', 'start .'], { cwd: fullPath })
+            await command.spawn()
+        } else {
+            // macOS/Linux
+            const command = Command.create('run-sh', ['-c', `open "${fullPath}"`])
+            await command.spawn()
+        }
     } catch (e) {
         console.error('Failed to open folder', e)
         consoleLines.value.push(`Failed to open folder: ${e}`)

@@ -45,7 +45,7 @@ Here is what we plan to add in upcoming updates:
 
 - [ ] **Modpack Installer**: One-click installation of popular modpacks (CurseForge/Modrinth).
 - [ ] **Backup System**: Automated and manual world backups with restore functionality.
-- [ ] **Player Manager**: GUI for managing Whitelist, Ops, and Banned players.
+- [X] **Player Manager**: GUI for managing Whitelist, Ops, and Banned players.
 - [ ] **Scheduled Tasks**: Auto-restart and scheduled commands.
 - [ ] **Advanced Network**: Port forwarding helper or tunnel integration (e.g., playit.gg).
 - [ ] **Multi-Version Support**: Better handling of Java versions manager for older Minecraft versions.
