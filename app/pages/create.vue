@@ -317,22 +317,45 @@
           </div>
 
           <!-- Custom JAR Picker -->
-          <div v-if="selectedType === 'custom'" class="space-y-2">
-            <label class="text-sm font-medium text-gray-200">Server JAR File</label>
-            <div 
-              class="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center cursor-pointer hover:border-primary-500 hover:bg-primary-900/20 transition-colors"
-              @click="selectJarFile"
-            >
-              <div v-if="!customJarPath" class="space-y-2">
-                <UIcon name="i-lucide-upload-cloud" class="w-12 h-12 mx-auto text-gray-400" />
-                <p class="font-medium text-gray-300">Click to select .jar file</p>
-                <p class="text-xs text-gray-500">Supports Spigot, Paper, Fabric, Forge, etc.</p>
-              </div>
-              <div v-else class="space-y-2">
-                <UIcon name="i-lucide-file-check" class="w-12 h-12 mx-auto text-success-500" />
-                <p class="font-medium text-white">{{ customJarName }}</p>
-                <p class="text-xs text-gray-400 truncate">{{ customJarPath }}</p>
-              </div>
+          <div v-if="selectedType === 'custom'" class="space-y-4">
+            <div class="space-y-2">
+               <label class="text-sm font-medium text-gray-200">Server JAR File</label>
+               <div 
+                 class="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center cursor-pointer hover:border-primary-500 hover:bg-primary-900/20 transition-colors"
+                 @click="selectJarFile"
+               >
+                 <div v-if="!customJarPath" class="space-y-2">
+                   <UIcon name="i-lucide-upload-cloud" class="w-12 h-12 mx-auto text-gray-400" />
+                   <p class="font-medium text-gray-300">Click to select .jar file</p>
+                   <p class="text-xs text-gray-500">Supports Spigot, Paper, Fabric, Forge, etc.</p>
+                 </div>
+                 <div v-else class="space-y-2">
+                   <UIcon name="i-lucide-file-check" class="w-12 h-12 mx-auto text-success-500" />
+                   <p class="font-medium text-white">{{ customJarName }}</p>
+                   <p class="text-xs text-gray-400 truncate">{{ customJarPath }}</p>
+                 </div>
+               </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-sm font-medium text-gray-200">Capabilities</label>
+                <div class="grid grid-cols-2 gap-4">
+                   <div class="flex items-center justify-between bg-gray-900 border border-gray-800 p-3 rounded-lg">
+                      <div class="flex items-center gap-2 text-gray-300">
+                         <UIcon name="i-lucide-toy-brick" class="w-4 h-4" />
+                         <span class="text-sm">Supports Plugins</span>
+                      </div>
+                      <USwitch v-model="customSupportsPlugins" color="primary" />
+                   </div>
+                   <div class="flex items-center justify-between bg-gray-900 border border-gray-800 p-3 rounded-lg">
+                      <div class="flex items-center gap-2 text-gray-300">
+                         <UIcon name="i-lucide-puzzle" class="w-4 h-4" />
+                         <span class="text-sm">Supports Mods</span>
+                      </div>
+                      <USwitch v-model="customSupportsMods" color="primary" />
+                   </div>
+                </div>
+                <p class="text-xs text-gray-500">Enable these if your custom JAR supports them (e.g. Paper for Plugins, Forge/Fabric for Mods).</p>
             </div>
           </div>
 
@@ -534,15 +557,15 @@
                 type="range" 
                 v-model.number="ramLimit" 
                 min="1" 
-                max="16" 
+                :max="systemRamGB" 
                 step="1"
                 class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
               />
 
-              <div class="flex justify-between mt-8 pt-6 border-t border-gray-800">
+              <div class="flex justify-between text-xs">
                 <span>1 GB</span>
                 <span class="text-success-500 font-medium">Recommended: 6-8 GB</span>
-                <span>16 GB</span>
+                <span>{{ systemRamGB }} GB</span>
               </div>
             </div>
 
@@ -904,7 +927,9 @@ const stepDescriptions = [
 // Engine state
 const selectedType = ref<string | null>(null)
 const customJarPath = ref<string | null>(null)
-const customJarName = ref<string>('')
+const customJarName = ref('')
+const customSupportsPlugins = ref(false)
+const customSupportsMods = ref(false)
 
 // Version state
 const selectedVersion = ref<string | undefined>(undefined)
@@ -969,6 +994,18 @@ const loadingDetails = ref(false)
 
 const availableMcVersions = ref<string[]>([])
 const availableLoaders = ['fabric', 'forge', 'neoforge', 'quilt']
+const systemRamGB = ref(16) // Default fallback
+
+// Fetch system RAM on init
+;(async () => {
+   try {
+      const { invoke } = await import('@tauri-apps/api/core')
+      const sysInfo = await invoke<{ total_memory_bytes: number }>('get_system_info')
+      systemRamGB.value = Math.floor(sysInfo.total_memory_bytes / (1024 * 1024 * 1024))
+   } catch (e) {
+      console.log('Failed to get system info, using 16GB default')
+   }
+})()
 
 async function fetchModrinthVersions() {
   try {
@@ -1098,8 +1135,8 @@ const serverTypes: ServerType[] = [
     icon: 'i-lucide-upload', 
     description: 'Use your own server JAR file from local disk.',
     performance: 'good',
-    supportsPlugins: false,
-    supportsMods: false,
+    supportsPlugins: customSupportsPlugins.value,
+    supportsMods: customSupportsMods.value,
     api: { url: '', type: 'custom' as any }
   }
 ]
@@ -1388,7 +1425,7 @@ async function selectModpackFile() {
           customModpackMetadata.value = meta
           if (meta.name) customModpackName.value = meta.name
           if (meta.dependencies.minecraft) {
-             // selectedVersion.value = meta.dependencies.minecraft
+             selectedVersion.value = meta.dependencies.minecraft
           }
           
           // Priority: fabric, quilt, neoforge, forge
@@ -1598,7 +1635,11 @@ async function createServer() {
       if (!customJarPath.value) throw new Error('No JAR selected')
       
       statusMessage.value = 'Copying JAR file...'
-      const destPath = await join(relativePath, jarName)
+      // Ensure absolute path for destination
+      const { documentDir } = await import('@tauri-apps/api/path')
+      const docDir = await documentDir()
+      const destPath = await join(docDir, relativePath, jarName)
+      
       await copyFile(customJarPath.value, destPath)
     } else if (selectedType.value === 'modpack') {
       if (customModpackPath.value) {
@@ -1717,15 +1758,18 @@ async function createServer() {
       modpack: selectedModpack.value ? {
          id: selectedModpack.value.id || 'custom',
          title: selectedModpack.value.title || customModpackName.value,
+         versionId: selectedVersion.value || 'custom',
+         versionName: selectedVersion.value || 'custom',
          slug: selectedModpack.value.slug || customModpackName.value,
-         loader: modpackLoader.value || selectedModpackVersionData.value?.loaders?.[0],
+         loader: modpackLoader.value,
          version: selectedType.value === 'custom' ? 'custom' : (selectedModpackVersionData.value?.id || 'custom'),
-         
          // Store extended metadata
          files: installedModpackFiles.value,
          dependencies: installedModpackDependencies.value
-      } : undefined,
-      version: selectedType.value === 'custom' ? 'Custom' : selectedVersion.value,
+      } : null,
+      supportsPlugins: selectedTypeData.value?.id === 'custom' ? customSupportsPlugins.value : selectedTypeData.value?.supportsPlugins,
+      supportsMods: selectedTypeData.value?.id === 'custom' ? customSupportsMods.value : selectedTypeData.value?.supportsMods,
+      version: selectedVersion.value || 'Custom',
       icon: selectedTypeData.value?.icon,
       jarFile: jarName,
       createdAt: new Date().toISOString(),

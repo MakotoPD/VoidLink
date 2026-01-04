@@ -118,18 +118,50 @@
            <!-- Console / Overview -->
            <template #console>
              <div class="h-full flex flex-col">
-               <div ref="consoleRef" class="flex-1 bg-black max-h-[68vh] rounded-lg border border-gray-800 p-4 font-mono text-xs md:text-sm text-gray-300 overflow-y-auto custom-scrollbar font-ligatures-none">
-                  <div v-if="consoleLines.length === 0" class="text-gray-500 italic">Server is offline. Output will appear here.</div>
-                  <div 
-                     v-for="(line, i) in consoleLines" 
-                     :key="i" 
-                     class="whitespace-pre-wrap break-all px-1 -mx-1 rounded"
-                     :class="{
-                        'bg-yellow-500/20': line.includes(' WARN]') || line.includes(' WARN:'),
-                        'bg-red-500/20': line.includes(' ERROR]') || line.includes(' ERROR:')
-                     }"
-                     v-html="parseAnsiToHtml(line)"
-                  ></div>
+               <div class="relative">
+                  <div ref="consoleRef" class="flex-1 bg-black max-h-[68vh] rounded-lg border border-gray-800 p-4 font-mono text-xs md:text-sm text-gray-300 overflow-y-auto custom-scrollbar font-ligatures-none">
+                     <div v-if="consoleLines.length === 0" class="text-gray-500 italic">Server is offline. Output will appear here.</div>
+                     
+                     <div 
+                        v-for="(line, i) in consoleLines" 
+                        :key="i" 
+                        class="flex items-start gap-2 py-0.5 group hover:bg-gray-800/30 px-1 -mx-1 rounded"
+                     >
+                        <!-- Parsed log line -->
+                        <template v-if="parseLogLine(line)">
+                           <span class="text-gray-500 shrink-0">{{ parseLogLine(line).time }}</span>
+                           <UBadge 
+                              :color="getLogLevelColor(parseLogLine(line).level)" 
+                              variant="subtle" 
+                              size="xs"
+                              class="shrink-0 w-12 justify-center"
+                           >{{ parseLogLine(line).level }}</UBadge>
+                           <span 
+                              class="whitespace-pre-wrap break-all flex-1"
+                              :class="{
+                                 'text-yellow-300': parseLogLine(line).level === 'WARN',
+                                 'text-red-400': parseLogLine(line).level === 'ERROR'
+                              }"
+                              v-html="parseAnsiToHtml(parseLogLine(line).message)"
+                           ></span>
+                        </template>
+                        
+                        <!-- Raw line (no pattern match) -->
+                        <template v-else>
+                           <span class="whitespace-pre-wrap break-all flex-1" v-html="parseAnsiToHtml(line)"></span>
+                        </template>
+                     </div>
+                  </div>
+                  
+                  <!-- Scroll to bottom button -->
+                  <UButton 
+                     class="absolute bottom-3 right-3 opacity-70 hover:opacity-100"
+                     icon="i-lucide-arrow-down" 
+                     color="neutral" 
+                     variant="solid"
+                     size="sm"
+                     @click="scrollToBottom"
+                  />
                </div>
                <div class="mt-4 flex gap-2">
                  <UInput 
@@ -160,7 +192,10 @@
                         <h2 class="font-bold text-lg text-white">Server Configuration</h2>
                        <p class="text-xs text-gray-500">Manage general settings, gameplay, and performance</p>
                     </div>
-                    <UButton size="md" color="primary" icon="i-lucide-save" :loading="saving" @click="saveAllSettings">Save All Changes</UButton>
+                    <div class="flex gap-2 item-center">
+                        <UButton size="md" color="neutral" variant="outline" icon="i-lucide-file-text" @click="showPropertiesEditor = true">Open server.properties</UButton>
+                        <UButton size="md" color="primary" icon="i-lucide-save" :loading="saving" @click="saveAllSettings">Save Changes</UButton>
+                    </div>
                  </div>
 
                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -301,6 +336,18 @@
                                       color="primary"
                                    />
                                 </div>
+
+                                <div class="flex items-center justify-between p-3 bg-red-800/20 rounded-lg hover:bg-red-800/30 transition-colors">
+                                   <div>
+                                      <p class="font-medium text-error">Hardcore Mode</p>
+                                      <p class="text-xs text-gray-500">Player will banned when die</p>
+                                   </div>
+                                   <USwitch 
+                                      :model-value="getPropertyValue('hardcore') === 'true'" 
+                                      @update:model-value="(val) => updateProperty('hardcore', val)" 
+                                      color="primary"
+                                   />
+                                </div>
                              </div>
                           </div>
                        </UCard>
@@ -323,10 +370,10 @@
                                   <label class="text-sm font-medium text-gray-300">Memory Allocation (RAM)</label>
                                   <span class="text-lg font-bold text-primary-400">{{ javaSettings.memory }} GB</span>
                                 </div>
-                                <USlider v-model="javaSettings.memory" :min="1" :max="32" :step="0.5" />
+                                <USlider v-model="javaSettings.memory" :min="1" :max="systemRamGB" :step="0.5" />
                                 <div class="flex justify-between text-xs text-gray-500 font-mono">
                                    <span>1 GB</span>
-                                   <span>32 GB</span>
+                                   <span>{{ systemRamGB }} GB</span>
                                 </div>
                              </div>
 
@@ -342,21 +389,112 @@
                            <template #header>
                              <div class="flex items-center gap-2">
                                 <UIcon name="i-lucide-users" class="w-5 h-5 text-primary-500" />
-                                <h3 class="font-semibold">Capacity</h3>
+                                <h3 class="font-semibold">Performance</h3>
                              </div>
                           </template>
-                           <div class="space-y-2 col-span-2">
-                              <label class="block text-sm font-medium text-gray-300">Max Players</label>
-                              <UInputNumber size="xl" class="w-44" placeholder="20" :value="getPropertyValue('max-players')"  @update:model-value="(val) => updateProperty('max-players', val)">
-                                 <template #decrement>
-                                    <UButton size="xs" icon="i-lucide-minus" />
-                                 </template>
+                           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <!-- Max Players -->
+                              <div class="space-y-2">
+                                 <label class="block text-sm font-medium text-gray-300">Max Players</label>
+                                 <UInputNumber size="xl" class="w-full" placeholder="20" :value="getPropertyValue('max-players')" @update:model-value="(val) => updateProperty('max-players', val)">
+                                    <template #decrement>
+                                       <UButton size="xs" icon="i-lucide-minus" />
+                                    </template>
+                                    <template #increment>
+                                       <UButton size="xs" icon="i-lucide-plus" />
+                                    </template>
+                                 </UInputNumber>
+                                 <p class="text-xs text-gray-500">More players = more RAM</p>
+                              </div>
 
-                                 <template #increment>
-                                    <UButton size="xs" icon="i-lucide-plus" />
-                                 </template>
-                              </UInputNumber>
-                              <p class="text-xs text-gray-500">MORE PLAYERS = MORE RAM</p>
+                              <!-- View Distance -->
+                              <div class="space-y-2">
+                                 <label class="block text-sm font-medium text-gray-300">View Distance</label>
+                                 <UInputNumber size="xl" class="w-full" placeholder="10" :min="2" :max="32" :value="getPropertyValue('view-distance')" @update:model-value="(val) => updateProperty('view-distance', val)">
+                                    <template #decrement>
+                                       <UButton size="xs" icon="i-lucide-minus" />
+                                    </template>
+                                    <template #increment>
+                                       <UButton size="xs" icon="i-lucide-plus" />
+                                    </template>
+                                 </UInputNumber>
+                                 <p class="text-xs text-gray-500">Chunks rendered (2-32)</p>
+                              </div>
+
+                              <!-- Simulation Distance -->
+                              <div class="space-y-2">
+                                 <label class="block text-sm font-medium text-gray-300">Simulation Distance</label>
+                                 <UInputNumber size="xl" class="w-full" placeholder="10" :min="2" :max="32" :value="getPropertyValue('simulation-distance')" @update:model-value="(val) => updateProperty('simulation-distance', val)">
+                                    <template #decrement>
+                                       <UButton size="xs" icon="i-lucide-minus" />
+                                    </template>
+                                    <template #increment>
+                                       <UButton size="xs" icon="i-lucide-plus" />
+                                    </template>
+                                 </UInputNumber>
+                                 <p class="text-xs text-gray-500">Chunks ticked (2-32)</p>
+                              </div>
+                           </div>
+                       </UCard>
+
+                       <UCard >
+                           <template #header>
+                             <div class="flex items-center gap-2">
+                                <UIcon name="i-lucide-shield" class="w-5 h-5 text-primary-500" />
+                                <h3 class="font-semibold">Security</h3>
+                             </div>
+                          </template>
+                           <div class="flex flex-col gap-4">
+                              <!-- Max Players -->
+                              <div class="space-y-2">
+                                 <label class="block text-sm font-medium text-gray-300">Spawn Protection Radius</label>
+                                 <UInputNumber class="w-full" size="xl" placeholder="20" :value="getPropertyValue('spawn-protection')" @update:model-value="(val) => updateProperty('spawn-protection', val)">
+                                    <template #decrement>
+                                       <UButton size="xs" icon="i-lucide-minus" />
+                                    </template>
+                                    <template #increment>
+                                       <UButton size="xs" icon="i-lucide-plus" />
+                                    </template>
+                                 </UInputNumber>
+                              </div>
+
+                              <div class=" flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
+                                 <div>
+                                    <p class="font-medium text-white">Enable Whitelist</p>
+                                    <p class="text-xs text-gray-500">Only players on the whitelist can join the server</p>
+                                 </div>
+                                 <USwitch 
+                                    :model-value="getPropertyValue('white-list') === 'true'" 
+                                    @update:model-value="(val) => updateProperty('white-list', val)" 
+                                    color="primary"
+                                 />
+                              </div>
+
+                              <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
+                                 <div>
+                                    <p class="font-medium text-white">Enforce Whitelist</p>
+                                    <p class="text-xs text-gray-500">Only players on the whitelist can join the server</p>
+                                 </div>
+                                 <USwitch
+                                    :disabled="getPropertyValue('white-list') === 'false'" 
+                                    :model-value="getPropertyValue('enforce-whitelist') === 'true'" 
+                                    @update:model-value="(val) => updateProperty('enforce-whitelist', val)" 
+                                    color="primary"
+                                 />
+                              </div>
+
+                              <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
+                                 <div>
+                                    <p class="font-medium text-white">Online Mode</p>
+                                    <p class="text-xs text-gray-500">Only players with a secure profile can join the server</p>
+                                 </div>
+                                 <USwitch 
+                                    :model-value="getPropertyValue('online-mode') === 'true'" 
+                                    @update:model-value="(val) => updateProperty('online-mode', val)" 
+                                    color="primary"
+                                 />
+                              </div>
+
                            </div>
                        </UCard>
 
@@ -884,6 +1022,35 @@
             </div>
          </template>
       </UModal>
+
+      <!-- Properties Editor Modal -->
+      <UModal v-model:open="showPropertiesEditor">
+         <template #header>
+            <div class="flex items-center gap-2">
+               <UIcon name="i-lucide-file-code" class="w-5 h-5 text-primary-500" />
+               <h3 class="font-bold text-lg text-white">Edit server.properties</h3>
+            </div>
+         </template>
+         
+         <template #body>
+            <div class="space-y-4">
+               <p class="text-xs text-gray-500">Edit the raw server.properties file directly. Be careful with formatting.</p>
+               <UTextarea 
+                  v-model="propertiesEditorContent" 
+                  :rows="20" 
+                  class="font-mono w-full text-xs"
+                  placeholder="# server.properties content..."
+               />
+            </div>
+         </template>
+
+         <template #footer>
+            <div class="flex justify-end gap-2">
+               <UButton color="neutral" variant="ghost" @click="showPropertiesEditor = false">Cancel</UButton>
+               <UButton color="primary" icon="i-lucide-save" @click="savePropertiesFromEditor">Save Changes</UButton>
+            </div>
+         </template>
+      </UModal>
     </main>
   </div>
 </template>
@@ -894,6 +1061,7 @@ import { fetch } from '@tauri-apps/plugin-http'
 import { Command, type Child, open } from '@tauri-apps/plugin-shell'
 import { join } from '@tauri-apps/api/path'
 import { documentDir } from '@tauri-apps/api/path'
+import { invoke } from '@tauri-apps/api/core'
 import { parseAnsiToHtml } from '~/utils/ansiParser'
 import { installModpack, installMrpack } from '~/utils/modpack'
 
@@ -924,10 +1092,24 @@ const javaSettings = reactive({
    flags: ''
 })
 
+// System RAM
+const systemRamGB = ref(32) // Default fallback
+
 // Properties
 const rawProperties = ref('')
 const parsedProperties = ref<Record<string, any>>({})
 const propsSearch = ref('')
+
+// Properties Editor Modal
+const showPropertiesEditor = ref(false)
+const propertiesEditorContent = ref('')
+
+watch(showPropertiesEditor, (isOpen) => {
+   if (isOpen) {
+      // Load raw content when modal opens
+      propertiesEditorContent.value = rawProperties.value
+   }
+})
 
 // MOTD Editor
 const motdTextarea = ref<HTMLTextAreaElement | null>(null)
@@ -972,6 +1154,88 @@ const mcColorMap: Record<string, string> = {
    '4': '#AA0000', '5': '#AA00AA', '6': '#FFAA00', '7': '#AAAAAA',
    '8': '#555555', '9': '#5555FF', 'a': '#55FF55', 'b': '#55FFFF',
    'c': '#FF5555', 'd': '#FF55FF', 'e': '#FFFF55', 'f': '#FFFFFF',
+}
+
+// Console log parsing
+interface ParsedLogLine {
+   time: string
+   level: string
+   message: string
+}
+
+function parseLogLine(line: string): ParsedLogLine | null {
+   // 1. Clean line for pattern matching (remove ANSI and extra whitespace)
+   // eslint-disable-next-line no-control-regex
+   const cleanLine = line.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '').trim()
+
+   // Pattern 1: [HH:MM:SS LEVEL]: message
+   const pattern1 = /^\[(\d{2}:\d{2}:\d{2})\s+(INFO|WARN|ERROR|DEBUG|FATAL)\]:\s*(.*)$/i
+   let match = cleanLine.match(pattern1)
+   
+   if (match) {
+      const time = match[1]
+      const level = match[2].toUpperCase()
+      // Extract message from original line to preserve colors
+      // Find the first occurrence of "]:" which likely marks end of header
+      const splitIdx = line.indexOf(']:')
+      const message = splitIdx !== -1 ? line.substring(splitIdx + 2).replace(/^\s+/, '') : match[3]
+      return { time, level, message }
+   }
+   
+   // Pattern 2: [HH:MM:SS] [Thread/LEVEL]: message
+   const pattern2 = /^\[(\d{2}:\d{2}:\d{2})\]\s+\[.*?\/(INFO|WARN|ERROR|DEBUG|FATAL)\]:\s*(.*)$/i
+   match = cleanLine.match(pattern2)
+   
+   if (match) {
+      const time = match[1]
+      const level = match[2].toUpperCase()
+      const splitIdx = line.indexOf(']:')
+      const message = splitIdx !== -1 ? line.substring(splitIdx + 2).replace(/^\s+/, '') : match[3]
+      return { time, level, message }
+   }
+
+   // Pattern 3: [HH:MM:SS] [Thread/LEVEL] [Context]: message
+   const pattern3 = /^\[(\d{2}:\d{2}:\d{2})\]\s+\[.*?\/(INFO|WARN|ERROR|DEBUG|FATAL)\].*?:\s*(.*)$/i
+   match = cleanLine.match(pattern3)
+
+   if (match) {
+      const time = match[1]
+      const level = match[2].toUpperCase()
+      const splitIdx = line.indexOf(']:') // Assumes standard formatting
+      const message = splitIdx !== -1 ? line.substring(splitIdx + 2).replace(/^\s+/, '') : match[3]
+      return { time, level, message }
+   }
+   
+   // Pattern 4: [LEVEL] message
+   const pattern4 = /^\[(INFO|WARN|ERROR|DEBUG|FATAL)\]\s*(.*)$/i
+   match = cleanLine.match(pattern4)
+   
+   if (match) {
+      const level = match[1].toUpperCase()
+      const splitIdx = line.indexOf(']')
+      const message = splitIdx !== -1 ? line.substring(splitIdx + 1).replace(/^\s+/, '') : match[2]
+      return { time: '', level, message }
+   }
+   
+   return null
+}
+
+function getLogLevelColor(level: string): 'primary' | 'success' | 'warning' | 'error' | 'neutral' {
+   switch (level) {
+      case 'INFO': return 'primary'
+      case 'WARN': return 'warning'
+      case 'ERROR': return 'error'
+      case 'FATAL': return 'error'
+      case 'DEBUG': return 'neutral'
+      default: return 'neutral'
+   }
+}
+
+function scrollToBottom() {
+   const el = consoleRef.value
+   if (el) {
+      el.scrollTop = el.scrollHeight
+   }
 }
 
 function insertMotdCode(code: string) {
@@ -1979,6 +2243,14 @@ async function loadData() {
          // Populate with defaults if empty so user can edit before start
          parsedProperties.value = getDefaultProperties()
       }
+      
+      // 3. Get system RAM for slider max
+      try {
+         const sysInfo = await invoke<{ total_memory_bytes: number }>('get_system_info')
+         systemRamGB.value = Math.floor(sysInfo.total_memory_bytes / (1024 * 1024 * 1024))
+      } catch (e) {
+         console.log('Failed to get system info, using 32GB default')
+      }
 
    } catch (e) {
       console.error('Error loading server data', e)
@@ -2149,6 +2421,35 @@ async function saveAllSettings() {
    }
 }
 
+async function savePropertiesFromEditor() {
+   try {
+      const folder = serverFolderName.value
+      const propsPath = `MineDash/servers/${folder}/server.properties`
+      
+      // Save raw content
+      await writeTextFile(propsPath, propertiesEditorContent.value, { baseDir: BaseDirectory.Document })
+      
+      // Update local state
+      rawProperties.value = propertiesEditorContent.value
+      
+      // Re-parse properties
+      const lines = propertiesEditorContent.value.split('\n')
+      const parsed: Record<string, string> = {}
+      for (const line of lines) {
+         if (line.startsWith('#') || !line.includes('=')) continue
+         const [key, ...rest] = line.split('=')
+         parsed[key.trim()] = rest.join('=').trim()
+      }
+      parsedProperties.value = parsed
+      
+      // Close modal
+      showPropertiesEditor.value = false
+      
+      console.log('Properties saved from editor')
+   } catch (e) {
+      console.error('Failed to save properties from editor', e)
+   }
+}
 
 
 // --- Modpack Updates ---
@@ -2295,8 +2596,28 @@ async function startServer() {
       // Detect platform
       const isWindows = navigator.userAgent.includes('Windows')
       
-      // Build Java command parts
-      const javaPath = 'java'
+      // Load global settings for Java installations
+      let javaInstallations: any = {}
+      try {
+         const settingsContent = await readTextFile('MineDash/settings.json', { baseDir: BaseDirectory.Document })
+         const globalSettings = JSON.parse(settingsContent)
+         javaInstallations = globalSettings.javaInstallations || {}
+      } catch (e) {
+         console.log('No global settings, using default java')
+      }
+      
+      // Auto-select Java path based on MC version
+      const { getJavaPathForVersion } = await import('~/utils/javaVersions')
+      const mcVersion = server.value.version || ''
+      
+      // If path is default 'java' or empty, try auto-detection
+      let javaPath = javaSettings.path
+      if (!javaPath || javaPath === 'java') {
+         javaPath = getJavaPathForVersion(javaInstallations, mcVersion, 'java')
+      }
+      
+      consoleLines.value.push(`Using Java: ${javaPath} (MC ${mcVersion || 'unknown'})`)
+      
       const jarPath = await join(fullServerPath, 'server.jar')
       
       // Build args array
@@ -2309,7 +2630,7 @@ async function startServer() {
       }
       // Use -Duser.dir to set working directory for server files (worlds, plugins, etc)
       javaArgs.push(`-Duser.dir=${fullServerPath}`)
-      javaArgs.push('-jar', 'server.jar', '-nogui')
+      javaArgs.push('-jar', 'server.jar', 'nogui')
       
       // Generate start script for manual use
       const fullJavaCmd = `"${javaPath}" ${javaArgs.join(' ')}`

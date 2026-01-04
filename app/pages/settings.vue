@@ -52,10 +52,10 @@
                      <label class="text-sm font-medium">Default Memory (RAM)</label>
                      <span class="text-sm font-bold text-primary-500">{{ settings.defaultMemory }} GB</span>
                    </div>
-                   <USlider v-model="settings.defaultMemory" :min="1" :max="32" :step="0.5" />
+                   <USlider v-model="settings.defaultMemory" :min="1" :max="systemRamGB" :step="0.5" />
                    <div class="flex justify-between text-xs text-gray-500">
                       <span>1 GB</span>
-                      <span>32 GB</span>
+                      <span>{{ systemRamGB }} GB</span>
                    </div>
                 </div>
 
@@ -64,6 +64,69 @@
                    <label class="text-sm font-medium">Global Startup Flags</label>
                    <UTextarea v-model="settings.defaultFlags" :rows="3" placeholder="-XX:+UseG1GC ..." />
                    <p class="text-xs text-gray-500">These flags are applied to all new servers by default.</p>
+                </div>
+
+                <!-- Java Installations -->
+                <div class="space-y-4 pt-4 border-t border-gray-800">
+                   <div class="flex items-center justify-between">
+                      <div>
+                         <h4 class="font-medium text-sm">Java Installations</h4>
+                         <p class="text-xs text-gray-500">Configure paths to different Java versions for compatibility</p>
+                      </div>
+                      <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-scan" @click="detectAllJavaVersions" :loading="detectingJava">
+                         Auto-Detect
+                      </UButton>
+                   </div>
+                   
+                   <div class="space-y-3">
+                      <!-- Java 8 -->
+                      <div class="p-3 bg-gray-900 rounded-lg space-y-2">
+                         <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                               <span class="text-sm font-medium">Java 8</span>
+                               <UBadge color="neutral" variant="subtle" size="xs">MC 1.12.x and older</UBadge>
+                            </div>
+                            <UBadge v-if="settings.javaInstallations.java8" color="success" variant="subtle" size="xs">Configured</UBadge>
+                         </div>
+                         <UInput class="w-full" v-model="settings.javaInstallations.java8" placeholder="C:/Program Files/Java/jdk1.8.0_xxx/bin/java.exe" size="sm" />
+                      </div>
+
+                      <!-- Java 11 -->
+                      <div class="p-3 bg-gray-900 rounded-lg space-y-2">
+                         <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                               <span class="text-sm font-medium">Java 11</span>
+                               <UBadge color="neutral" variant="subtle" size="xs">MC 1.13 - 1.16.x</UBadge>
+                            </div>
+                            <UBadge v-if="settings.javaInstallations.java11" color="success" variant="subtle" size="xs">Configured</UBadge>
+                         </div>
+                         <UInput class="w-full" v-model="settings.javaInstallations.java11" placeholder="C:/Program Files/Java/jdk-11/bin/java.exe" size="sm" />
+                      </div>
+
+                      <!-- Java 17 -->
+                      <div class="p-3 bg-gray-900 rounded-lg space-y-2">
+                         <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                               <span class="text-sm font-medium">Java 17</span>
+                               <UBadge color="primary" variant="subtle" size="xs">MC 1.17 - 1.20.4 (Most Common)</UBadge>
+                            </div>
+                            <UBadge v-if="settings.javaInstallations.java17" color="success" variant="subtle" size="xs">Configured</UBadge>
+                         </div>
+                         <UInput class="w-full" v-model="settings.javaInstallations.java17" placeholder="C:/Program Files/Java/jdk-17/bin/java.exe" size="sm" />
+                      </div>
+
+                      <!-- Java 21 -->
+                      <div class="p-3 bg-gray-900 rounded-lg space-y-2">
+                         <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                               <span class="text-sm font-medium">Java 21</span>
+                               <UBadge color="neutral" variant="subtle" size="xs">MC 1.20.5+</UBadge>
+                            </div>
+                            <UBadge v-if="settings.javaInstallations.java21" color="success" variant="subtle" size="xs">Configured</UBadge>
+                         </div>
+                         <UInput class="w-full" v-model="settings.javaInstallations.java21" placeholder="C:/Program Files/Java/jdk-21/bin/java.exe" size="sm" />
+                      </div>
+                   </div>
                 </div>
              </div>
 
@@ -150,12 +213,30 @@ const { updateInfo, checking: checkingUpdate, checkForUpdates, currentVersion } 
 const settings = reactive({
    javaPath: 'java',
    defaultMemory: 4,
-   defaultFlags: ''
+   defaultFlags: '',
+   javaInstallations: {
+      java8: '',
+      java11: '',
+      java17: '',
+      java21: ''
+   }
 })
 
-onMounted(() => {
+const detectingJava = ref(false)
+const systemRamGB = ref(32)
+
+onMounted(async () => {
    loadSettings()
    checkJava()
+   
+   // Get system RAM
+   try {
+      const { invoke } = await import('@tauri-apps/api/core')
+      const sysInfo = await invoke<{ total_memory_bytes: number }>('get_system_info')
+      systemRamGB.value = Math.floor(sysInfo.total_memory_bytes / (1024 * 1024 * 1024))
+   } catch (e) {
+      console.log('Failed to get system info')
+   }
 })
 
 async function checkUpdate() {
@@ -181,11 +262,56 @@ async function loadSettings() {
         settings.javaPath = data.javaPath ?? 'java'
         settings.defaultMemory = data.defaultMemory ?? 4
         settings.defaultFlags = data.defaultFlags ?? ''
+        if (data.javaInstallations) {
+           settings.javaInstallations = {
+              java8: data.javaInstallations.java8 ?? '',
+              java11: data.javaInstallations.java11 ?? '',
+              java17: data.javaInstallations.java17 ?? '',
+              java21: data.javaInstallations.java21 ?? ''
+           }
+        }
      }
    } catch (e) {
       console.log('No settings file found, using defaults.')
    } finally {
       loading.value = false
+   }
+}
+
+async function detectAllJavaVersions() {
+   detectingJava.value = true
+   try {
+      // Try common Java installation paths on Windows
+      const commonPaths = [
+         'C:/Program Files/Java',
+         'C:/Program Files/Eclipse Adoptium',
+         'C:/Program Files/Zulu',
+         'C:/Program Files/BellSoft',
+         'C:/Program Files/Microsoft'
+      ]
+      
+      // For now just check if default 'java' works
+      const status = await detectJava()
+      if (status.installed && status.version) {
+         // Parse version from status
+         const versionMatch = status.version.match(/(\d+)(?:\.(\d+))?/)
+         if (versionMatch) {
+            const major = parseInt(versionMatch[1])
+            if (major === 8 || major === 1) {
+               settings.javaInstallations.java8 = 'java'
+            } else if (major >= 21) {
+               settings.javaInstallations.java21 = 'java'
+            } else if (major >= 17) {
+               settings.javaInstallations.java17 = 'java'
+            } else if (major >= 11) {
+               settings.javaInstallations.java11 = 'java'
+            }
+         }
+      }
+   } catch (e) {
+      console.error('Failed to detect Java versions', e)
+   } finally {
+      detectingJava.value = false
    }
 }
 

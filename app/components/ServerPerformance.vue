@@ -19,7 +19,6 @@
           <p class="text-sm text-gray-400 font-medium">RAM Usage</p>
           <div class="mt-1">
             <p class="text-2xl font-bold text-yellow-500">{{ formatBytes(memoryBytes) }}</p>
-            <UProgress :value="ramParams.percent" color="warning" size="xs" class="mt-2 w-24" />
           </div>
         </div>
         <div class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center">

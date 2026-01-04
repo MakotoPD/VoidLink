@@ -8,7 +8,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.82",
