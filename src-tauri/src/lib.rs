@@ -196,6 +196,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![get_process_info, get_system_info, get_local_ip, update_tray_servers])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

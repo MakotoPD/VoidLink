@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+  <div class="min-h-screen bg-gray-950 flex flex-col">
     <!-- Header -->
-    <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-4">
+    <header class="bg-gray-900 border-b border-gray-800 p-4">
        <div class="max-w-7xl mx-auto flex items-center justify-between">
           <div class="flex items-center gap-4">
             <UButton
@@ -11,10 +11,10 @@
               to="/"
             />
             
-            <div v-if="loading" class="h-8 w-48 bg-gray-100 dark:bg-gray-800 animate-pulse rounded" />
+            <div v-if="loading" class="h-8 w-48 bg-gray-800 animate-pulse rounded" />
             <div v-else class="flex items-center gap-3">
-               <div class="w-10 h-10 rounded bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                 <UIcon :name="server?.icon || 'i-lucide-box'" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
+               <div class="w-10 h-10 rounded bg-primary-900/30 flex items-center justify-center">
+                 <UIcon :name="server?.icon || 'i-lucide-box'" class="w-5 h-5 text-primary-400" />
                </div>
                <div>
                  <h1 class="font-bold text-lg leading-tight">{{ server?.name }}</h1>
@@ -109,9 +109,9 @@
               <div class="max-w-6xl mx-auto space-y-6 py-6 px-4">
                  
                  <!-- Header & Actions -->
-                 <div class="flex justify-between items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-xl shadow-sm sticky top-0 z-20 backdrop-blur-md bg-opacity-90 dark:bg-opacity-90">
+                  <div class="flex justify-between items-center bg-gray-900 border border-gray-800 p-4 rounded-xl shadow-sm sticky top-0 z-20 backdrop-blur-md">
                     <div>
-                       <h2 class="font-bold text-lg text-gray-900 dark:text-white">Server Configuration</h2>
+                        <h2 class="font-bold text-lg text-white">Server Configuration</h2>
                        <p class="text-xs text-gray-500">Manage general settings, gameplay, and performance</p>
                     </div>
                     <UButton size="md" color="primary" icon="i-lucide-save" :loading="saving" @click="saveAllSettings">Save All Changes</UButton>
@@ -132,28 +132,28 @@
                           
                           <div class="space-y-6">
                              <div class="space-y-2">
-                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Server Name</label>
+                                <label class="text-sm font-medium text-gray-300">Server Name</label>
                                 <UInput v-model="serverName" placeholder="My Awesome Server" icon="i-lucide-pencil" />
                              </div>
 
                              <!-- MOTD Editor -->
                              <div class="space-y-3">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Message of the Day (MOTD)</label>
+                                <label class="block text-sm font-medium text-gray-300">Message of the Day (MOTD)</label>
                                 <div class="flex flex-wrap gap-1 mb-2">
                                    <!-- Colors -->
                                    <button v-for="code in mcColorCodes" :key="code.code" 
                                       @click="insertMotdCode(code.code)"
-                                      class="w-6 h-6 rounded text-xs font-bold border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform"
+                                      class="w-6 h-6 rounded text-xs font-bold border border-gray-600 hover:scale-110 transition-transform"
                                       :style="{ backgroundColor: code.color, color: code.textColor }"
                                       :title="code.name"
                                    >
                                       {{ code.code }}
                                    </button>
-                                   <div class="w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                                   <div class="w-px bg-gray-600 mx-1"></div>
                                    <!-- Styles -->
                                    <button v-for="style in mcStyleCodes" :key="style.code"
                                       @click="insertMotdCode(style.code)"
-                                      class="px-2 h-6 rounded text-xs bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                      class="px-2 h-6 rounded text-xs bg-gray-700 border border-gray-600 hover:bg-gray-600 transition-colors"
                                       :class="style.class"
                                       :title="style.name"
                                    >
@@ -165,7 +165,7 @@
                                    :value="getPropertyValue('motd')" 
                                    @input="(e) => updateProperty('motd', (e.target as HTMLTextAreaElement).value)"
                                    placeholder="A Minecraft Server"
-                                   class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white font-mono text-sm resize-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                                   class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white font-mono text-sm resize-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                                    rows="3"
                                 ></textarea>
                                 <div class="p-3 bg-black border border-gray-800 rounded-lg overflow-hidden">
@@ -188,7 +188,7 @@
                           <div class="space-y-6">
                              <div class="grid grid-cols-2 gap-4">
                                 <div class="space-y-2">
-                                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Gamemode</label>
+                                   <label class="block text-sm font-medium text-gray-300">Gamemode</label>
                                    <USelectMenu 
                                        class="w-full"
                                       :model-value="getPropertyValue('gamemode')" 
@@ -197,7 +197,7 @@
                                    />
                                 </div>
                                 <div class="space-y-2">
-                                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Difficulty</label>
+                                   <label class="block text-sm font-medium text-gray-300">Difficulty</label>
                                    <USelectMenu 
                                        class="w-full"
                                       :model-value="getPropertyValue('difficulty')" 
@@ -206,7 +206,7 @@
                                    />
                                 </div>
                                 <div class="space-y-2">
-                                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Port</label>
+                                   <label class="block text-sm font-medium text-gray-300">Port</label>
                                    <UInput 
                                        type="number"
                                        placeholder="25565"
@@ -220,9 +220,9 @@
                              </div>
 
                              <div class="space-y-4 pt-2">
-                                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
                                    <div>
-                                      <p class="font-medium text-gray-900 dark:text-white">PVP</p>
+                                      <p class="font-medium text-white">PVP</p>
                                       <p class="text-xs text-gray-500">Allow players to fight each other</p>
                                    </div>
                                    <USwitch 
@@ -232,9 +232,9 @@
                                    />
                                 </div>
 
-                                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
                                    <div>
-                                      <p class="font-medium text-gray-900 dark:text-white">Allow Flight</p>
+                                      <p class="font-medium text-white">Allow Flight</p>
                                       <p class="text-xs text-gray-500">Allow flying in survival mode</p>
                                    </div>
                                    <USwitch 
@@ -244,9 +244,9 @@
                                    />
                                 </div>
 
-                                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
                                    <div>
-                                      <p class="font-medium text-gray-900 dark:text-white">Command Blocks</p>
+                                      <p class="font-medium text-white">Command Blocks</p>
                                       <p class="text-xs text-gray-500">Enable command block functionality</p>
                                    </div>
                                    <USwitch 
@@ -274,8 +274,8 @@
                           <div class="space-y-6">
                              <div class="space-y-4">
                                 <div class="flex justify-between items-end">
-                                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Memory Allocation (RAM)</label>
-                                  <span class="text-lg font-bold text-primary-600 dark:text-primary-400">{{ javaSettings.memory }} GB</span>
+                                  <label class="text-sm font-medium text-gray-300">Memory Allocation (RAM)</label>
+                                  <span class="text-lg font-bold text-primary-400">{{ javaSettings.memory }} GB</span>
                                 </div>
                                 <USlider v-model="javaSettings.memory" :min="1" :max="32" :step="0.5" />
                                 <div class="flex justify-between text-xs text-gray-500 font-mono">
@@ -285,7 +285,7 @@
                              </div>
 
                              <div class="space-y-2 flex flex-col">
-                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Java Startup Flags</label>
+                                <label class="text-sm font-medium text-gray-300">Java Startup Flags</label>
                                 <UTextarea v-model="javaSettings.flags" placeholder="-Aikars flags..." :rows="4" class="font-mono text-xs" />
                                 <p class="text-xs text-gray-500">Advanced: Add custom JVM arguments here.</p>
                              </div>
@@ -300,7 +300,7 @@
                              </div>
                           </template>
                            <div class="space-y-2 col-span-2">
-                              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max Players</label>
+                              <label class="block text-sm font-medium text-gray-300">Max Players</label>
                               <UInputNumber size="xl" class="w-44" placeholder="20" :value="getPropertyValue('max-players')"  @update:model-value="(val) => updateProperty('max-players', val)">
                                  <template #decrement>
                                     <UButton size="xs" icon="i-lucide-minus" />
@@ -315,7 +315,7 @@
                        </UCard>
 
                        <!-- Danger Zone -->
-                       <UCard :ui="{ root: 'ring-1 ring-error-500/50 divide-error-500/20', body: 'bg-error-50/50 dark:bg-error-950/10' }">
+                       <UCard :ui="{ root: 'ring-1 ring-error-500/50 divide-error-500/20', body: 'bg-error-950/10' }">
                           <template #header>
                              <h3 class="font-semibold text-error-500 flex items-center gap-2">
                                 <UIcon name="i-lucide-alert-triangle" />
@@ -325,7 +325,7 @@
                           
                           <div class="flex items-center justify-between">
                              <div>
-                                <div class="font-medium text-gray-900 dark:text-white">Delete Server</div>
+                                <div class="font-medium text-white">Delete Server</div>
                                 <div class="text-sm text-gray-500 w-3/4">Permanently delete this server and all its files. This action cannot be undone.</div>
                              </div>
                              <UButton 
@@ -346,14 +346,14 @@
                      <template #body>
                         <div class="p-6 space-y-4">
                            <div class="flex items-center gap-3 text-error-500 mb-2">
-                              <div class="p-2 flex justify-center items-center bg-error-50 dark:bg-error-900/20 rounded-lg">
+                              <div class="p-2 flex justify-center items-center bg-error-900/20 rounded-lg">
                                  <UIcon name="i-lucide-alert-triangle" class="w-6 h-6" />
                               </div>
-                              <h3 class="font-bold text-lg text-gray-900 dark:text-white">Delete Server?</h3>
+                              <h3 class="font-bold text-lg text-white">Delete Server?</h3>
                            </div>
                            
-                           <p class="text-gray-500 dark:text-gray-400">
-                              Are you sure you want to delete <span class="font-bold text-gray-900 dark:text-white">{{ serverFolderName }}</span>? 
+                           <p class="text-gray-400">
+                              Are you sure you want to delete <span class="font-bold text-white">{{ serverFolderName }}</span>? 
                               This action will permanently remove all server files, worlds, and configs. 
                               <span class="font-bold text-error-500">This cannot be undone.</span>
                            </p>
@@ -398,7 +398,7 @@
                   <!-- Toolbar -->
                   <div class="flex items-center justify-between mb-4">
                      <div>
-                        <h3 class="font-bold text-lg text-gray-900 dark:text-white">Installed {{ addonsFolder === 'mods' ? 'Mods' : 'Plugins' }}</h3>
+                        <h3 class="font-bold text-lg text-white">Installed {{ addonsFolder === 'mods' ? 'Mods' : 'Plugins' }}</h3>
                         <p class="text-sm text-gray-500">Manage your server extensions</p>
                      </div>
                      <UButton 
@@ -419,15 +419,15 @@
                          <p>No extensions installed</p>
                      </div>
                      <table v-else class="w-full text-sm">
-                        <thead class="bg-gray-50 dark:bg-gray-800/50 text-left sticky top-0 z-10 backdrop-blur">
+                        <thead class="bg-gray-800/50 text-left sticky top-0 z-10 backdrop-blur">
                            <tr>
                               <th class="p-3 font-medium text-gray-500 w-8"></th>
                               <th class="p-3 font-medium text-gray-500">Name</th>
                               <th class="p-3 font-medium text-gray-500 text-right">Actions</th>
                            </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                           <tr v-for="addon in addons" :key="addon.fileName" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <tbody class="divide-y divide-gray-800">
+                           <tr v-for="addon in addons" :key="addon.fileName" class="hover:bg-gray-800/50">
                               <td class="p-3 w-14">
                                  <img v-if="addon.icon" :src="addon.icon" class="w-6 h-6 rounded object-cover" />
                                  <UIcon v-else name="i-lucide-box" class="w-6 h-6 text-gray-400" />
@@ -456,63 +456,140 @@
                   </UCard>
                   
                   <!-- Modrinth Modal -->
-                  <UModal v-model:open="showModrinthModal" :ui="{ width: 'w-screen max-w-4xl' }">
+                  <UModal fullscreen v-model:open="showModrinthModal">
                      <template #header>
-                         <div class="flex items-center gap-4 w-full">
-                            <UInput 
-                               v-model="modrinthQuery" 
-                               icon="i-lucide-search" 
-                               placeholder="Search..." 
-                               class="flex-1" 
-                               autofocus
-                               @keydown.enter="searchModrinth"
+                         <div class="flex items-center justify-between w-full gap-4">
+                            <div class="flex items-center gap-3">
+                               <UIcon name="i-simple-icons-modrinth" class="w-6 h-6 text-[#1bd96a]" />
+                               <h2 class="text-lg font-bold">Browse {{ addonsFolder === 'mods' ? 'Mods' : 'Plugins' }}</h2>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 flex-1 max-w-xl">
+                               <UInput 
+                                  v-model="modrinthQuery" 
+                                  icon="i-lucide-search" 
+                                  placeholder="Search..." 
+                                  class="flex-1" 
+                                  @keydown.enter="searchModrinth"
+                               />
+                               <USelectMenu
+                                  v-model="modrinthSort"
+                                  :items="sortOptions"
+                                  value-key="value"
+                                  label-key="label"
+                                  class="w-36"
+                                  @update:model-value="searchModrinth"
+                               />
+                            </div>
+                            
+                            <UButton 
+                               icon="i-lucide-x" 
+                               color="neutral" 
+                               variant="ghost" 
+                               size="lg"
+                               @click="showModrinthModal = false"
                             />
-                            <USelect 
-                               v-model="selectedCategory" 
-                               :options="modrinthCategories" 
-                               option-attribute="label"
-                               value-attribute="value"
-                               placeholder="Category"
-                               class="w-40"
-                            />
-                            <UButton color="primary" icon="i-lucide-search" :loading="searchingModrinth" @click="searchModrinth" />
                          </div>
                      </template>
 
                      <template #body>
-                        <div class="h-[60vh] overflow-y-auto p-4 space-y-2">
-                           <div v-if="modrinthResults.length === 0 && !searchingModrinth" class="text-center py-12 text-gray-500">
-                              <UIcon name="i-lucide-search" class="w-12 h-12 mx-auto mb-2 opacity-20" />
-                              <p>Search via Modrinth to find addons...</p>
+                        <div class="flex h-full">
+                           <!-- Categories Sidebar -->
+                           <div class="w-56 border-r border-gray-800 overflow-y-auto flex-shrink-0 p-3 space-y-1">
+                              <div class="mb-3">
+                                 <UButton 
+                                    color="error" 
+                                    variant="soft" 
+                                    size="sm" 
+                                    class="w-full"
+                                    :disabled="!selectedCategory"
+                                    @click="selectedCategory = ''; searchModrinth()"
+                                 >
+                                    Clear Filters
+                                 </UButton>
+                              </div>
+                              
+                              <p class="text-xs font-semibold text-gray-400 uppercase px-2 mb-2">Categories</p>
+                              <button
+                                 v-for="cat in filteredCategories"
+                                 :key="cat.name"
+                                 class="w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm text-left transition-colors"
+                                 :class="selectedCategory === cat.name 
+                                    ? 'bg-primary-900/30 text-primary-400' 
+                                    : 'hover:bg-gray-800 text-gray-400'"
+                                 @click="selectedCategory = cat.name; searchModrinth()"
+                              >
+                                 <span v-html="cat.icon" class="w-4 h-4 flex-shrink-0"></span>
+                                 <span class="capitalize truncate">{{ cat.name.replace(/-/g, ' ') }}</span>
+                              </button>
                            </div>
                            
-                           <div v-for="hit in modrinthResults" :key="hit.slug" class="flex gap-4 p-3 rounded-lg border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                              <img :src="hit.icon_url || 'https://cdn.modrinth.com/placeholder.svg'" class="w-12 h-12 rounded bg-gray-200 object-cover" />
-                              <div class="flex-1 min-w-0">
-                                 <h4 class="font-bold text-sm truncate flex items-center gap-2">
-                                    {{ hit.title }}
-                                    <UBadge v-if="installedAddonsMeta[hit.slug]" size="xs" color="success" variant="subtle">Installed</UBadge>
-                                 </h4>
-                                 <p class="text-xs text-gray-500 line-clamp-2 my-1">{{ hit.description }}</p>
-                                 <div class="flex items-center gap-2">
-                                    <UBadge size="xs" color="neutral" variant="subtle">{{ hit.project_type }}</UBadge>
-                                    <span class="text-xs text-gray-400">Downloads: {{ hit.downloads }}</span>
+                           <!-- Results Grid -->
+                           <div class="flex-1 overflow-y-auto p-4">
+                              <div v-if="searchingModrinth" class="flex justify-center py-12">
+                                 <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary-500" />
+                              </div>
+                              
+                              <div v-else-if="modrinthResults.length === 0" class="text-center py-12 text-gray-500">
+                                 <UIcon name="i-lucide-search" class="w-12 h-12 mx-auto mb-2 opacity-20" />
+                                 <p>Search or select a category to browse</p>
+                              </div>
+                              
+                              <div v-else class="space-y-3">
+                                 <div 
+                                    v-for="hit in modrinthResults" 
+                                    :key="hit.slug" 
+                                    class="flex gap-4 p-4 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition-colors"
+                                 >
+                                    <img 
+                                       :src="hit.icon_url || 'https://cdn.modrinth.com/placeholder.svg'" 
+                                       class="w-14 h-14 rounded-lg bg-gray-200 object-cover flex-shrink-0" 
+                                    />
+                                    <div class="flex-1 min-w-0">
+                                       <div class="flex items-center gap-2 mb-1">
+                                          <h4 class="font-bold text-base truncate">{{ hit.title }}</h4>
+                                          <span class="text-xs text-gray-400">by {{ hit.author }}</span>
+                                       <UBadge v-if="installedSlugs.has(hit.slug)" size="xs" color="success" variant="subtle">Installed</UBadge>
+                                       </div>
+                                       <p class="text-sm text-gray-400 line-clamp-2 mb-2">{{ hit.description }}</p>
+                                       <div class="flex items-center gap-3 text-xs text-gray-400">
+                                          <span class="flex items-center gap-1">
+                                             <UIcon name="i-lucide-download" class="w-3 h-3" />
+                                             {{ formatNumber(hit.downloads) }}
+                                          </span>
+                                          <span class="flex items-center gap-1">
+                                             <UIcon name="i-lucide-heart" class="w-3 h-3" />
+                                             {{ formatNumber(hit.follows) }}
+                                          </span>
+                                          <div class="flex gap-1 flex-wrap">
+                                             <UBadge v-for="cat in (hit.categories || []).slice(0, 3)" :key="cat" size="xs" color="neutral" variant="subtle">
+                                                {{ cat }}
+                                             </UBadge>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    <UButton 
+                                       v-if="!installedSlugs.has(hit.slug)"
+                                       size="sm" 
+                                       color="primary" 
+                                       variant="soft" 
+                                       icon="i-lucide-download" 
+                                       class="self-center"
+                                       :loading="installingSlug === hit.slug"
+                                       :disabled="installingSlug !== null"
+                                       @click="installFromModrinth(hit)"
+                                    >
+                                       Install
+                                    </UButton>
+                                    <UBadge v-else size="sm" color="success" variant="soft" class="self-center">
+                                       <UIcon name="i-lucide-check" class="w-4 h-4 mr-1" />
+                                       Installed
+                                    </UBadge>
                                  </div>
                               </div>
-                              <UButton 
-                                 size="xs" 
-                                 color="primary" 
-                                 variant="soft" 
-                                 icon="i-lucide-download" 
-                                 class="self-center"
-                                 :loading="hit.installing"
-                                 @click="installFromModrinth(hit)"
-                              />
                            </div>
                         </div>
                      </template>
-                     
-
                   </UModal>
                </div>
            </template>
@@ -542,7 +619,7 @@
                         <p>No players online</p>
                      </div>
                      <div v-else class="space-y-2">
-                        <div v-for="player in onlinePlayers" :key="player" class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group">
+                        <div v-for="player in onlinePlayers" :key="player" class="flex items-center justify-between p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors group">
                            <div class="flex items-center gap-3">
                               <img :src="`https://mc-heads.net/avatar/${player}/24`" class="w-6 h-6 rounded" :alt="player" />
                               <span class="font-medium text-sm">{{ player }}</span>
@@ -589,7 +666,7 @@
                         <p>Whitelist is empty</p>
                      </div>
                      <div v-else class="space-y-2">
-                        <div v-for="entry in whitelist" :key="entry.uuid" class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <div v-for="entry in whitelist" :key="entry.uuid" class="flex items-center justify-between p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
                            <div class="flex items-center gap-3">
                               <img :src="`https://mc-heads.net/avatar/${entry.name}/24`" class="w-6 h-6 rounded" :alt="entry.name" />
                               <div>
@@ -626,7 +703,7 @@
                         <p>No operators</p>
                      </div>
                      <div v-else class="space-y-2">
-                        <div v-for="entry in operators" :key="entry.uuid" class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <div v-for="entry in operators" :key="entry.uuid" class="flex items-center justify-between p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
                            <div class="flex items-center gap-3">
                               <img :src="`https://mc-heads.net/avatar/${entry.name}/24`" class="w-6 h-6 rounded" :alt="entry.name" />
                               <div>
@@ -664,7 +741,7 @@
                         <p>No banned players</p>
                      </div>
                      <div v-else class="space-y-2">
-                        <div v-for="entry in bannedPlayers" :key="entry.uuid" class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <div v-for="entry in bannedPlayers" :key="entry.uuid" class="flex items-center justify-between p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
                            <div class="flex items-center gap-3">
                               <img :src="`https://mc-heads.net/avatar/${entry.name}/24`" class="w-6 h-6 rounded" :alt="entry.name" />
                               <div>
@@ -685,13 +762,13 @@
          <template #header>
             <div class="flex items-center gap-2 text-warning-500">
                <UIcon name="i-lucide-scroll-text" class="w-6 h-6" />
-               <h3 class="font-bold text-lg text-gray-900 dark:text-white">Accept EULA</h3>
+               <h3 class="font-bold text-lg text-white">Accept EULA</h3>
             </div>
          </template>
          
          <template #body>
             <div class="space-y-4">
-               <p class="text-sm text-gray-600 dark:text-gray-300">
+               <p class="text-sm text-gray-300">
                   By using this software, you agree to the <a href="https://aka.ms/MinecraftEULA" target="_blank" class="text-primary-500 hover:underline">Minecraft End User License Agreement</a>.
                </p>
                <p class="text-xs text-gray-500">
@@ -860,6 +937,16 @@ const addons = ref<AddonUI[]>([]) // Combined list
 const installedAddonsMeta = ref<Record<string, Omit<AddonMeta, 'fileName' | 'source'>>>({}) // Persistent meta
 const loadingAddons = ref(false)
 const checkingUpdates = ref(false)
+const installingSlug = ref<string | null>(null) // Currently installing addon slug
+
+// Get set of installed slugs for quick lookup
+const installedSlugs = computed(() => {
+   const slugs = new Set<string>()
+   Object.values(installedAddonsMeta.value).forEach(meta => {
+      if (meta.slug) slugs.add(meta.slug)
+   })
+   return slugs
+})
 
 // --- Player Management ---
 interface WhitelistEntry {
@@ -1006,6 +1093,16 @@ async function updateAddon(addon: AddonUI) {
 
 // ...
 
+// Modrinth browser state
+const showModrinthBrowser = ref(true)
+
+// Format large numbers nicely (e.g. 1000000 -> 1M)
+function formatNumber(num: number): string {
+   if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M'
+   if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K'
+   return num.toString()
+}
+
 // Update installFromModrinth to save versionId
 
 
@@ -1014,18 +1111,50 @@ const modrinthResults = ref<any[]>([])
 const searchingModrinth = ref(false)
 const showModrinthModal = ref(false)
 const selectedCategory = ref('')
+const modrinthSort = ref('relevance')
+const modrinthCategories = ref<{ name: string; icon: string; project_type: string }[]>([])
+const loadingCategories = ref(false)
 
-const modrinthCategories = [
-    { label: 'All', value: '' },
-    { label: 'Fabric', value: 'fabric' },
-    { label: 'Forge', value: 'forge' },
-    { label: 'NeoForge', value: 'neoforge' },
-    { label: 'Quilt', value: 'quilt' },
-    { label: 'Bukkit', value: 'bukkit' },
-    { label: 'Spigot', value: 'spigot' },
-    { label: 'Paper', value: 'paper' },
-    { label: 'Datapack', value: 'datapack' }
+const sortOptions = [
+   { label: 'Relevance', value: 'relevance' },
+   { label: 'Downloads', value: 'downloads' },
+   { label: 'Follows', value: 'follows' },
+   { label: 'Newest', value: 'newest' },
+   { label: 'Updated', value: 'updated' }
 ]
+
+// Filtered categories for current project type (mod or plugin)
+const filteredCategories = computed(() => {
+   // Modrinth uses 'mod' for both mods and plugins
+   // Also include categories with no specific project_type
+   return modrinthCategories.value.filter(c => 
+      c.project_type === 'mod' || c.project_type === 'project' || !c.project_type
+   )
+})
+
+async function loadModrinthCategories() {
+   if (modrinthCategories.value.length > 0) {
+      return
+   }
+   loadingCategories.value = true
+   try {
+      const res = await fetch('https://api.modrinth.com/v2/tag/category')
+      const data = await res.json()
+      modrinthCategories.value = data
+   } catch (e) {
+      console.error('[Categories] Failed to load:', e)
+   } finally {
+      loadingCategories.value = false
+   }
+}
+
+// Load categories and initial results when modal opens
+watch(showModrinthModal, (isOpen) => {
+   if (isOpen) {
+      loadModrinthCategories()
+      searchModrinth()
+   }
+})
 
 // Use composable for server state persistence
 const serverStore = useServerProcessStore()
@@ -1198,10 +1327,8 @@ async function searchModrinth() {
       }
 
       const facetsStr = `[${facets.join(',')}]`
-
-      console.log('facetsStr:', facetsStr)
       
-      const res = await fetch(`https://api.modrinth.com/v2/search?query=${encodeURIComponent(modrinthQuery.value)}&facets=${facetsStr}&limit=20`)
+      const res = await fetch(`https://api.modrinth.com/v2/search?query=${encodeURIComponent(modrinthQuery.value)}&facets=${facetsStr}&index=${modrinthSort.value}&limit=30`)
       const data = await res.json()
       modrinthResults.value = data.hits || []
    } catch (e) {
@@ -1212,6 +1339,7 @@ async function searchModrinth() {
 }
 
 async function installFromModrinth(project: any) {
+   installingSlug.value = project.slug
    try {
        const serverVersion = server.value.version
        const serverType = server.value.type
@@ -1251,11 +1379,61 @@ async function installFromModrinth(project: any) {
               icon: project.icon_url,
               slug: project.slug
           }
+          
+          // Download required dependencies
+          const dependencies = validVersion.dependencies || []
+          const requiredDeps = dependencies.filter((d: any) => d.dependency_type === 'required')
+          
+          for (const dep of requiredDeps) {
+             // Skip if already installed
+             if (dep.project_id && installedSlugs.value.has(dep.project_id)) continue
+             
+             try {
+                // Get dependency project info
+                const projectRes = await fetch(`https://api.modrinth.com/v2/project/${dep.project_id}`)
+                const depProject = await projectRes.json()
+                
+                // Skip if already installed by slug
+                if (depProject.slug && installedSlugs.value.has(depProject.slug)) continue
+                
+                // Get version (use specific version_id if provided, otherwise get latest compatible)
+                let depVersion
+                if (dep.version_id) {
+                   const versionRes = await fetch(`https://api.modrinth.com/v2/version/${dep.version_id}`)
+                   depVersion = await versionRes.json()
+                } else {
+                   const depVersionsRes = await fetch(`https://api.modrinth.com/v2/project/${dep.project_id}/version?${params.toString()}`)
+                   const depVersions = await depVersionsRes.json()
+                   if (depVersions && depVersions.length > 0) {
+                      depVersion = depVersions[0]
+                   }
+                }
+                
+                if (depVersion) {
+                   const depFile = depVersion.files.find((f: any) => f.primary) || depVersion.files[0]
+                   if (depFile) {
+                      await downloadAddon(depFile.url, depFile.filename)
+                      
+                      // Save dependency metadata
+                      installedAddonsMeta.value[depFile.filename] = {
+                         title: depProject.title,
+                         icon: depProject.icon_url,
+                         slug: depProject.slug
+                      }
+                   }
+                }
+             } catch (depError) {
+                console.warn('Failed to install dependency:', dep.project_id, depError)
+             }
+          }
+          
           await saveAddonsMeta()
           await loadAddons()
        }
    } catch (e) {
       console.error('Install failed', e)
+   } finally {
+      installingSlug.value = null
    }
 }
 

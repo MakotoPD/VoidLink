@@ -174,7 +174,8 @@
       ]
     },
     "shell:allow-open",
-    "shell:allow-stdin-write"
+    "shell:allow-stdin-write",
+    "dialog:allow-open"
   ],
   "plugins": {
     "shell": {

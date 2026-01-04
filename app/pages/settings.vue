@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-950 p-8">
+  <div class="min-h-screen bg-gray-950 p-8">
      <div class="max-w-2xl mx-auto space-y-8">
        <!-- Header -->
        <div class="flex items-center gap-4">
@@ -10,8 +10,8 @@
            @click="navigateTo('/')"
          />
          <div>
-           <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
-           <p class="text-gray-500 dark:text-gray-400">Configure global defaults for your servers.</p>
+           <h1 class="text-3xl font-bold text-white">Settings</h1>
+           <p class="text-gray-400">Configure global defaults for your servers.</p>
          </div>
        </div>
 
@@ -26,14 +26,14 @@
 
              <div class="space-y-6">
                 <!-- Java Status --> 
-                <div class="p-4 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-900">
+                <div class="p-4 rounded-lg border border-gray-800 bg-gray-900">
                     <div class="flex items-center justify-between mb-2">
                        <h4 class="font-medium text-sm">System Java Status</h4>
                        <UBadge :color="javaStatus.installed ? 'success' : 'warning'" variant="subtle">
                           {{ javaStatus.installed ? 'Detected' : 'Not Found' }}
                        </UBadge>
                     </div>
-                    <div v-if="javaStatus.installed" class="text-xs text-gray-600 dark:text-gray-400">
+                    <div v-if="javaStatus.installed" class="text-xs text-gray-400">
                        {{ javaStatus.version }}
                     </div>
                     <div v-else class="text-xs text-red-500">
@@ -99,12 +99,12 @@
                 </div>
                 
                 <!-- Update Available Banner -->
-                <div v-if="updateInfo?.available" class="p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
+                <div v-if="updateInfo?.available" class="p-4 bg-primary-900/20 border border-primary-800 rounded-lg">
                    <div class="flex items-start gap-3">
                       <UIcon name="i-lucide-download" class="w-5 h-5 text-primary-500 mt-0.5" />
                       <div class="flex-1">
-                         <h4 class="font-semibold text-primary-700 dark:text-primary-300">Update Available!</h4>
-                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                         <h4 class="font-semibold text-primary-300">Update Available!</h4>
+                         <p class="text-sm text-gray-400 mt-1">
                             Version <strong>{{ updateInfo.latestVersion }}</strong> is available. You have <strong>{{ updateInfo.currentVersion }}</strong>.
                          </p>
                          <UButton 
@@ -121,9 +121,9 @@
                 </div>
                 
                 <!-- Up to date message -->
-                <div v-else-if="updateInfo && !updateInfo.available" class="p-3 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg flex items-center gap-2">
+                <div v-else-if="updateInfo && !updateInfo.available" class="p-3 bg-success-900/20 border border-success-800 rounded-lg flex items-center gap-2">
                    <UIcon name="i-lucide-check-circle" class="w-5 h-5 text-success-500" />
-                   <span class="text-sm text-success-700 dark:text-success-300">You're running the latest version!</span>
+                   <span class="text-sm text-success-300">You're running the latest version!</span>
                 </div>
              </div>
           </UCard>
