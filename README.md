@@ -32,9 +32,8 @@ A modern, powerful, and easy-to-use desktop application for creating and managin
 - **Modrinth Integration**: Browse, search, and install plugins/mods directly from the app.
 - **Automatic Dependencies**: Resolves and installs required dependencies automatically.
 
-### 💻 Console & Files
+### 💻 Console
 - **Live Console**: Real-time server logs with command input support.
-- **File Manager**: Built-in simple file browser to manage server files.
 
 ## 🛠️ Technology Stack
 
