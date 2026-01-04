@@ -53,8 +53,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__
-          releaseName: 'MineDash v__VERSION__'
+          tagName: ${{ github.ref_name }}
+          releaseName: 'MineDash ${{ github.ref_name }}'
           releaseBody: 'See the assets below to download and install MineDash.'
           releaseDraft: true
           prerelease: false
