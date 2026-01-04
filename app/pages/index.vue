@@ -6,7 +6,8 @@
           <h2 class="text-3xl font-semibold">Overview</h2>
           <p class="text-gray-500">System healthy.</p>
         </div>
-        <div>
+        <div class="flex gap-2 items-center">
+          <UButton color="neutral" variant="outline" icon="i-lucide-cog" to="/settings" class="font-bold">Settings</UButton>
           <UButton color="primary" icon="i-lucide-plus" to="/create" class="font-bold">Create Server</UButton>
         </div>
       </div>
@@ -37,7 +38,7 @@
     </div>
     <div class="mt-8">
       <div>
-        <h2 class="text-3xl font-semibold">Detailed Metrics</h2>
+        <h2 class="text-3xl font-semibold">Servers</h2>
       </div>
       <div class="grid grid-cols-2 gap-8 mt-4">
         <div 
@@ -81,10 +82,10 @@
                 <div>
                   <p class="text-gray-500 text-sm">RAM <span>({{ formatBytes(getServerMemory(server.path.split('/').pop() || '')) }} / {{ server.javaSettings?.memory || 4 }}GB)</span></p>
                   <div class="flex items-center gap-2">
-                    <UIcon name="i-lucide-memory-stick" class="w-4 h-4 text-success-400 flex-shrink-0" />
+                    <UIcon name="i-lucide-memory-stick" class="w-4 h-4 text-yellow-400 flex-shrink-0" />
                     <div class="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
                       <div 
-                        class="h-full bg-success-500 transition-all duration-300"
+                        class="h-full bg-yellow-500 transition-all duration-300"
                         :style="{ width: Math.min(getRamPercent(server), 100) + '%' }"
                       ></div>
                     </div>

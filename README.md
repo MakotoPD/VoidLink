@@ -46,7 +46,7 @@ A modern, powerful, and easy-to-use desktop application for creating and managin
 
 Here is what we plan to add in upcoming updates:
 
-- [ ] **Modpack Installer**: One-click installation of popular modpacks (CurseForge/Modrinth).
+- [X] **Modpack Installer**: One-click installation of popular modpacks (CurseForge/Modrinth).
 - [ ] **Backup System**: Automated and manual world backups with restore functionality.
 - [X] **Player Manager**: GUI for managing Whitelist, Ops, and Banned players.
 - [ ] **Scheduled Tasks**: Auto-restart and scheduled commands.

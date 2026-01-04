@@ -35,6 +35,24 @@
         },
         {
           "url": "https://api.mojang.com/**"
+        },
+        {
+          "url": "https://meta.fabricmc.net/**"
+        },
+        {
+          "url": "https://maven.fabricmc.net/**"
+        },
+        {
+          "url": "https://meta.quiltmc.org/**"
+        },
+        {
+          "url": "https://piston-meta.mojang.com/**"
+        },
+        {
+          "url": "https://launchermeta.mojang.com/**"
+        },
+        {
+          "url": "https://files.minecraftforge.net/**"
         }
       ]
     },

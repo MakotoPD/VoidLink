@@ -18,7 +18,9 @@
                </div>
                <div>
                  <h1 class="font-bold text-lg leading-tight">{{ server?.name }}</h1>
-                 <p class="text-xs text-gray-500">{{ server?.typeName }} {{ server?.version }} • ID: {{ server?.id }}</p>
+                 <p class="text-xs text-gray-500">
+                  {{ server?.typeName }}{{ server?.modpack?.loader ? ` (${server.modpack.loader})` : '' }} {{ server?.version }} • ID: {{ server?.id }}
+                 </p>
                </div>
             </div>
           </div>
@@ -56,9 +58,44 @@
                    title="Force Kill"
                 />
              </template>
-          </div>
+              
+              <!-- Update Modpack Button -->
+              <UButton 
+                 v-if="server?.modpack?.id && server.modpack.id !== 'custom'"
+                 :loading="checkingUpdate"
+                 icon="i-lucide-refresh-cw"
+                 color="primary"
+                 variant="soft"
+                 @click="checkModpackUpdate"
+                 title="Check for Modpack Updates"
+              >
+                  {{ updateAvailable ? 'Update Available' : 'Check Updates' }}
+              </UButton>
+           </div>
        </div>
     </header>
+
+    <!-- Update Modal -->
+    <UModal v-model:open="showUpdateModal">
+      <template #body>
+         <div class="p-6">
+            <h3 class="text-xl font-bold mb-4">Update Modpack</h3>
+            <p class="text-gray-400 mb-4">
+               A new version is available: <span class="text-white font-bold">{{ updateData?.name }}</span>
+            </p>
+            
+            <div class="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded mb-4 text-sm text-yellow-500">
+               Warning: Updating will replace mods and config files. Your world data will be safe, but custom config changes might be lost.
+            </div>
+
+            <div class="flex justify-end gap-2">
+               <UButton color="neutral" variant="ghost" @click="showUpdateModal = false">Cancel</UButton>
+               <UButton color="primary" :loading="isUpdating" @click="performModpackUpdate">Update Now</UButton>
+            </div>
+         </div>
+      </template>
+    </UModal>
+
 
     <!-- Main Content -->
     <main class="flex-1 overflow-hidden">
@@ -69,6 +106,15 @@
       <div v-else class="max-w-7xl mx-auto h-full p-6 flex flex-col">
         <UTabs v-model="selectedTab" :items="tabs" class="w-full flex-1 flex flex-col">
            
+           <!-- Performance -->
+           <template #performance>
+             <ServerPerformance 
+                v-if="server" 
+                :server-id="storeServerId" 
+                :server-data="server" 
+             />
+           </template>
+
            <!-- Console / Overview -->
            <template #console>
              <div class="h-full flex flex-col">
@@ -391,8 +437,6 @@
               </div>
            </template>
 
-
-
            <template #addons>
                <div class="h-full flex flex-col p-4 relative">
                   <!-- Toolbar -->
@@ -410,7 +454,7 @@
                   </div>
 
                   <!-- Installed List -->
-                  <UCard class="flex-1 min-h-0 flex flex-col" :ui="{ body: { base: 'flex-1 min-h-0 overflow-y-auto p-0' } }">
+                  <UCard class="flex-1 min-h-0 flex flex-col">
                      <div v-if="loadingAddons" class="flex justify-center py-12">
                          <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary-500" />
                      </div>
@@ -418,41 +462,96 @@
                          <UIcon name="i-lucide-package" class="w-12 h-12 mb-2 opacity-30" />
                          <p>No extensions installed</p>
                      </div>
-                     <table v-else class="w-full text-sm">
-                        <thead class="bg-gray-800/50 text-left sticky top-0 z-10 backdrop-blur">
-                           <tr>
-                              <th class="p-3 font-medium text-gray-500 w-8"></th>
-                              <th class="p-3 font-medium text-gray-500">Name</th>
-                              <th class="p-3 font-medium text-gray-500 text-right">Actions</th>
-                           </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-800">
-                           <tr v-for="addon in addons" :key="addon.fileName" class="hover:bg-gray-800/50">
-                              <td class="p-3 w-14">
-                                 <img v-if="addon.icon" :src="addon.icon" class="w-6 h-6 rounded object-cover" />
-                                 <UIcon v-else name="i-lucide-box" class="w-6 h-6 text-gray-400" />
-                              </td>
-                              <td class="p-3">
-                                 <div class="font-medium" :class="{'text-gray-400 line-through': !addon.enabled}">{{ addon.title || addon.fileName }}</div>
-                                 <div class="text-xs text-gray-500">{{ addon.fileName }}</div>
-                              </td>
-                              <td class="p-3 text-right">
-                                 <div class="flex justify-end gap-1">
-                                       <USwitch 
-                                          :model-value="addon.enabled" 
-                                          @update:model-value="toggleAddon(addon)"
-                                          color="primary"
-                                          size="md"
-                                       />
-                                    <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteAddon(addon.fileName)" />
-                                    <UTooltip v-if="addon.source === 'modrinth' && addon.latestVersionId" :text="`Update to ${addon.latestVersionNumber}`">
-                                       <UButton icon="i-lucide-rotate-cw" color="primary" variant="ghost" size="xs" @click="updateAddon(addon)" />
-                                    </UTooltip>
+                     <div v-else>
+                        <div class="w-full flex justify-end mb-2">
+                           <UButton variant="ghost" icon="i-lucide-grid-2x2" @click="viewMode = 'grid'" />
+                           <UButton variant="ghost" icon="i-lucide-list" @click="viewMode = 'list'" />
+                        </div>
+                        <div v-if="viewMode == 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                           <UCard v-for="mod in addons" :key="mod.fileName" class="hover:border-primary-500/50 transition-colors">
+                              <div class="flex items-start gap-3">
+                                 <img 
+                                    v-if="mod.icon" 
+                                    :src="mod.icon" 
+                                    class="w-10 h-10 rounded bg-gray-800 object-cover" 
+                                    alt="Icon"
+                                    @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
+                                 >
+                                 <div v-else class="w-10 h-10 rounded bg-gray-800 flex items-center justify-center">
+                                    <UIcon name="i-lucide-box" class="w-5 h-5 text-gray-500" />
                                  </div>
-                              </td>
-                           </tr>
-                        </tbody>
-                     </table>
+                                 
+                                 <div class="min-w-0 flex-1">
+                                    <div class="flex items-center justify-between">
+                                       <h4 class="font-bold text-sm truncate" :title="mod.title">{{ mod.title }}</h4>
+                                       <div class="flex items-center gap-2">
+                                          <USwitch size="xs" :model-value="mod.enabled" @update:model-value="toggleAddon(mod)" />
+                                          <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteAddon(mod.fileName)" />
+                                          <UTooltip v-if="mod.source === 'modrinth' && mod.latestVersionId" :text="`Update to ${mod.latestVersionNumber}`">
+                                             <UButton icon="i-lucide-rotate-cw" color="primary" variant="ghost" size="xs" @click="updateAddon(mod)" />
+                                          </UTooltip>
+                                       </div>
+
+                                    </div>
+                                    <p class="text-xs text-gray-400 truncate">{{ mod.fileName }}</p>
+                                    
+                                    <div class="flex gap-2 mt-2">
+                                       <UBadge v-if="mod.versionId" color="neutral" variant="subtle" size="xs">{{ mod.versionId?.slice(0, 8) }}</UBadge>
+                                       <UBadge v-else color="neutral" variant="subtle" size="xs">Local</UBadge>
+                                       
+                                       <a v-if="mod.slug" :href="`https://modrinth.com/mod/${mod.slug}`" target="_blank" class="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1">
+                                          View <UIcon name="i-lucide-external-link" class="w-3 h-3" />
+                                       </a>
+                                    </div>
+                                 </div>
+                              </div>
+                           </UCard>
+                        </div>
+                        
+                        <table v-else class="w-full text-sm">
+                           <thead class="bg-gray-800/50 text-left sticky top-0 z-10 backdrop-blur">
+                              <tr>
+                                 <th class="p-3 font-medium text-gray-500 w-8"></th>
+                                 <th class="p-3 font-medium text-gray-500">Name</th>
+                                 <th class="p-3 font-medium text-gray-500 text-right">Actions</th>
+                              </tr>
+                           </thead>
+                           <tbody class="divide-y divide-gray-800">
+                              <tr v-for="addon in addons" :key="addon.fileName" class="hover:bg-gray-800/50">
+                                 <td class="p-3 w-14">
+                                    <img v-if="addon.icon" :src="addon.icon" class="w-6 h-6 rounded object-cover" />
+                                    <UIcon v-else name="i-lucide-box" class="w-6 h-6 text-gray-400" />
+                                 </td>
+                                 <td class="p-3">
+                                    <div class="font-medium flex items-center gap-2" :class="{'text-gray-400 line-through ': !addon.enabled}">
+                                       <p>{{ addon.title || addon.fileName }}</p>
+                                       <a v-if="addon.slug" :href="`https://modrinth.com/mod/${addon.slug}`" target="_blank" class="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1">
+                                       View <UIcon name="i-lucide-external-link" class="w-3 h-3" />
+                                       </a>
+                                    </div>
+                                    <div class="text-xs text-gray-500">{{ addon.fileName }}</div>
+                                    
+                                 </td>
+                                 <td class="p-3 text-right">
+                                    <div class="flex justify-end gap-1">
+                                          <USwitch 
+                                             :model-value="addon.enabled" 
+                                             @update:model-value="toggleAddon(addon)"
+                                             color="primary"
+                                             size="md"
+                                          />
+                                       <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteAddon(addon.fileName)" />
+                                       <UTooltip v-if="addon.source === 'modrinth' && addon.latestVersionId" :text="`Update to ${addon.latestVersionNumber}`">
+                                          <UButton icon="i-lucide-rotate-cw" color="primary" variant="ghost" size="xs" @click="updateAddon(addon)" />
+                                       </UTooltip>
+                                    </div>
+                                 </td>
+                              </tr>
+                           </tbody>
+                        </table>
+
+                     </div>
+
                   </UCard>
                   
                   <!-- Modrinth Modal -->
@@ -796,8 +895,19 @@ import { Command, type Child, open } from '@tauri-apps/plugin-shell'
 import { join } from '@tauri-apps/api/path'
 import { documentDir } from '@tauri-apps/api/path'
 import { parseAnsiToHtml } from '~/utils/ansiParser'
+import { installModpack, installMrpack } from '~/utils/modpack'
 
 const route = useRoute()
+const router = useRouter()
+const toast = useToast()
+const serverProcessStore = useServerProcessStore()
+const serversStore = useServersStore()
+
+let viewMode = ref<'grid' | 'list'>('grid')
+
+
+
+
 const serverId = route.params.id as string // actually folder name
 
 const serverFolderName = computed(() => route.params.id as string)
@@ -849,6 +959,13 @@ const mcStyleCodes = [
    { code: 'k', label: '?', class: '', name: 'Obfuscated' },
    { code: 'r', label: 'R', class: 'text-gray-400', name: 'Reset' },
 ]
+
+// Modpack Update State
+const showUpdateModal = ref(false)
+const checkingUpdate = ref(false)
+const isUpdating = ref(false)
+const updateAvailable = ref(false)
+const updateData = ref<any>(null)
 
 const mcColorMap: Record<string, string> = {
    '0': '#000000', '1': '#0000AA', '2': '#00AA00', '3': '#00AAAA',
@@ -1156,6 +1273,8 @@ watch(showModrinthModal, (isOpen) => {
    }
 })
 
+
+
 // Use composable for server state persistence
 const serverStore = useServerProcessStore()
 const storeServerId = computed(() => serverFolderName.value)
@@ -1197,6 +1316,7 @@ const addonsFolder = computed(() => {
    const t = server.value.type
    if (['fabric', 'forge', 'neoforge', 'quilt'].includes(t)) return 'mods'
    if (['paper', 'purpur', 'folia', 'velocity'].includes(t)) return 'plugins'
+   if (t === 'modpack') return 'mods' // Modpacks typically use mods
    return null
 })
 
@@ -1761,22 +1881,25 @@ async function openServerFolder() {
     }
 }
 
+
+
 const tabs = computed(() => {
     const allTabs = [
+        { label: 'Performance', icon: 'i-lucide-activity', value: 'performance', slot: 'performance' as const },
         { label: 'Console', icon: 'i-lucide-terminal', value: 'console', slot: 'console' as const },
-        { label: 'Settings', icon: 'i-lucide-settings-2', value: 'settings', slot: 'settings' as const },
-        { label: 'Mods & Plugins', icon: 'i-lucide-package', value: 'addons', slot: 'addons' as const },
+        { label: 'Settings', icon: 'i-lucide-settings', value: 'settings', slot: 'settings' as const },
+        { label: 'Mods/Plugins', icon: 'i-lucide-package', value: 'addons', slot: 'addons' as const },
         { label: 'Players', icon: 'i-lucide-users', value: 'players', slot: 'players' as const }
     ]
     
     if (!addonsFolder.value) {
-        return allTabs.filter(t => t.value !== 'addons')
+        return allTabs.filter(t => t.value !== 'mods')
     }
     
     return allTabs
 })
 
-const selectedTab = ref('console')
+const selectedTab = ref('performance')
 
 watch(selectedTab, async () => {
    const tab = selectedTab.value
@@ -1794,7 +1917,7 @@ watch(selectedTab, async () => {
       loadPlayerLists()
       fetchOnlinePlayers()
    }
-   if (tab === 'addons' && !addons.value.length) {
+   if (tab === 'mods' && !Object.keys(addons.value).length) {
       loadAddons()
    }
 })
@@ -1803,8 +1926,9 @@ watch(selectedTab, async () => {
 // --- Initialization ---
 
 onMounted(async () => {
-   selectedTab.value = 'console' // Ensure Console is selected by default
+   selectedTab.value = 'performance' // Ensure Console is selected by default
    await loadData()
+   loadAddons() // Load addons after server data is loaded
 })
 
 async function loadData() {
@@ -2025,6 +2149,112 @@ async function saveAllSettings() {
    }
 }
 
+
+
+// --- Modpack Updates ---
+
+async function checkModpackUpdate() {
+   if (!server.value?.modpack?.id || server.value.modpack.id === 'custom') return
+
+   checkingUpdate.value = true
+   try {
+      const res = await fetch(`https://api.modrinth.com/v2/project/${server.value.modpack.id}/version`)
+      const versions = await res.json()
+      
+      if (versions.length > 0) {
+         const latest = versions.find((v: any) => v.version_type === 'release') || versions[0]
+         
+         // Check if version is different from current
+         // Assuming server.value.modpack.versionId matches modrinth version ID
+         if (latest.id !== server.value.modpack.versionId) {
+            updateAvailable.value = true
+            updateData.value = latest
+            showUpdateModal.value = true
+         } else {
+            console.log('Modpack is up to date')
+            // Optional: toast logic here
+         }
+      }
+   } catch (e) {
+      console.error('Failed to check updates', e)
+   } finally {
+      checkingUpdate.value = false
+   }
+}
+
+async function performModpackUpdate() {
+   if (!updateData.value) return
+   
+   isUpdating.value = true
+   try {
+      // 1. Stop server if running
+      if (serverStatus.value !== 'offline' && serverProcess.value) {
+         await stopServer()
+         // Wait for stop
+         let retries = 0
+         while (serverStatus.value !== 'offline' && retries < 20) {
+            await new Promise(r => setTimeout(r, 500))
+            retries++
+         }
+      }
+
+      const folder = serverFolderName.value
+      const relativePath = `MineDash/servers/${folder}`
+      const fullServerPath = await join(await documentDir(), relativePath)
+
+      // 2. Clean mods and config folders
+      // Note: This is destructive but standard for modpack updates
+      const modsPath = await join(fullServerPath, 'mods')
+      if (await exists(modsPath, { baseDir: BaseDirectory.Document })) {
+          await remove(modsPath, { baseDir: BaseDirectory.Document, recursive: true })
+      }
+      
+      const configPath = await join(fullServerPath, 'config')
+       if (await exists(configPath, { baseDir: BaseDirectory.Document })) {
+          await remove(configPath, { baseDir: BaseDirectory.Document, recursive: true })
+      }
+
+      // 3. Install new version
+      // Find primary file
+      const file = updateData.value.files.find((f: any) => f.primary) || updateData.value.files[0]
+      if (!file) throw new Error("No file found for update version")
+      
+      // Determine loader (fallback to fabric if not set, or keep existing)
+      const loader = server.value.modpack.loader || 'fabric'
+      
+      const result = await installModpack(file.url, relativePath, (msg) => {
+          console.log('Update progress:', msg)
+      })
+      
+      // 4. Update metadata
+      server.value.modpack.versionId = updateData.value.id
+      if (updateData.value.name) server.value.modpack.versionName = updateData.value.name
+      server.value.modpack.updated = new Date().toISOString()
+      
+       if (result && result.files) {
+          server.value.files = result.files
+          server.value.dependencies = result.dependencies
+
+          // Save addons.json
+          if (result.metadata && Object.keys(result.metadata).length > 0) {
+             const addonsPath = await join(fullServerPath, 'addons.json')
+             await writeTextFile(addonsPath, JSON.stringify(result.metadata, null, 2), { baseDir: BaseDirectory.Document })
+          }
+       }
+      
+      await saveAllSettings()
+      
+      showUpdateModal.value = false
+      updateAvailable.value = false
+      
+      // Refresh UI/Data via save logic
+      
+   } catch (e) {
+      console.error('Failed to update modpack', e)
+   } finally {
+      isUpdating.value = false
+   }
+}
 
 
 // --- Server Process Management Functions ---

@@ -12,6 +12,7 @@ export interface ServerProcess {
 	consoleLines: string[]
 	memoryBytes: number
 	cpuUsage: number
+	history: { timestamp: number; cpu: number; memory: number }[]
 }
 
 // Global state for server processes using Nuxt's useState
@@ -25,7 +26,8 @@ export function useServerProcessStore() {
 				process: null,
 				consoleLines: [],
 				memoryBytes: 0,
-				cpuUsage: 0
+				cpuUsage: 0,
+				history: []
 			}
 		}
 		return servers.value[serverId]
@@ -86,6 +88,17 @@ export function useServerProcessStore() {
 			if (info) {
 				server.memoryBytes = info.memory_bytes
 				server.cpuUsage = info.cpu_usage
+
+				server.history.push({
+					timestamp: Date.now(),
+					cpu: info.cpu_usage,
+					memory: info.memory_bytes
+				})
+
+				// Keep last 60 points (approx 2 minutes at 2s interval)
+				if (server.history.length > 60) {
+					server.history.shift()
+				}
 			}
 		} catch (e) {
 			console.error('Failed to get process info:', e)
