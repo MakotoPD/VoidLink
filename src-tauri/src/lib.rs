@@ -153,9 +153,29 @@ fn update_tray_servers(servers: Vec<TrayServer>) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn quit_app() {
+    std::process::exit(0);
+}
+
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
+            // ... (setup content kept implicit if not changing, but here I am modifying run)
+            // Wait, replace_file_content replaces contiguous block.
+            // I need to insert quit_app BEFORE run, and update invoke_handler inside run.
+            // This is tricky with one replacement if they are far apart.
+            // quit_app is newly added.
+            // invoke_handler is at the end.
+            
+            // Actually, I can add quit_app just before run().
+            // And update run().
+            
+            // Let's use multi_replace?
+            // "Use this tool ONLY when you are making MULTIPLE, NON-CONTIGUOUS edits".
+            // Yes.
+        })
+
             // Store app handle for later use
             if let Ok(mut handle) = APP_HANDLE.lock() {
                 *handle = Some(app.handle().clone());
@@ -223,7 +243,7 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![get_process_info, get_system_info, get_local_ip, update_tray_servers])
+        .invoke_handler(tauri::generate_handler![get_process_info, get_system_info, get_local_ip, update_tray_servers, quit_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

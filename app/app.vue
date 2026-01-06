@@ -15,6 +15,7 @@ import { useServersStore } from '~/stores/useServersStore'
 import { useSettingsStore } from '~/stores/useSettingsStore'
 import { storeToRefs } from 'pinia'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { invoke } from '@tauri-apps/api/core'
 
 const serversStore = useServersStore()
 const { servers } = storeToRefs(serversStore)
@@ -52,7 +53,8 @@ onMounted(async () => {
                 unlistenClose()
                 unlistenClose = null
             }
-            await appWindow.close()
+            // Use backend quit for reliable exit on all platforms (inc. MacOS)
+            await invoke('quit_app')
          }
       } catch (e) {
          console.error('Error handling close request', e)
