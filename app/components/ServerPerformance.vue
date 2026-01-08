@@ -1,9 +1,10 @@
 <template>
   <div class="h-full flex flex-col gap-6 p-4">
     <!-- Top Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <!-- CPU Card -->
-      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+      <div class="relative bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+        <div class="absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] from-red-500/10 to-transparent to-75%"></div>
         <div>
           <p class="text-sm text-gray-400 font-medium">CPU Usage</p>
           <p class="text-2xl font-bold text-red-500 mt-1">{{ cpuUsage.toFixed(1) }}%</p>
@@ -14,7 +15,8 @@
       </div>
 
       <!-- RAM Card -->
-      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+      <div class="relative bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+        <div class="absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] from-yellow-500/10 to-transparent to-75%"></div>
         <div>
           <p class="text-sm text-gray-400 font-medium">RAM Usage</p>
           <div class="mt-1">
@@ -27,7 +29,8 @@
       </div>
 
       <!-- Uptime / Status Card -->
-      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+      <div class="relative bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+        <div :class="['absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] to-75% ',statusColorClassGradient]" class=""></div>
         <div>
           <p class="text-sm text-gray-400 font-medium">Server Status</p>
           <div class="mt-1 flex items-center gap-2">
@@ -38,6 +41,18 @@
         </div>
         <div class="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center">
            <UIcon name="i-lucide-activity" :class="['w-6 h-6', statusIconClass]" />
+        </div>
+      </div>
+
+      <!-- TPS Card -->
+      <div class="relative bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+        <div :class="['absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] to-transparent to-75% ' ,tpsColorClassGradient]"></div>
+        <div>
+          <p class="text-sm text-gray-400 font-medium">TPS</p>
+          <p :class="['text-2xl font-bold mt-1', tpsColorClass]">{{ tps.toFixed(1) }}</p>
+        </div>
+        <div :class="['w-10 h-10 rounded-lg flex items-center justify-center', tpsBgClass]">
+          <UIcon name="i-lucide-gauge" :class="['w-6 h-6', tpsColorClass]" />
         </div>
       </div>
     </div>
@@ -96,6 +111,7 @@ const serverProcess = computed(() => store.getServer(props.serverId))
 const cpuUsage = computed(() => serverProcess.value.cpuUsage || 0)
 const memoryBytes = computed(() => serverProcess.value.memoryBytes || 0)
 const status = computed(() => serverProcess.value.status)
+const tps = computed(() => serverProcess.value.tps || 20)
 const history = computed(() => serverProcess.value.history || [])
 
 // RAM Calculation for % bar
@@ -115,11 +131,41 @@ const statusColorClass = computed(() => {
    }
 })
 
+const statusColorClassGradient = computed(() => {
+   switch (status.value) {
+     case 'online': return 'from-green-500/10'
+     case 'starting': return 'from-yellow-500/10'
+     case 'stopping': return 'from-red-500/10'
+     default: return 'from-gray-500/10'
+   }
+})
+
 const statusIconClass = computed(() => {
    switch (status.value) {
      case 'online': return 'text-green-500 animate-pulse'
      default: return 'text-gray-500'
    }
+})
+
+const tpsColorClass = computed(() => {
+   const val = tps.value
+   if (val >= 19.0) return 'text-green-500'
+   if (val >= 15.0) return 'text-yellow-500'
+   return 'text-red-500'
+})
+
+const tpsColorClassGradient = computed(() => {
+   const val = tps.value
+   if (val >= 19.0) return 'from-green-500/10'
+   if (val >= 15.0) return 'from-yellow-500/10'
+   return 'from-red-500/10'
+})
+
+const tpsBgClass = computed(() => {
+   const val = tps.value
+   if (val >= 19.0) return 'bg-green-500/10'
+   if (val >= 15.0) return 'bg-yellow-500/10'
+   return 'bg-red-500/10'
 })
 
 

@@ -23,7 +23,7 @@ export function useUpdateChecker() {
 			const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
 				headers: {
 					'Accept': 'application/vnd.github.v3+json',
-					'User-Agent': 'MineDash-UpdateChecker'
+					'User-Agent': 'VoidLink-UpdateChecker'
 				}
 			})
 

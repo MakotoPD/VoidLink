@@ -37,7 +37,7 @@ export const useSettingsStore = defineStore('settings', () => {
 		if (loaded.value) return // Don't reload unnecessarily
 
 		try {
-			const content = await readTextFile('MineDash/settings.json', { baseDir: BaseDirectory.Document })
+			const content = await readTextFile('VoidLink/settings.json', { baseDir: BaseDirectory.Document })
 			const data = JSON.parse(content)
 			if (data) {
 				settings.minimizeOnClose = data.minimizeOnClose ?? true
@@ -74,7 +74,7 @@ export const useSettingsStore = defineStore('settings', () => {
 	async function saveSettings() {
 		try {
 			await writeTextFile(
-				'MineDash/settings.json',
+				'VoidLink/settings.json',
 				JSON.stringify(settings, null, 2),
 				{ baseDir: BaseDirectory.Document }
 			)

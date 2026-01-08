@@ -16,3 +16,21 @@
   --color-green-900: #0A5331;
   --color-green-950: #052E16;
 }
+
+
+@font-face {
+  font-family: 'minecraft';
+  src: url('/minecraft.ttf');
+}
+
+.font-minecraft {
+  font-family: 'minecraft';
+}
+
+
+.vue-grid-item.vue-grid-placeholder {
+    background: rgb(0, 132, 255) !important;
+    opacity: 0.1 !important;
+    border-radius: 0.75rem;
+}
+

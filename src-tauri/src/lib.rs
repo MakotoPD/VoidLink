@@ -1,5 +1,9 @@
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
+mod frp;
+mod rcon;
+mod utils;
 
+use serde::{Deserialize, Serialize};
+use std::sync::Mutex;
 use sysinfo::{Pid, ProcessesToUpdate, System};
 use local_ip_address::local_ip;
 use tauri::{
@@ -7,25 +11,24 @@ use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Manager, Emitter,
 };
-use std::sync::Mutex;
 
 // Store app handle globally for menu updates
 static APP_HANDLE: Mutex<Option<tauri::AppHandle>> = Mutex::new(None);
 
-#[derive(serde::Serialize)]
+#[derive(Serialize)]
 pub struct ProcessInfo {
     pub memory_bytes: u64,
     pub cpu_usage: f32,
 }
 
-#[derive(serde::Serialize)]
+#[derive(Serialize)]
 pub struct SystemInfo {
     pub total_memory_bytes: u64,
     pub used_memory_bytes: u64,
     pub cpu_count: usize,
 }
 
-#[derive(serde::Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct TrayServer {
     pub id: String,
     pub name: String,
@@ -35,32 +38,23 @@ pub struct TrayServer {
 #[tauri::command]
 fn get_process_info(pid: u32) -> Option<ProcessInfo> {
     let mut sys = System::new();
-    // We must refresh all processes to find children relationships
     sys.refresh_processes(ProcessesToUpdate::All, true);
     
     let target_pid = Pid::from_u32(pid);
     
-    // Check if process exists first
     if sys.process(target_pid).is_none() {
         return None;
     }
 
-    // Since we need to traverse down, and sysinfo doesn't give direct child links easily without iteration,
-    // we can iterate once to build a simple map of Parent -> Children, OR just iterate repeatedly.
-    // Iterating repeatedly is O(N * Depth), which is small enough for process trees.
-    
-    // Recursive closure to sum stats
     fn sum_stats(sys: &System, pid: Pid) -> (u64, f32) {
         let mut mem = 0;
         let mut cpu = 0.0;
         
-        // Add self stats
         if let Some(proc) = sys.process(pid) {
             mem += proc.memory();
             cpu += proc.cpu_usage();
         }
         
-        // Find children (inefficient O(N) scan per node but robust)
         for (child_pid, child_proc) in sys.processes() {
             if let Some(parent) = child_proc.parent() {
                 if parent == pid {
@@ -106,46 +100,38 @@ fn update_tray_servers(servers: Vec<TrayServer>) -> Result<(), String> {
     let handle_guard = APP_HANDLE.lock().map_err(|e| e.to_string())?;
     let app = handle_guard.as_ref().ok_or("App handle not initialized")?;
     
-    // Build new menu
     let mut menu_items: Vec<MenuItem<tauri::Wry>> = vec![];
     
-    // Add header
-    if let Ok(item) = MenuItem::new(app, "MineDash", false, None::<&str>) {
+    if let Ok(item) = MenuItem::new(app, "VoidLink", false, None::<&str>) {
         menu_items.push(item);
     }
     
-    // Add separator-like disabled item
     if let Ok(item) = MenuItem::new(app, "─────────────", false, None::<&str>) {
         menu_items.push(item);
     }
     
-    // Add servers
     for server in &servers {
-        let status_icon = if server.status == "online" { "🟢" } else { "🔴" };
+        let status_icon = if server.status == "online" { "▶" } else { "⏹" };
         let label = format!("{} {}", status_icon, server.name);
         if let Ok(item) = MenuItem::with_id(app, format!("server_{}", server.id), label, true, None::<&str>) {
             menu_items.push(item);
         }
     }
     
-    // Add separator
     if let Ok(item) = MenuItem::new(app, "─────────────", false, None::<&str>) {
         menu_items.push(item);
     }
     
-    // Add show/quit
-    if let Ok(item) = MenuItem::with_id(app, "show", "Show MineDash", true, None::<&str>) {
+    if let Ok(item) = MenuItem::with_id(app, "show", "Show VoidLink", true, None::<&str>) {
         menu_items.push(item);
     }
     if let Ok(item) = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>) {
         menu_items.push(item);
     }
     
-    // Build menu from items
     let menu = Menu::with_items(app, &menu_items.iter().map(|i| i as &dyn tauri::menu::IsMenuItem<tauri::Wry>).collect::<Vec<_>>())
         .map_err(|e| e.to_string())?;
     
-    // Update tray menu
     if let Some(tray) = app.tray_by_id("main-tray") {
         let _ = tray.set_menu(Some(menu));
     }
@@ -154,29 +140,51 @@ fn update_tray_servers(servers: Vec<TrayServer>) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn kill_process(pid: u32) -> bool {
+    #[cfg(windows)]
+    {
+        // Use /T to kill the entire process tree (important for Java which spawns child processes)
+        let result = std::process::Command::new("taskkill")
+            .args(["/F", "/T", "/PID", &pid.to_string()])
+            .output();
+        
+        match result {
+            Ok(output) => {
+                log::info!("Killed process tree for PID {}: {:?}", pid, output.status.success());
+                output.status.success()
+            }
+            Err(e) => {
+                log::error!("Failed to kill process {}: {}", pid, e);
+                false
+            }
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        let result = std::process::Command::new("kill")
+            .args(["-9", &pid.to_string()])
+            .output();
+        result.map(|o| o.status.success()).unwrap_or(false)
+    }
+}
+
+#[tauri::command]
 fn quit_app() {
+    frp::stop_all_tunnels();
     std::process::exit(0);
+}
+
+#[tauri::command]
+fn cleanup_and_quit(app: tauri::AppHandle) {
+    // Stop all FRP tunnels
+    frp::stop_all_tunnels();
+    // Exit the app
+    app.exit(0);
 }
 
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            // ... (setup content kept implicit if not changing, but here I am modifying run)
-            // Wait, replace_file_content replaces contiguous block.
-            // I need to insert quit_app BEFORE run, and update invoke_handler inside run.
-            // This is tricky with one replacement if they are far apart.
-            // quit_app is newly added.
-            // invoke_handler is at the end.
-            
-            // Actually, I can add quit_app just before run().
-            // And update run().
-            
-            // Let's use multi_replace?
-            // "Use this tool ONLY when you are making MULTIPLE, NON-CONTIGUOUS edits".
-            // Yes.
-        })
-
-            // Store app handle for later use
             if let Ok(mut handle) = APP_HANDLE.lock() {
                 *handle = Some(app.handle().clone());
             }
@@ -189,14 +197,12 @@ pub fn run() {
                 )?;
             }
             
-            // Create initial tray menu
-            let show = MenuItem::with_id(app, "show", "Show MineDash", true, None::<&str>)?;
+            let show = MenuItem::with_id(app, "show", "Show VoidLink", true, None::<&str>)?;
             let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show, &quit])?;
             
-            // Create tray icon
             let _tray = TrayIconBuilder::with_id("main-tray")
-                .tooltip("MineDash")
+                .tooltip("VoidLink")
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
                 .show_menu_on_left_click(false)
@@ -204,6 +210,7 @@ pub fn run() {
                     let id = event.id.as_ref();
                     
                     if id == "quit" {
+                        frp::stop_all_tunnels();
                         app.exit(0);
                     } else if id == "show" {
                         if let Some(window) = app.get_webview_window("main") {
@@ -212,9 +219,7 @@ pub fn run() {
                         }
                     } else if id.starts_with("server_") {
                         let server_id = id.replace("server_", "");
-                        // Emit event to frontend
                         let _ = app.emit("tray-open-server", server_id);
-                        // Show window
                         if let Some(window) = app.get_webview_window("main") {
                             let _ = window.show();
                             let _ = window.set_focus();
@@ -242,8 +247,45 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
+          // Check for deep link in args
+          for arg in argv {
+              if arg.starts_with("voidlink://") {
+                  let _ = app.emit("deep-link://new-url", vec![arg]);
+              }
+          }
+          
+          if let Some(window) = app.get_webview_window("main") {
+              let _ = window.set_focus();
+              let _ = window.show();
+              let _ = window.unminimize();
+          }
+        }))
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![get_process_info, get_system_info, get_local_ip, update_tray_servers, quit_app])
+        .invoke_handler(tauri::generate_handler![
+            get_process_info,
+            get_system_info,
+            get_local_ip,
+            update_tray_servers,
+            kill_process,
+            quit_app,
+            cleanup_and_quit,
+            // FRP Tunnel commands
+            frp::frp_start_tunnel,
+            frp::frp_stop_tunnel,
+            frp::frp_get_status,
+            // RCON commands
+            rcon::rcon_send_command,
+            rcon::rcon_stop_server,
+            utils::read_log_tail,
+        ])
+        .on_window_event(|_window, event| {
+            if let tauri::WindowEvent::CloseRequested { .. } = event {
+                // Cleanup all FRP tunnels when window closes
+                frp::stop_all_tunnels();
+            }
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

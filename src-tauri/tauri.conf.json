@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "MineDash",
-  "version": "0.2.2",
-  "identifier": "pl.makotopd.minedash",
+  "productName": "VoidLink",
+  "version": "0.3.0",
+  "identifier": "pl.makotopd.voidlink",
   "build": {
     "frontendDist": "../.output/public",
     "devUrl": "http://localhost:3000",
@@ -12,12 +12,16 @@
   "app": {
     "windows": [
       {
-        "title": "MineDash",
+        "title": "VoidLink",
         "label": "main",
         "width": 1200,
-        "height": 700,
+        "height": 850,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "minWidth": 1200,
+        "minHeight": 850,
+        "dragDropEnabled": false
+      
       }
     ],
     "security": {
@@ -27,9 +31,21 @@
       ]
     }
   },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "voidlink"
+        ]
+      }
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",
+    "externalBin": [
+      "binaries/frpc"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

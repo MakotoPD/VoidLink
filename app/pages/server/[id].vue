@@ -1,75 +1,123 @@
 <template>
   <div class="min-h-screen bg-gray-950 flex flex-col">
     <!-- Header -->
-    <header class="bg-gray-900 border-b border-gray-800 p-4">
-       <div class="max-w-7xl mx-auto flex items-center justify-between">
-          <div class="flex items-center gap-4">
+    <header class="relative bg-gray-900 border-b border-gray-800 p-6 overflow-hidden">
+       <!-- Gradient Background Mesh -->
+       <div class="absolute inset-0 z-0">
+          <div class="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+          <div class="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4"></div>
+       </div>
+
+       <div class="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="flex items-center gap-6">
             <UButton
               icon="i-lucide-arrow-left"
               color="neutral"
               variant="ghost"
               to="/"
+              class="hidden md:flex"
             />
             
-            <div v-if="loading" class="h-8 w-48 bg-gray-800 animate-pulse rounded" />
-            <div v-else class="flex items-center gap-3">
-               <div class="w-10 h-10 rounded bg-primary-900/30 flex items-center justify-center">
-                 <UIcon :name="server?.icon || 'i-lucide-box'" class="w-5 h-5 text-primary-400" />
+            <div v-if="loading" class="h-16 w-64 bg-gray-800 animate-pulse rounded-xl" />
+            <div v-else class="flex items-center gap-5">
+               <div class="relative group cursor-pointer" @click="changeServerIcon">
+                   <div class="absolute inset-0 bg-primary-500/20 rounded-2xl blur-lg group-hover:bg-primary-500/30 transition-all duration-500"></div>
+                   <div class="relative w-16 h-16 rounded-2xl bg-gray-900 border border-gray-700 flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                     <img v-if="serverIconUrl" :src="serverIconUrl" class="w-full h-full object-cover" />
+                     <UIcon v-else :name="server?.icon || 'i-lucide-box'" class="w-8 h-8 text-primary-400 group-hover:text-primary-300 transition-colors" />
+                     
+                     <!-- Overlay for change hint -->
+                     <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <UIcon name="i-lucide-edit-2" class="w-4 h-4 text-white" />
+                     </div>
+                   </div>
+                   <!-- Status Indicator Dot -->
+                   <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-gray-900 shadow-sm" :class="statusBgClass"></div>
                </div>
+               
                <div>
-                 <h1 class="font-bold text-lg leading-tight">{{ server?.name }}</h1>
-                 <p class="text-xs text-gray-500">
-                  {{ server?.typeName }}{{ server?.modpack?.loader ? ` (${server.modpack.loader})` : '' }} {{ server?.version }} • ID: {{ server?.id }}
-                 </p>
+                  <div class="flex items-center gap-3">
+                     <h1 class="font-bold text-2xl text-white tracking-tight">{{ server?.name }}</h1>
+                     <UBadge :color="statusColor" variant="subtle" size="xs" class="uppercase font-bold tracking-wider">{{ serverStatus }}</UBadge>
+                  </div>
+                 <div class="flex items-center gap-2 mt-1 text-sm text-gray-400">
+                    <span class="flex items-center gap-1.5 bg-gray-800/50 px-2 py-0.5 rounded-md border border-gray-700/50">
+                        <UIcon name="i-lucide-layers" class="w-3.5 h-3.5" />
+                        {{ server?.typeName }}{{ server?.modpack?.loader ? ` (${server.modpack.loader})` : '' }}
+                    </span>
+                    <span class="hidden sm:inline text-gray-600">•</span>
+                    <span class="bg-gray-800/50 px-2 py-0.5 rounded-md border border-gray-700/50 font-mono text-xs">v{{ server?.version }}</span>
+                    <span class="hidden sm:inline text-gray-600">•</span>
+                    <span class="text-xs text-gray-500 font-mono cursor-pointer hover:text-white transition-colors" title="Click to copy ID" @click="copyId">#{{ server?.id }}</span>
+                 </div>
                </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
-             <UButton 
-               icon="i-lucide-folder-open" 
-               color="neutral" 
-               variant="ghost" 
-               title="Open Server Folder"
-               @click="openServerFolder"
-             />
-             <UBadge :color="statusColor" variant="subtle" size="md" class="px-3 py-1.5 uppercase">{{ serverStatus }}</UBadge>
+          <!-- Actions Toolbar -->
+          <div class="flex items-center gap-3 bg-gray-800/30 p-1.5 rounded-xl border border-gray-700/50 backdrop-blur-sm shadow-sm">
              
-             <UButton 
-               v-if="serverStatus === 'offline'"
-               color="success" 
-               icon="i-lucide-play" 
-               label="Start" 
-               @click="startServer" 
-             />
-             <template v-else>
-                <UButton 
-                   color="error" 
-                   icon="i-lucide-square" 
-                   label="Stop" 
-                   :loading="serverStatus === 'stopping'"
-                   @click="stopServer" 
-                />
-                <UButton 
-                   color="error" 
-                   variant="ghost"
-                   icon="i-lucide-skull" 
-                   @click="killServer"
-                   title="Force Kill"
-                />
-             </template>
-              
+             <!-- Primary Power Controls -->
+             <div class="flex gap-1">
+                 <UButton 
+                   v-if="serverStatus === 'offline'"
+                   color="success" 
+                   icon="i-lucide-play" 
+                   label="Start Server"
+                   size="md"
+                   @click="startServer"
+                   class="shadow-lg shadow-green-500/10 hover:shadow-green-500/20 transition-all font-semibold px-6"
+                 />
+                 <template v-else>
+                    <UButton 
+                       color="error" 
+                       icon="i-lucide-square" 
+                       label="Stop" 
+                       size="md"
+                       variant="soft"
+                       :loading="serverStatus === 'stopping'"
+                       @click="stopServer" 
+                    />
+                    <UTooltip text="Force Kill">
+                       <UButton 
+                          color="error" 
+                          variant="ghost"
+                          icon="i-lucide-skull" 
+                          size="md"
+                          @click="killServer"
+                       />
+                    </UTooltip>
+                 </template>
+             </div>
+
+             <div class="w-px h-8 bg-gray-700/50 mx-1"></div>
+
+             <!-- Secondary Actions -->
+             <UTooltip text="Open Server Folder">
+                 <UButton 
+                   icon="i-lucide-folder-open" 
+                   color="neutral" 
+                   variant="ghost" 
+                   size="md"
+                   @click="openServerFolder"
+                 />
+             </UTooltip>
+             
               <!-- Update Modpack Button -->
               <UButton 
                  v-if="server?.modpack?.id && server.modpack.id !== 'custom'"
                  :loading="checkingUpdate"
                  icon="i-lucide-refresh-cw"
                  color="primary"
-                 variant="soft"
+                 variant="ghost"
+                 size="md"
                  @click="checkModpackUpdate"
-                 title="Check for Modpack Updates"
+                 :title="updateAvailable ? 'Update Available' : 'Check Updates'"
               >
-                  {{ updateAvailable ? 'Update Available' : 'Check Updates' }}
+                  <span v-if="updateAvailable" class="relative flex h-2 w-2 mr-1">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+                  </span>
               </UButton>
            </div>
        </div>
@@ -104,7 +152,7 @@
       </div>
 
       <div v-else class="max-w-7xl mx-auto h-full p-6 flex flex-col">
-        <UTabs v-model="selectedTab" :items="tabs" class="w-full flex-1 flex flex-col">
+        <UTabs v-model="selectedTab" variant="pill" :items="tabs" class="w-full flex-1 flex flex-col">
            
            <!-- Performance -->
            <template #performance>
@@ -184,17 +232,38 @@
 
            <!-- Settings (RAM, Flags, Java) -->
            <template #settings>
-              <div class="max-w-6xl mx-auto space-y-6 py-6 px-4">
+              <div class="max-w-6xl mx-auto space-y-6 py-6 px-4 pb-24">
                  
                  <!-- Header & Actions -->
-                  <div class="flex justify-between items-center bg-gray-900 border border-gray-800 p-4 rounded-xl shadow-sm sticky top-0 z-20 backdrop-blur-md">
+                  <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-gray-900/80 border border-gray-800 p-4 rounded-xl shadow-lg sticky top-0 z-20 backdrop-blur-xl gap-4">
                     <div>
-                        <h2 class="font-bold text-lg text-white">Server Configuration</h2>
-                       <p class="text-xs text-gray-500">Manage general settings, gameplay, and performance</p>
+                        <h2 class="font-bold text-xl text-white flex items-center gap-2">
+                           <UIcon name="i-lucide-settings-2" class="w-6 h-6 text-primary-500" />
+                           Server Configuration
+                        </h2>
+                       <p class="text-sm text-gray-400">Manage general settings, gameplay, and system performance</p>
                     </div>
-                    <div class="flex gap-2 item-center">
-                        <UButton size="md" color="neutral" variant="outline" icon="i-lucide-file-text" @click="showPropertiesEditor = true">Open server.properties</UButton>
-                        <UButton size="md" color="primary" icon="i-lucide-save" :loading="saving" @click="saveAllSettings">Save Changes</UButton>
+                    <div class="flex gap-3 items-center w-full md:w-auto">
+                        <UButton 
+                           size="md" 
+                           color="neutral" 
+                           variant="outline" 
+                           icon="i-lucide-file-code" 
+                           @click="showPropertiesEditor = true"
+                           class="flex-1 md:flex-none justify-center"
+                        >
+                           Edit properties
+                        </UButton>
+                        <UButton 
+                           size="md" 
+                           color="primary" 
+                           icon="i-lucide-save" 
+                           :loading="saving" 
+                           @click="saveAllSettings"
+                           class="flex-1 md:flex-none justify-center shadow-lg shadow-primary-500/20"
+                        >
+                           Save Changes
+                        </UButton>
                     </div>
                  </div>
 
@@ -203,38 +272,49 @@
                     <!-- Left Column: General & Gameplay -->
                     <div class="space-y-6">
                        <!-- General Settings -->
-                       <UCard>
+                       <UCard :ui="{ root: 'bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-800' }">
                           <template #header>
-                             <div class="flex items-center gap-2">
-                                <UIcon name="i-lucide-info" class="w-5 h-5 text-primary-500" />
-                                <h3 class="font-semibold">General Information</h3>
+                             <div class="flex items-center gap-3">
+                                <div class="p-2 bg-primary-500/10 rounded-lg flex items-center justify-center">
+                                   <UIcon name="i-lucide-sliders" class="w-5 h-5 text-primary-500" />
+                                </div>
+                                <div>
+                                   <h3 class="font-bold text-white">General Information</h3>
+                                   <p class="text-xs text-gray-500">Basic server details</p>
+                                </div>
                              </div>
                           </template>
                           
                           <div class="space-y-6">
-                             <div class="space-y-2">
+                             <div class="space-y-2 flex flex-col gap-1">
                                 <label class="text-sm font-medium text-gray-300">Server Name</label>
-                                <UInput v-model="serverName" placeholder="My Awesome Server" icon="i-lucide-pencil" />
+                                <UInput 
+                                   v-model="serverName" 
+                                   placeholder="My Awesome Server" 
+                                   icon="i-lucide-pencil" 
+                                   size="lg"
+                                  
+                                />
                              </div>
 
                              <!-- MOTD Editor -->
                              <div class="space-y-3">
                                 <label class="block text-sm font-medium text-gray-300">Message of the Day (MOTD)</label>
-                                <div class="flex flex-wrap gap-1 mb-2">
+                                <div class="flex flex-wrap gap-1.5 mb-2 bg-gray-950/30 p-2 rounded-lg border border-gray-800/50">
                                    <!-- Colors -->
                                    <button v-for="code in mcColorCodes" :key="code.code" 
                                       @click="insertMotdCode(code.code)"
-                                      class="w-6 h-6 rounded text-xs font-bold border border-gray-600 hover:scale-110 transition-transform"
+                                      class="w-6 h-6 rounded text-[10px] font-bold border border-white/10 hover:scale-110 transition-transform shadow-sm"
                                       :style="{ backgroundColor: code.color, color: code.textColor }"
                                       :title="code.name"
                                    >
                                       {{ code.code }}
                                    </button>
-                                   <div class="w-px bg-gray-600 mx-1"></div>
+                                   <div class="w-px bg-gray-700 mx-1 h-6"></div>
                                    <!-- Styles -->
                                    <button v-for="style in mcStyleCodes" :key="style.code"
                                       @click="insertMotdCode(style.code)"
-                                      class="px-2 h-6 rounded text-xs bg-gray-700 border border-gray-600 hover:bg-gray-600 transition-colors"
+                                      class="px-2 h-6 rounded text-[10px] bg-gray-800 border border-gray-700 hover:bg-gray-700 transition-colors font-mono"
                                       :class="style.class"
                                       :title="style.name"
                                    >
@@ -246,23 +326,37 @@
                                    :value="getPropertyValue('motd')" 
                                    @input="(e) => updateProperty('motd', (e.target as HTMLTextAreaElement).value)"
                                    placeholder="A Minecraft Server"
-                                   class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white font-mono text-sm resize-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                                   class="w-full px-4 py-3 bg-gray-950/50 border border-gray-800 rounded-xl text-white font-mono text-sm resize-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all outline-none"
                                    rows="3"
                                 ></textarea>
-                                <div class="p-3 bg-black border border-gray-800 rounded-lg overflow-hidden">
-                                   <p class="text-[10px] uppercase tracking-wider text-gray-500 mb-1">Preview</p>
-                                   <div class="font-minecraft text-lg leading-tight" v-html="renderMotdPreview(getPropertyValue('motd'))"></div>
+                                <div class="p-4 bg-black/80 border border-gray-800 rounded-xl overflow-hidden relative group">
+                                   <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <UBadge size="xs" color="neutral" variant="subtle">PREVIEW</UBadge>
+                                   </div>
+                                   <div class="font-minecraft text-lg leading-tight flex items-center gap-2">
+                                      <img v-if="serverIconUrl" :src="serverIconUrl" class="w-16 h-16 rounded-sm opacity-90" />
+                                      <UIcon v-else name="i-lucide-box" class="w-16 h-16 rounded-sm bg-gray-800 text-gray-700 p-4" />
+                                      <div class="flex flex-col justify-center h-16">
+                                         <div class="text-white font-minecraft">{{ serverName || 'Minecraft Server' }}</div>
+                                         <div v-html="renderMotdPreview(getPropertyValue('motd'))"></div>
+                                      </div>
+                                   </div>
                                 </div>
                              </div>
                           </div>
                        </UCard>
 
                        <!-- Gameplay Settings -->
-                       <UCard>
+                       <UCard :ui="{ root: 'bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-800' }">
                           <template #header>
-                             <div class="flex items-center gap-2">
-                                <UIcon name="i-lucide-gamepad-2" class="w-5 h-5 text-primary-500" />
-                                <h3 class="font-semibold">Gameplay</h3>
+                             <div class="flex items-center gap-3">
+                                <div class="p-2 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                                   <UIcon name="i-lucide-gamepad-2" class="w-5 h-5 text-emerald-500" />
+                                </div>
+                                <div>
+                                   <h3 class="font-bold text-white">Gameplay Experience</h3>
+                                   <p class="text-xs text-gray-500">Game rules and mechanics</p>
+                                </div>
                              </div>
                           </template>
 
@@ -271,81 +365,63 @@
                                 <div class="space-y-2">
                                    <label class="block text-sm font-medium text-gray-300">Gamemode</label>
                                    <USelectMenu 
-                                       class="w-full"
+                                      class="w-full"
+                                      size="lg"
                                       :model-value="getPropertyValue('gamemode')" 
                                       @update:model-value="(val) => updateProperty('gamemode', val)"
                                       :items="['survival', 'creative', 'adventure', 'spectator']"
+                                      icon="i-lucide-swords"
                                    />
                                 </div>
                                 <div class="space-y-2">
                                    <label class="block text-sm font-medium text-gray-300">Difficulty</label>
                                    <USelectMenu 
-                                       class="w-full"
+                                      class="w-full"
+                                      size="lg"
                                       :model-value="getPropertyValue('difficulty')" 
                                       @update:model-value="(val) => updateProperty('difficulty', val)"
                                       :items="['peaceful', 'easy', 'normal', 'hard']"
+                                      icon="i-lucide-skull"
                                    />
                                 </div>
-                                <div class="space-y-2">
-                                   <label class="block text-sm font-medium text-gray-300">Port</label>
-                                   <UInput 
-                                       type="number"
-                                       placeholder="25565"
-                                       class="w-full"
-                                       icon="i-lucide-network"
-                                      :model-value="getPropertyValue('server-port')" 
-                                      @update:model-value="(val) => updateProperty('server-port', val)"
-                                   />
-                                </div>
-                                
+                             </div>
+                             
+                             <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-300">Server Port</label>
+                                <UInput 
+                                   type="number"
+                                   placeholder="25565"
+                                   class="w-full"
+                                   size="lg"
+                                   icon="i-lucide-network"
+                                   :model-value="getPropertyValue('server-port')" 
+                                   @update:model-value="(val) => updateProperty('server-port', val)"
+                                   :ui="{ icon: { leading: { pointer: '' } } }"
+                                />
                              </div>
 
-                             <div class="space-y-4 pt-2">
-                                <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
-                                   <div>
-                                      <p class="font-medium text-white">PVP</p>
-                                      <p class="text-xs text-gray-500">Allow players to fight each other</p>
+                             <div class="space-y-3 pt-2">
+                                <div v-for="(item, idx) in [
+                                   { label: 'PVP Combat', desc: 'Allow players to fight each other', prop: 'pvp', icon: 'i-lucide-swords', color: 'text-red-400' },
+                                   { label: 'Allow Flight', desc: 'Allow flying in survival mode', prop: 'allow-flight', icon: 'i-lucide-cloud', color: 'text-sky-400' },
+                                   { label: 'Command Blocks', desc: 'Enable command block functionality', prop: 'enable-command-block', icon: 'i-lucide-box-select', color: 'text-purple-400' },
+                                   { label: 'Hardcore Mode', desc: 'Players are banned upon death', prop: 'hardcore', icon: 'i-lucide-skull', color: 'text-rose-500' }
+                                ]" :key="idx"
+                                class="flex items-center justify-between p-4 bg-gray-800/30 border border-gray-800/50 rounded-xl hover:bg-gray-800/50 transition-colors group">
+                                   <div class="flex items-center gap-3">
+                                      <div class="p-2 rounded-lg bg-gray-900 group-hover:bg-gray-800 flex items-center justify-center transition-colors">
+                                         <UIcon :name="item.icon" class="w-5 h-5" :class="item.color" />
+                                      </div>
+                                      <div>
+                                         <p class="font-medium text-white">{{ item.label }}</p>
+                                         <p class="text-xs text-gray-500">{{ item.desc }}</p>
+                                      </div>
                                    </div>
                                    <USwitch 
-                                      :model-value="getPropertyValue('pvp') === 'true'" 
-                                      @update:model-value="(val) => updateProperty('pvp', val)" 
+                                      :model-value="getPropertyValue(item.prop) === 'true'" 
+                                      @update:model-value="(val) => updateProperty(item.prop, val)" 
                                       color="primary"
-                                   />
-                                </div>
-
-                                <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
-                                   <div>
-                                      <p class="font-medium text-white">Allow Flight</p>
-                                      <p class="text-xs text-gray-500">Allow flying in survival mode</p>
-                                   </div>
-                                   <USwitch 
-                                      :model-value="getPropertyValue('allow-flight') === 'true'" 
-                                      @update:model-value="(val) => updateProperty('allow-flight', val)" 
-                                      color="primary"
-                                   />
-                                </div>
-
-                                <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
-                                   <div>
-                                      <p class="font-medium text-white">Command Blocks</p>
-                                      <p class="text-xs text-gray-500">Enable command block functionality</p>
-                                   </div>
-                                   <USwitch 
-                                      :model-value="getPropertyValue('enable-command-block') === 'true'" 
-                                      @update:model-value="(val) => updateProperty('enable-command-block', val)" 
-                                      color="primary"
-                                   />
-                                </div>
-
-                                <div class="flex items-center justify-between p-3 bg-red-800/20 rounded-lg hover:bg-red-800/30 transition-colors">
-                                   <div>
-                                      <p class="font-medium text-error">Hardcore Mode</p>
-                                      <p class="text-xs text-gray-500">Player will banned when die</p>
-                                   </div>
-                                   <USwitch 
-                                      :model-value="getPropertyValue('hardcore') === 'true'" 
-                                      @update:model-value="(val) => updateProperty('hardcore', val)" 
-                                      color="primary"
+                                      size="lg"
                                    />
                                 </div>
                              </div>
@@ -355,172 +431,178 @@
 
                     <!-- Right Column: System & Danger -->
                     <div class="space-y-6">
-                       <!-- Java Settings -->
-                       <UCard>
+                       <!-- System & Performance -->
+                       <UCard :ui="{ root: 'bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-800' }">
                           <template #header>
-                             <div class="flex items-center gap-2">
-                                <UIcon name="i-lucide-cpu" class="w-5 h-5 text-primary-500" />
-                                <h3 class="font-semibold">System & Performance</h3>
+                             <div class="flex items-center gap-3">
+                                <div class="p-2 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                                   <UIcon name="i-lucide-cpu" class="w-5 h-5 text-blue-500" />
+                                </div>
+                                <div>
+                                   <h3 class="font-bold text-white">System & Performance</h3>
+                                   <p class="text-xs text-gray-500">Allocations and limits</p>
+                                </div>
                              </div>
                           </template>
                           
-                          <div class="space-y-6">
-                             <div class="space-y-4">
+                          <div class="space-y-8">
+                             <!-- Memory Slider -->
+                             <div class="space-y-4 bg-gray-800/20 p-5 rounded-xl border border-gray-800/50">
                                 <div class="flex justify-between items-end">
-                                  <label class="text-sm font-medium text-gray-300">Memory Allocation (RAM)</label>
-                                  <span class="text-lg font-bold text-primary-400">{{ javaSettings.memory }} GB</span>
+                                  <div class="flex flex-col">
+                                     <label class="text-sm font-medium text-gray-200 flex items-center gap-2">
+                                        <UIcon name="i-lucide-memory-stick" class="w-4 h-4 text-primary-400" />
+                                        RAM Allocation
+                                     </label>
+                                     <span class="text-xs text-gray-500">Reserved memory for Java</span>
+                                  </div>
+                                  <span class="text-2xl font-bold text-primary-400 tracking-tight">{{ javaSettings.memory }} <span class="text-sm font-normal text-gray-500">GB</span></span>
                                 </div>
-                                <USlider v-model="javaSettings.memory" :min="1" :max="systemRamGB" :step="0.5" />
+                                <USlider v-model="javaSettings.memory" :min="1" :max="systemRamGB" :step="0.5" color="primary" class="w-full" />
                                 <div class="flex justify-between text-xs text-gray-500 font-mono">
                                    <span>1 GB</span>
                                    <span>{{ systemRamGB }} GB</span>
                                 </div>
                              </div>
 
+                             <!-- Grid Inputs -->
+                             <div class="grid grid-cols-2 gap-4">
+                                <!-- Max Players -->
+                                <div class="space-y-2">
+                                   <label class="block text-sm font-medium text-gray-300">Max Players</label>
+                                   <UInputNumber 
+                                      size="lg" 
+                                      class="w-full" 
+                                      placeholder="20" 
+                                      :value="getPropertyValue('max-players')" 
+                                      @update:model-value="(val) => updateProperty('max-players', val)"
+                                   />
+                                </div>
+
+                                <!-- View Distance -->
+                                <div class="space-y-2">
+                                   <label class="block text-sm font-medium text-gray-300">View Distance</label>
+                                   <UInputNumber 
+                                      size="lg" 
+                                      class="w-full" 
+                                      placeholder="10" 
+                                      :min="2" 
+                                      :max="32" 
+                                      :value="getPropertyValue('view-distance')" 
+                                      @update:model-value="(val) => updateProperty('view-distance', val)"
+                                   />
+                                </div>
+                                
+                                <!-- Sim Distance -->
+                                <div class="space-y-2">
+                                   <label class="block text-sm font-medium text-gray-300">Sim Distance</label>
+                                   <UInputNumber 
+                                      size="lg" 
+                                      class="w-full" 
+                                      placeholder="10" 
+                                      :min="2" 
+                                      :max="32" 
+                                      :value="getPropertyValue('simulation-distance')" 
+                                      @update:model-value="(val) => updateProperty('simulation-distance', val)"
+                                   />
+                                </div>
+
+                                <!-- Spawn Protection -->
+                                <div class="space-y-2">
+                                   <label class="block text-sm font-medium text-gray-300">Spawn Radius</label>
+                                   <UInputNumber 
+                                      size="lg" 
+                                      class="w-full" 
+                                      placeholder="16" 
+                                      :value="getPropertyValue('spawn-protection')" 
+                                      @update:model-value="(val) => updateProperty('spawn-protection', val)"
+                                   />
+                                </div>
+                             </div>
+
                              <div class="space-y-2 flex flex-col">
-                                <label class="text-sm font-medium text-gray-300">Java Startup Flags</label>
-                                <UTextarea v-model="javaSettings.flags" placeholder="-Aikars flags..." :rows="4" class="font-mono text-xs" />
-                                <p class="text-xs text-gray-500">Advanced: Add custom JVM arguments here.</p>
+                                <label class="text-sm font-medium text-gray-300 flex items-center gap-2">
+                                   <UIcon name="i-lucide-code-2" class="w-4 h-4" />
+                                   Java Startup Flags
+                                </label>
+                                <UTextarea 
+                                   v-model="javaSettings.flags" 
+                                   placeholder="-Aikars flags..." 
+                                   :rows="3" 
+                                   class="font-mono text-xs"
+                                   variant="outline"
+                                   color="neutral" 
+                                />
                              </div>
                           </div>
                        </UCard>
 
-                        <UCard >
+                       <!-- Security -->
+                       <UCard :ui="{ root: 'bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-800' }">
                            <template #header>
-                             <div class="flex items-center gap-2">
-                                <UIcon name="i-lucide-users" class="w-5 h-5 text-primary-500" />
-                                <h3 class="font-semibold">Performance</h3>
+                             <div class="flex items-center gap-3">
+                                <div class="p-2 bg-indigo-500/10 rounded-lg flex items-center justify-center">
+                                   <UIcon name="i-lucide-shield-check" class="w-5 h-5 text-indigo-500" />
+                                </div>
+                                <div>
+                                   <h3 class="font-bold text-white">Access Control</h3>
+                                   <p class="text-xs text-gray-500">Whitelist and verification</p>
+                                </div>
                              </div>
                           </template>
-                           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <!-- Max Players -->
-                              <div class="space-y-2">
-                                 <label class="block text-sm font-medium text-gray-300">Max Players</label>
-                                 <UInputNumber size="xl" class="w-full" placeholder="20" :value="getPropertyValue('max-players')" @update:model-value="(val) => updateProperty('max-players', val)">
-                                    <template #decrement>
-                                       <UButton size="xs" icon="i-lucide-minus" />
-                                    </template>
-                                    <template #increment>
-                                       <UButton size="xs" icon="i-lucide-plus" />
-                                    </template>
-                                 </UInputNumber>
-                                 <p class="text-xs text-gray-500">More players = more RAM</p>
-                              </div>
-
-                              <!-- View Distance -->
-                              <div class="space-y-2">
-                                 <label class="block text-sm font-medium text-gray-300">View Distance</label>
-                                 <UInputNumber size="xl" class="w-full" placeholder="10" :min="2" :max="32" :value="getPropertyValue('view-distance')" @update:model-value="(val) => updateProperty('view-distance', val)">
-                                    <template #decrement>
-                                       <UButton size="xs" icon="i-lucide-minus" />
-                                    </template>
-                                    <template #increment>
-                                       <UButton size="xs" icon="i-lucide-plus" />
-                                    </template>
-                                 </UInputNumber>
-                                 <p class="text-xs text-gray-500">Chunks rendered (2-32)</p>
-                              </div>
-
-                              <!-- Simulation Distance -->
-                              <div class="space-y-2">
-                                 <label class="block text-sm font-medium text-gray-300">Simulation Distance</label>
-                                 <UInputNumber size="xl" class="w-full" placeholder="10" :min="2" :max="32" :value="getPropertyValue('simulation-distance')" @update:model-value="(val) => updateProperty('simulation-distance', val)">
-                                    <template #decrement>
-                                       <UButton size="xs" icon="i-lucide-minus" />
-                                    </template>
-                                    <template #increment>
-                                       <UButton size="xs" icon="i-lucide-plus" />
-                                    </template>
-                                 </UInputNumber>
-                                 <p class="text-xs text-gray-500">Chunks ticked (2-32)</p>
-                              </div>
-                           </div>
-                       </UCard>
-
-                       <UCard >
-                           <template #header>
-                             <div class="flex items-center gap-2">
-                                <UIcon name="i-lucide-shield" class="w-5 h-5 text-primary-500" />
-                                <h3 class="font-semibold">Security</h3>
-                             </div>
-                          </template>
-                           <div class="flex flex-col gap-4">
-                              <!-- Max Players -->
-                              <div class="space-y-2">
-                                 <label class="block text-sm font-medium text-gray-300">Spawn Protection Radius</label>
-                                 <UInputNumber class="w-full" size="xl" placeholder="20" :value="getPropertyValue('spawn-protection')" @update:model-value="(val) => updateProperty('spawn-protection', val)">
-                                    <template #decrement>
-                                       <UButton size="xs" icon="i-lucide-minus" />
-                                    </template>
-                                    <template #increment>
-                                       <UButton size="xs" icon="i-lucide-plus" />
-                                    </template>
-                                 </UInputNumber>
-                              </div>
-
-                              <div class=" flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
-                                 <div>
-                                    <p class="font-medium text-white">Enable Whitelist</p>
-                                    <p class="text-xs text-gray-500">Only players on the whitelist can join the server</p>
+                           <div class="space-y-3">
+                              <div v-for="(item, idx) in [
+                                 { label: 'Enable Whitelist', desc: 'Only whitelisted players can join', prop: 'white-list', icon: 'i-lucide-list-checks' },
+                                 { label: 'Enforce Whitelist', desc: 'Kick non-whitelisted players on reload', prop: 'enforce-whitelist', icon: 'i-lucide-gavel' },
+                                 { label: 'Online Mode', desc: 'Verify player accounts with Mojang', prop: 'online-mode', icon: 'i-lucide-globe-lock' }
+                              ]" :key="idx"
+                              class="flex items-center justify-between p-4 bg-gray-800/30 border border-gray-800/50 rounded-xl transition-colors"
+                              :class="[
+                                 (item.prop === 'enforce-whitelist' && getPropertyValue('white-list') !== 'true') ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800/50'
+                              ]">
+                                 <div class="flex items-center gap-3">
+                                    <UIcon :name="item.icon" class="w-5 h-5 text-gray-400" />
+                                    <div>
+                                       <p class="font-medium text-white">{{ item.label }}</p>
+                                       <p class="text-xs text-gray-500">{{ item.desc }}</p>
+                                    </div>
                                  </div>
                                  <USwitch 
-                                    :model-value="getPropertyValue('white-list') === 'true'" 
-                                    @update:model-value="(val) => updateProperty('white-list', val)" 
+                                    :model-value="getPropertyValue(item.prop) === 'true'" 
+                                    @update:model-value="(val) => updateAccessProperty(item.prop, val)" 
+                                    :disabled="item.prop === 'enforce-whitelist' && getPropertyValue('white-list') !== 'true'"
                                     color="primary"
+                                    size="lg"
                                  />
                               </div>
-
-                              <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
-                                 <div>
-                                    <p class="font-medium text-white">Enforce Whitelist</p>
-                                    <p class="text-xs text-gray-500">Only players on the whitelist can join the server</p>
-                                 </div>
-                                 <USwitch
-                                    :disabled="getPropertyValue('white-list') === 'false'" 
-                                    :model-value="getPropertyValue('enforce-whitelist') === 'true'" 
-                                    @update:model-value="(val) => updateProperty('enforce-whitelist', val)" 
-                                    color="primary"
-                                 />
-                              </div>
-
-                              <div class="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors">
-                                 <div>
-                                    <p class="font-medium text-white">Online Mode</p>
-                                    <p class="text-xs text-gray-500">Only players with a secure profile can join the server</p>
-                                 </div>
-                                 <USwitch 
-                                    :model-value="getPropertyValue('online-mode') === 'true'" 
-                                    @update:model-value="(val) => updateProperty('online-mode', val)" 
-                                    color="primary"
-                                 />
-                              </div>
-
                            </div>
                        </UCard>
 
                        <!-- Danger Zone -->
-                       <UCard :ui="{ root: 'ring-1 ring-error-500/50 divide-error-500/20', body: 'bg-error-950/10' }">
-                          <template #header>
-                             <h3 class="font-semibold text-error-500 flex items-center gap-2">
-                                <UIcon name="i-lucide-alert-triangle" />
-                                Danger Zone
-                             </h3>
-                          </template>
-                          
-                          <div class="flex items-center justify-between">
-                             <div>
-                                <div class="font-medium text-white">Delete Server</div>
-                                <div class="text-sm text-gray-500 w-3/4">Permanently delete this server and all its files. This action cannot be undone.</div>
-                             </div>
-                             <UButton 
-                                color="error" 
-                                variant="solid" 
-                                label="Delete" 
-                                icon="i-lucide-trash-2"
-                                @click="openDeleteModal"
-                             />
-                          </div>
-                       </UCard>
+                       <div class="relative overflow-hidden rounded-xl border border-error-900/50 bg-error-950/10 group">
+                          <div class="absolute inset-0 bg-gradient-to-r from-error-900/10 to-transparent pointer-events-none"></div>
+                          <div class="p-6 relative z-10">
+                              <h3 class="font-bold text-error-500 flex items-center gap-2 mb-4">
+                                 <UIcon name="i-lucide-alert-octagon" class="w-5 h-5" />
+                                 Danger Zone
+                              </h3>
+                              
+                              <div class="flex items-center justify-between bg-error-950/30 gap-4 p-4 rounded-lg border border-error-900/30 backdrop-blur-sm transition-colors hover:border-error-700/50">
+                                 <div>
+                                    <div class="font-bold text-white text-sm">Delete Server</div>
+                                    <div class="text-xs text-gray-400 mt-1 max-w-[200px] sm:max-w-xs">Permanently delete this server and all its files. <br/> Cannot be undone.</div>
+                                 </div>
+                                 <UButton 
+                                    color="error" 
+                                    variant="solid" 
+                                    label="Delete Server" 
+                                    icon="i-lucide-trash-2"
+                                    @click="openDeleteModal"
+                                    class="shadow-lg shadow-error-500/20"
+                                 />
+                              </div>
+                           </div>
+                       </div>
                     </div>
 
                  </div>
@@ -530,40 +612,43 @@
                      <template #body>
                         <div class="p-6 space-y-4">
                            <div class="flex items-center gap-3 text-error-500 mb-2">
-                              <div class="p-2 flex justify-center items-center bg-error-900/20 rounded-lg">
+                              <div class="p-3 flex justify-center items-center bg-error-950 rounded-full ring-4 ring-error-900/30">
                                  <UIcon name="i-lucide-alert-triangle" class="w-6 h-6" />
                               </div>
-                              <h3 class="font-bold text-lg text-white">Delete Server?</h3>
+                              <div>
+                                 <h3 class="font-bold text-lg text-white">Delete Server?</h3>
+                                 <p class="text-xs text-error-400 font-medium">This action is irreversible</p>
+                              </div>
                            </div>
                            
-                           <p class="text-gray-400">
+                           <p class="text-gray-300 text-sm leading-relaxed bg-gray-900/50 p-4 rounded-lg border border-gray-800">
                               Are you sure you want to delete <span class="font-bold text-white">{{ serverFolderName }}</span>? 
-                              This action will permanently remove all server files, worlds, and configs. 
-                              <span class="font-bold text-error-500">This cannot be undone.</span>
+                              This action will permanently remove all worlds, configurations, and player data.
                            </p>
                            
-                           <div class="space-y-2 flex flex-col">
-                              <label class="text-xs font-medium text-gray-500 uppercase">Type server name to confirm</label>
+                           <div class="space-y-2 flex flex-col pt-2">
+                              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Type server name to confirm</label>
                               <UInput 
                                  v-model="deleteConfirmation" 
                                  :placeholder="serverFolderName" 
                                  icon="i-lucide-trash-2"
                                  :ui="{ icon: { trailing: { pointer: '' } } }"
                                  color="error"
+                                 size="lg"
+                                 class="font-mono"
                               />
                            </div>
-
-                           
                         </div>
                      </template>
 
                      <template #footer>
-                        <div class="flex justify-end gap-2 mt-6">
+                        <div class="flex justify-end gap-3 p-4 bg-gray-900/50 border-t border-gray-800">
                            <UButton color="neutral" variant="ghost" @click="showDeleteModal = false">Cancel</UButton>
                            <UButton 
                               color="error" 
                               variant="solid" 
                               label="Delete Permanently" 
+                              icon="i-lucide-trash-2"
                               :loading="deletingServer"
                               :disabled="deleteConfirmation !== serverFolderName"
                               @click="confirmDeleteServer"
@@ -576,145 +661,202 @@
            </template>
 
            <template #addons>
-               <div class="h-full flex flex-col p-4 relative">
+               <div class="h-full flex flex-col p-4 relative space-y-4">
                   <!-- Toolbar -->
-                  <div class="flex items-center justify-between mb-4">
-                     <div>
-                        <h3 class="font-bold text-lg text-white">Installed {{ addonsFolder === 'mods' ? 'Mods' : 'Plugins' }}</h3>
-                        <p class="text-sm text-gray-500">Manage your server extensions</p>
+                  <div class="flex items-center justify-between bg-gray-900/50 p-4 rounded-xl border border-gray-800 backdrop-blur-sm">
+                     <div class="flex items-center gap-4">
+                        <div class="p-3 bg-indigo-500/10 rounded-lg">
+                           <UIcon :name="addonsFolder === 'mods' ? 'i-lucide-package' : 'i-lucide-puzzle'" class="w-6 h-6 text-indigo-400" />
+                        </div>
+                        <div>
+                           <h3 class="font-bold text-lg text-white">Installed {{ addonsFolder === 'mods' ? 'Mods' : 'Plugins' }}</h3>
+                           <p class="text-sm text-gray-400 flex items-center gap-2">
+                              Manage your server extensions
+                              <UBadge size="xs" color="neutral" variant="subtle">{{ addons.length }} installed</UBadge>
+                           </p>
+                        </div>
                      </div>
-                     <UButton 
-                        icon="i-lucide-download" 
-                        color="primary" 
-                        :label="addonsFolder === 'mods' ? 'Download Mods' : 'Download Plugins'" 
-                        @click="showModrinthModal = true"
-                     />
+                     <div class="flex items-center gap-2">
+                         <div class="flex bg-gray-800 p-1 rounded-lg border border-gray-700/50">
+                           <UButton 
+                              variant="ghost" 
+                              size="xs"
+                              color="neutral"
+                              icon="i-lucide-grid-2x2" 
+                              :class="{ 'bg-gray-700 text-white': viewMode === 'grid' }"
+                              @click="viewMode = 'grid'" 
+                           />
+                           <UButton 
+                              variant="ghost" 
+                              size="xs"
+                              color="neutral"
+                              icon="i-lucide-list" 
+                              :class="{ 'bg-gray-700 text-white': viewMode === 'list' }"
+                              @click="viewMode = 'list'" 
+                           />
+                        </div>
+                        <div class="h-8 w-px bg-gray-800 mx-2"></div>
+                        <UButton 
+                           icon="i-lucide-download" 
+                           color="primary" 
+                           size="md"
+                           :label="addonsFolder === 'mods' ? 'Download Mods' : 'Download Plugins'" 
+                           @click="showModrinthModal = true"
+                           class="shadow-lg shadow-primary-500/20"
+                        />
+                     </div>
                   </div>
 
-                  <!-- Installed List -->
-                  <UCard class="flex-1 min-h-0 flex flex-col">
-                     <div v-if="loadingAddons" class="flex justify-center py-12">
-                         <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary-500" />
+                  <!-- Content Area -->
+                  <div class="flex-1 min-h-0 relative"> 
+                     <div v-if="loadingAddons" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/50 backdrop-blur-sm z-10 rounded-xl">
+                         <UIcon name="i-lucide-loader-2" class="w-10 h-10 animate-spin text-primary-500 mb-4" />
+                         <p class="text-gray-400 font-medium">Loading extensions...</p>
                      </div>
-                     <div v-else-if="addons.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-500">
-                         <UIcon name="i-lucide-package" class="w-12 h-12 mb-2 opacity-30" />
-                         <p>No extensions installed</p>
+                     
+                     <div v-else-if="addons.length === 0" class="flex flex-col items-center justify-center h-full text-gray-500 border-2 border-dashed border-gray-800 rounded-xl bg-gray-900/20">
+                         <div class="p-4 bg-gray-800/50 rounded-full mb-4">
+                           <UIcon name="i-lucide-package-open" class="w-10 h-10 opacity-50" />
+                         </div>
+                         <h4 class="text-lg font-bold text-gray-300">No extensions installed</h4>
+                         <p class="text-sm mb-6">Start customization by downloading mods or plugins</p>
+                         <UButton color="primary" variant="soft" @click="showModrinthModal = true">Browse Modrinth</UButton>
                      </div>
-                     <div v-else>
-                        <div class="w-full flex justify-end mb-2">
-                           <UButton variant="ghost" icon="i-lucide-grid-2x2" @click="viewMode = 'grid'" />
-                           <UButton variant="ghost" icon="i-lucide-list" @click="viewMode = 'list'" />
-                        </div>
-                        <div v-if="viewMode == 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                           <UCard v-for="mod in addons" :key="mod.fileName" class="hover:border-primary-500/50 transition-colors">
-                              <div class="flex items-start gap-3">
-                                 <img 
-                                    v-if="mod.icon" 
-                                    :src="mod.icon" 
-                                    class="w-10 h-10 rounded bg-gray-800 object-cover" 
-                                    alt="Icon"
-                                    @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
-                                 >
-                                 <div v-else class="w-10 h-10 rounded bg-gray-800 flex items-center justify-center">
-                                    <UIcon name="i-lucide-box" class="w-5 h-5 text-gray-500" />
+
+                     <div v-else class="h-full overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Grid View -->
+                        <div v-if="viewMode == 'grid'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 pb-6">
+                           <div 
+                              v-for="mod in addons" 
+                              :key="mod.fileName" 
+                              class="group bg-gray-900/50 border border-gray-800 rounded-xl p-4 hover:border-primary-500/50 hover:bg-gray-800/80 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 relative"
+                           >
+                              <div class="flex items-start gap-4 mb-3">
+                                 <div class="relative flex-shrink-0">
+                                    <img 
+                                       v-if="mod.icon" 
+                                       :src="mod.icon" 
+                                       class="w-12 h-12 rounded-lg bg-gray-800 object-cover shadow-sm group-hover:scale-105 transition-transform" 
+                                       alt="Icon"
+                                       @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
+                                    >
+                                    <div v-else class="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center border border-gray-700">
+                                       <UIcon name="i-lucide-box" class="w-6 h-6 text-gray-500" />
+                                    </div>
+                                    <div class="absolute -bottom-1 -right-1 bg-gray-900 rounded-full p-0.5" v-if="mod.source === 'modrinth'">
+                                       <UIcon name="i-simple-icons-modrinth" class="w-3 h-3 text-[#1bd96a]" />
+                                    </div>
                                  </div>
                                  
                                  <div class="min-w-0 flex-1">
-                                    <div class="flex items-center justify-between">
-                                       <h4 class="font-bold text-sm truncate" :title="mod.title">{{ mod.title }}</h4>
-                                       <div class="flex items-center gap-2">
-                                          <USwitch size="xs" :model-value="mod.enabled" @update:model-value="toggleAddon(mod)" />
-                                          <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteAddon(mod.fileName)" />
-                                          <UTooltip v-if="mod.source === 'modrinth' && mod.latestVersionId" :text="`Update to ${mod.latestVersionNumber}`">
-                                             <UButton icon="i-lucide-rotate-cw" color="primary" variant="ghost" size="xs" @click="updateAddon(mod)" />
-                                          </UTooltip>
-                                       </div>
-
+                                    <div class="flex items-start justify-between gap-2">
+                                       <h4 class="font-bold text-white truncate text-base pt-0.5" :title="mod.title">{{ mod.title }}</h4>
                                     </div>
-                                    <p class="text-xs text-gray-400 truncate">{{ mod.fileName }}</p>
-                                    
-                                    <div class="flex gap-2 mt-2">
-                                       <UBadge v-if="mod.versionId" color="neutral" variant="subtle" size="xs">{{ mod.versionId?.slice(0, 8) }}</UBadge>
-                                       <UBadge v-else color="neutral" variant="subtle" size="xs">Local</UBadge>
-                                       
-                                       <a v-if="mod.slug" :href="`https://modrinth.com/mod/${mod.slug}`" target="_blank" class="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1">
-                                          View <UIcon name="i-lucide-external-link" class="w-3 h-3" />
-                                       </a>
-                                    </div>
+                                    <p class="text-xs text-gray-500 truncate font-mono mt-0.5">{{ mod.fileName }}</p>
                                  </div>
                               </div>
-                           </UCard>
+
+                              <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-800/50 group-hover:border-gray-700/50 transition-colors">
+                                 <div class="flex gap-2">
+                                    <UBadge v-if="mod.versionId" color="neutral" variant="subtle" size="xs">{{ mod.versionId?.slice(0, 8) }}</UBadge>
+                                    <UBadge v-else color="neutral" variant="subtle" size="xs">Local File</UBadge>
+                                 </div>
+                                 
+                                 <div class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                                    <USwitch size="xs" :model-value="mod.enabled" @update:model-value="toggleAddon(mod)" color="success" />
+                                    <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                                    <UTooltip v-if="mod.source === 'modrinth' && mod.latestVersionId" :text="`Update to ${mod.latestVersionNumber}`">
+                                       <UButton icon="i-lucide-rotate-cw" color="primary" variant="ghost" size="xs" @click="updateAddon(mod)" />
+                                    </UTooltip>
+                                    <a v-if="mod.slug" :href="`https://modrinth.com/mod/${mod.slug}`" target="_blank" class="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors">
+                                       <UIcon name="i-lucide-external-link" class="w-4 h-4" />
+                                    </a>
+                                    <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteAddon(mod.fileName)" />
+                                 </div>
+                              </div>
+                           </div>
                         </div>
                         
-                        <table v-else class="w-full text-sm">
-                           <thead class="bg-gray-800/50 text-left sticky top-0 z-10 backdrop-blur">
-                              <tr>
-                                 <th class="p-3 font-medium text-gray-500 w-8"></th>
-                                 <th class="p-3 font-medium text-gray-500">Name</th>
-                                 <th class="p-3 font-medium text-gray-500 text-right">Actions</th>
-                              </tr>
-                           </thead>
-                           <tbody class="divide-y divide-gray-800">
-                              <tr v-for="addon in addons" :key="addon.fileName" class="hover:bg-gray-800/50">
-                                 <td class="p-3 w-14">
-                                    <img v-if="addon.icon" :src="addon.icon" class="w-6 h-6 rounded object-cover" />
-                                    <UIcon v-else name="i-lucide-box" class="w-6 h-6 text-gray-400" />
-                                 </td>
-                                 <td class="p-3">
-                                    <div class="font-medium flex items-center gap-2" :class="{'text-gray-400 line-through ': !addon.enabled}">
-                                       <p>{{ addon.title || addon.fileName }}</p>
-                                       <a v-if="addon.slug" :href="`https://modrinth.com/mod/${addon.slug}`" target="_blank" class="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1">
-                                       View <UIcon name="i-lucide-external-link" class="w-3 h-3" />
-                                       </a>
+                        <!-- List View -->
+                        <div v-else class="space-y-2 pb-6">
+                           <div v-for="addon in addons" :key="addon.fileName" class="group bg-gray-900/30 border border-gray-800 hover:bg-gray-800/50 hover:border-gray-700 rounded-lg p-3 flex items-center gap-4 transition-all">
+                                 <div class="flex-shrink-0 relative">
+                                    <img v-if="addon.icon" :src="addon.icon" class="w-10 h-10 rounded-lg object-cover bg-gray-800" />
+                                    <div v-else class="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center">
+                                       <UIcon name="i-lucide-box" class="w-5 h-5 text-gray-500" />
                                     </div>
-                                    <div class="text-xs text-gray-500">{{ addon.fileName }}</div>
+                                 </div>
+
+                                 <div class="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                                    <div>
+                                       <div class="font-bold text-white truncate flex items-center gap-2">
+                                          {{ addon.title || addon.fileName }}
+                                          <UIcon v-if="addon.source === 'modrinth'" name="i-simple-icons-modrinth" class="w-3 h-3 text-[#1bd96a]" />
+                                       </div>
+                                       <div class="text-xs text-gray-500 truncate font-mono">{{ addon.fileName }}</div>
+                                    </div>
                                     
-                                 </td>
-                                 <td class="p-3 text-right">
-                                    <div class="flex justify-end gap-1">
-                                          <USwitch 
-                                             :model-value="addon.enabled" 
-                                             @update:model-value="toggleAddon(addon)"
-                                             color="primary"
-                                             size="md"
-                                          />
-                                       <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteAddon(addon.fileName)" />
+                                    <div class="hidden md:flex gap-2">
+                                       <UBadge v-if="addon.versionId" color="neutral" variant="subtle" size="xs">{{ addon.versionId }}</UBadge>
+                                       <UBadge v-else color="neutral" variant="subtle" size="xs">Local Import</UBadge>
+                                    </div>
+
+                                    <div class="flex justify-end items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                                       <USwitch 
+                                          :model-value="addon.enabled" 
+                                          @update:model-value="toggleAddon(addon)"
+                                          color="success"
+                                          size="md"
+                                       />
+                                       <div class="w-px h-5 bg-gray-700 mx-1"></div>
                                        <UTooltip v-if="addon.source === 'modrinth' && addon.latestVersionId" :text="`Update to ${addon.latestVersionNumber}`">
                                           <UButton icon="i-lucide-rotate-cw" color="primary" variant="ghost" size="xs" @click="updateAddon(addon)" />
                                        </UTooltip>
+                                       <a v-if="addon.slug" :href="`https://modrinth.com/mod/${addon.slug}`" target="_blank">
+                                          <UButton icon="i-lucide-external-link" color="neutral" variant="ghost" size="xs" />
+                                       </a>
+                                       <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="deleteAddon(addon.fileName)" />
                                     </div>
-                                 </td>
-                              </tr>
-                           </tbody>
-                        </table>
+                                 </div>
+                           </div>
+                        </div>
 
                      </div>
-
-                  </UCard>
+                  </div>
                   
                   <!-- Modrinth Modal -->
-                  <UModal fullscreen v-model:open="showModrinthModal">
+                  <UModal fullscreen v-model:open="showModrinthModal" :ui="{ base: 'bg-gray-950', ring: 'ring-1 ring-gray-800' }">
                      <template #header>
-                         <div class="flex items-center justify-between w-full gap-4">
+                         <div class="flex items-center justify-between w-full gap-4 py-2">
                             <div class="flex items-center gap-3">
-                               <UIcon name="i-simple-icons-modrinth" class="w-6 h-6 text-[#1bd96a]" />
-                               <h2 class="text-lg font-bold">Browse {{ addonsFolder === 'mods' ? 'Mods' : 'Plugins' }}</h2>
+                               <div class="p-2 bg-[#1bd96a]/10 rounded-lg">
+                                 <UIcon name="i-simple-icons-modrinth" class="w-6 h-6 text-[#1bd96a]" />
+                               </div>
+                               <div>
+                                 <h2 class="text-lg font-bold text-white">Browse {{ addonsFolder === 'mods' ? 'Mods' : 'Plugins' }}</h2>
+                                 <p class="text-xs text-gray-500">Powered by Modrinth</p>
+                               </div>
                             </div>
                             
-                            <div class="flex items-center gap-3 flex-1 max-w-xl">
+                            <div class="flex items-center gap-3 flex-1 max-w-xl bg-gray-900 border border-gray-800 p-1 rounded-xl">
                                <UInput 
                                   v-model="modrinthQuery" 
                                   icon="i-lucide-search" 
-                                  placeholder="Search..." 
-                                  class="flex-1" 
+                                  placeholder="Search extensions..." 
+                                  class="flex-1 border-none" 
+                                  variant="none"
+                                  :ui="{ icon: { leading: { pointer: '' } } }"
                                   @keydown.enter="searchModrinth"
+                                  autofocus
                                />
+                               <div class="w-px h-6 bg-gray-800"></div>
                                <USelectMenu
                                   v-model="modrinthSort"
                                   :items="sortOptions"
                                   value-key="value"
                                   label-key="label"
-                                  class="w-36"
+                                  class="w-40"
+                                  variant="none"
                                   @update:model-value="searchModrinth"
                                />
                             </div>
@@ -725,103 +867,114 @@
                                variant="ghost" 
                                size="lg"
                                @click="showModrinthModal = false"
+                               class="hover:bg-gray-800 rounded-xl"
                             />
                          </div>
                      </template>
 
                      <template #body>
-                        <div class="flex h-full">
+                        <div class="flex h-full bg-gray-950">
                            <!-- Categories Sidebar -->
-                           <div class="w-56 border-r border-gray-800 overflow-y-auto flex-shrink-0 p-3 space-y-1">
-                              <div class="mb-3">
+                           <div class="w-64 border-r border-gray-800/50 bg-gray-900/20 overflow-y-auto flex-shrink-0 p-4 space-y-2 custom-scrollbar">
+                              <div class="mb-4">
+                                 <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-2">Filters</p>
                                  <UButton 
-                                    color="error" 
+                                    color="neutral" 
                                     variant="soft" 
                                     size="sm" 
-                                    class="w-full"
+                                    icon="i-lucide-filter-x"
+                                    class="w-full justify-start"
                                     :disabled="!selectedCategory"
                                     @click="selectedCategory = ''; searchModrinth()"
                                  >
-                                    Clear Filters
+                                    Reset Filters
                                  </UButton>
                               </div>
                               
-                              <p class="text-xs font-semibold text-gray-400 uppercase px-2 mb-2">Categories</p>
-                              <button
-                                 v-for="cat in filteredCategories"
-                                 :key="cat.name"
-                                 class="w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm text-left transition-colors"
-                                 :class="selectedCategory === cat.name 
-                                    ? 'bg-primary-900/30 text-primary-400' 
-                                    : 'hover:bg-gray-800 text-gray-400'"
-                                 @click="selectedCategory = cat.name; searchModrinth()"
-                              >
-                                 <span v-html="cat.icon" class="w-4 h-4 flex-shrink-0"></span>
-                                 <span class="capitalize truncate">{{ cat.name.replace(/-/g, ' ') }}</span>
-                              </button>
+                              <div>
+                                 <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-2">Categories</p>
+                                 <div class="space-y-1">
+                                    <button
+                                       v-for="cat in filteredCategories"
+                                       :key="cat.name"
+                                       class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left transition-all border border-transparent"
+                                       :class="selectedCategory === cat.name 
+                                          ? 'bg-primary-500/10 text-primary-400 border-primary-500/20 shadow-sm' 
+                                          : 'hover:bg-gray-800 text-gray-400 hover:text-gray-200'"
+                                       @click="selectedCategory = cat.name; searchModrinth()"
+                                    >
+                                       <span v-html="cat.icon" class="w-4 h-4 flex-shrink-0 opacity-80"></span>
+                                       <span class="capitalize truncate flex-1">{{ cat.name.replace(/-/g, ' ') }}</span>
+                                       <UIcon v-if="selectedCategory === cat.name" name="i-lucide-check" class="w-3 h-3" />
+                                    </button>
+                                 </div>
+                              </div>
                            </div>
                            
                            <!-- Results Grid -->
-                           <div class="flex-1 overflow-y-auto p-4">
-                              <div v-if="searchingModrinth" class="flex justify-center py-12">
-                                 <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary-500" />
+                           <div class="flex-1 overflow-y-auto p-6 bg-dots-dark">
+                              <div v-if="searchingModrinth" class="flex flex-col items-center justify-center h-[50vh]">
+                                 <UIcon name="i-lucide-loader-2" class="w-12 h-12 animate-spin text-primary-500 mb-4" />
+                                 <p class="text-gray-400 animate-pulse">Searching Modrinth library...</p>
                               </div>
                               
-                              <div v-else-if="modrinthResults.length === 0" class="text-center py-12 text-gray-500">
-                                 <UIcon name="i-lucide-search" class="w-12 h-12 mx-auto mb-2 opacity-20" />
-                                 <p>Search or select a category to browse</p>
+                              <div v-else-if="modrinthResults.length === 0" class="flex flex-col items-center justify-center h-[50vh] text-center text-gray-500">
+                                 <div class="p-6 bg-gray-900 rounded-full border border-gray-800 mb-4 shadow-xl">
+                                    <UIcon name="i-lucide-search" class="w-12 h-12 opacity-30" />
+                                 </div>
+                                 <h3 class="text-xl font-bold text-gray-300 mb-2">No results found</h3>
+                                 <p class="max-w-md mx-auto">Try customizing your search terms or selecting a different category to browse.</p>
                               </div>
                               
-                              <div v-else class="space-y-3">
+                              <div v-else class="grid grid-cols-1 xl:grid-cols-2 gap-4 max-w-7xl mx-auto">
                                  <div 
                                     v-for="hit in modrinthResults" 
                                     :key="hit.slug" 
-                                    class="flex gap-4 p-4 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition-colors"
+                                    class="flex gap-4 p-4 rounded-xl bg-gray-900 border border-gray-800 hover:border-primary-500/30 hover:bg-gray-800/80 transition-all hover:shadow-lg group"
                                  >
                                     <img 
                                        :src="hit.icon_url || 'https://cdn.modrinth.com/placeholder.svg'" 
-                                       class="w-14 h-14 rounded-lg bg-gray-200 object-cover flex-shrink-0" 
+                                       class="w-20 h-20 rounded-xl bg-gray-800 object-cover flex-shrink-0 shadow-md group-hover:scale-105 transition-transform duration-300" 
                                     />
-                                    <div class="flex-1 min-w-0">
-                                       <div class="flex items-center gap-2 mb-1">
-                                          <h4 class="font-bold text-base truncate">{{ hit.title }}</h4>
-                                          <span class="text-xs text-gray-400">by {{ hit.author }}</span>
-                                       <UBadge v-if="installedSlugs.has(hit.slug)" size="xs" color="success" variant="subtle">Installed</UBadge>
-                                       </div>
-                                       <p class="text-sm text-gray-400 line-clamp-2 mb-2">{{ hit.description }}</p>
-                                       <div class="flex items-center gap-3 text-xs text-gray-400">
-                                          <span class="flex items-center gap-1">
-                                             <UIcon name="i-lucide-download" class="w-3 h-3" />
-                                             {{ formatNumber(hit.downloads) }}
-                                          </span>
-                                          <span class="flex items-center gap-1">
-                                             <UIcon name="i-lucide-heart" class="w-3 h-3" />
-                                             {{ formatNumber(hit.follows) }}
-                                          </span>
-                                          <div class="flex gap-1 flex-wrap">
-                                             <UBadge v-for="cat in (hit.categories || []).slice(0, 3)" :key="cat" size="xs" color="neutral" variant="subtle">
-                                                {{ cat }}
-                                             </UBadge>
+                                    <div class="flex-1 min-w-0 flex flex-col">
+                                       <div class="flex items-start justify-between gap-2 mb-1">
+                                          <div>
+                                             <h4 class="font-bold text-lg text-white truncate group-hover:text-primary-400 transition-colors">{{ hit.title }}</h4>
+                                             <div class="text-xs text-gray-400 flex items-center gap-1.5">
+                                                <span>by {{ hit.author }}</span>
+                                                <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+                                                <span class="flex items-center gap-0.5"><UIcon name="i-lucide-download" class="w-3 h-3"/> {{ formatNumber(hit.downloads) }}</span>
+                                             </div>
                                           </div>
+                                          <UBadge v-if="installedSlugs.has(hit.slug)" size="xs" color="success" variant="soft" class="shadow-sm shadow-success-500/10">
+                                             <UIcon name="i-lucide-check" class="w-3 h-3 mr-1" />
+                                             Installed
+                                          </UBadge>
+                                       </div>
+                                       
+                                       <p class="text-sm text-gray-400 line-clamp-2 mb-3 flex-1 leading-relaxed">{{ hit.description }}</p>
+                                       
+                                       <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-800/50">
+                                          <div class="flex gap-1.5 flex-wrap">
+                                             <span v-for="cat in (hit.categories || []).slice(0, 3)" :key="cat" class="px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-gray-800 text-gray-400 border border-gray-700/50">
+                                                {{ cat }}
+                                             </span>
+                                          </div>
+                                          <UButton 
+                                             v-if="!installedSlugs.has(hit.slug)"
+                                             size="sm" 
+                                             color="primary" 
+                                             variant="solid" 
+                                             icon="i-lucide-download" 
+                                             :loading="installingSlug === hit.slug"
+                                             :disabled="installingSlug !== null"
+                                             @click="installFromModrinth(hit)"
+                                             class="flex-shrink-0 shadow-lg shadow-primary-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                                          >
+                                             Install
+                                          </UButton>
                                        </div>
                                     </div>
-                                    <UButton 
-                                       v-if="!installedSlugs.has(hit.slug)"
-                                       size="sm" 
-                                       color="primary" 
-                                       variant="soft" 
-                                       icon="i-lucide-download" 
-                                       class="self-center"
-                                       :loading="installingSlug === hit.slug"
-                                       :disabled="installingSlug !== null"
-                                       @click="installFromModrinth(hit)"
-                                    >
-                                       Install
-                                    </UButton>
-                                    <UBadge v-else size="sm" color="success" variant="soft" class="self-center">
-                                       <UIcon name="i-lucide-check" class="w-4 h-4 mr-1" />
-                                       Installed
-                                    </UBadge>
                                  </div>
                               </div>
                            </div>
@@ -829,169 +982,207 @@
                      </template>
                   </UModal>
                </div>
-           </template>
+            </template>
 
            <!-- Player Management -->
            <template #players>
-               <div class="h-full flex flex-col p-4 space-y-4 overflow-y-auto">
-                  <!-- Online Players -->
-                  <UCard>
-                     <template #header>
+               <div class="h-full overflow-y-auto p-4 custom-scrollbar">
+                  <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                     <!-- Online Players -->
+                     <div class="space-y-4">
                         <div class="flex items-center justify-between">
                            <div class="flex items-center gap-2">
-                              <UIcon name="i-lucide-circle-dot" class="w-5 h-5 text-success-500" />
-                              <h3 class="font-semibold">Online Players</h3>
-                              <UBadge v-if="serverStatus === 'online'" color="success" variant="subtle" size="xs">{{ onlinePlayers.length }}</UBadge>
+                              <UIcon name="i-lucide-users" class="w-5 h-5 text-indigo-400" />
+                              <h3 class="font-bold text-lg text-white">Online Players</h3>
                            </div>
-                           <UButton icon="i-lucide-refresh-cw" color="neutral" variant="ghost" size="xs" @click="fetchOnlinePlayers" title="Refresh" />
+                           <UBadge :color="serverStatus === 'online' ? 'success' : 'neutral'" variant="subtle" size="md">
+                              {{ onlinePlayers.length }} Online
+                           </UBadge>
                         </div>
-                     </template>
-                     
-                     <div v-if="serverStatus !== 'online'" class="text-center py-6 text-gray-500">
-                        <UIcon name="i-lucide-wifi-off" class="w-8 h-8 mx-auto mb-2 opacity-30" />
-                        <p>Server is offline</p>
-                     </div>
-                     <div v-else-if="onlinePlayers.length === 0" class="text-center py-6 text-gray-500">
-                        <UIcon name="i-lucide-user-x" class="w-8 h-8 mx-auto mb-2 opacity-30" />
-                        <p>No players online</p>
-                     </div>
-                     <div v-else class="space-y-2">
-                        <div v-for="player in onlinePlayers" :key="player" class="flex items-center justify-between p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors group">
-                           <div class="flex items-center gap-3">
-                              <img :src="`https://mc-heads.net/avatar/${player}/24`" class="w-6 h-6 rounded" :alt="player" />
-                              <span class="font-medium text-sm">{{ player }}</span>
-                           </div>
-                           <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <UTooltip text="Add to Whitelist">
-                                 <UButton icon="i-lucide-shield-plus" color="primary" variant="ghost" size="xs" @click="quickWhitelist(player)" />
-                              </UTooltip>
-                              <UTooltip text="Make Operator">
-                                 <UButton icon="i-lucide-star" color="warning" variant="ghost" size="xs" @click="quickOp(player)" />
-                              </UTooltip>
-                              <UTooltip text="Kick Player">
-                                 <UButton icon="i-lucide-log-out" color="neutral" variant="ghost" size="xs" @click="kickPlayer(player)" />
-                              </UTooltip>
-                              <UTooltip text="Ban Player">
-                                 <UButton icon="i-lucide-ban" color="error" variant="ghost" size="xs" @click="quickBan(player)" />
-                              </UTooltip>
-                           </div>
-                        </div>
-                     </div>
-                  </UCard>
+                        
+                        <UCard class="h-[400px] flex flex-col">
+                           <template #header>
+                             <div class="flex justify-between items-center py-1">
+                                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Player List</span>
+                                <UButton icon="i-lucide-refresh-cw" color="neutral" variant="ghost" size="xs" @click="fetchOnlinePlayers" :loading="loadingPlayers" />
+                             </div>
+                           </template>
 
-                  <!-- Whitelist -->
-                  <UCard>
-                     <template #header>
-                        <div class="flex items-center justify-between">
-                           <div class="flex items-center gap-2">
-                              <UIcon name="i-lucide-shield-check" class="w-5 h-5 text-primary-500" />
-                              <h3 class="font-semibold">Whitelist</h3>
-                              <UBadge color="neutral" variant="subtle" size="xs">{{ whitelist.length }}</UBadge>
-                           </div>
-                           <div class="flex items-center gap-2">
-                              <UInput v-model="newWhitelistPlayer" placeholder="Player name" size="xs" class="w-36" @keydown.enter="addToWhitelist" />
-                              <UButton icon="i-lucide-plus" color="primary" size="xs" @click="addToWhitelist" :disabled="!newWhitelistPlayer" />
-                           </div>
-                        </div>
-                     </template>
-                     
-                     <div v-if="loadingPlayers" class="flex justify-center py-6">
-                        <UIcon name="i-lucide-loader-2" class="w-6 h-6 animate-spin text-primary-500" />
-                     </div>
-                     <div v-else-if="whitelist.length === 0" class="text-center py-6 text-gray-500">
-                        <UIcon name="i-lucide-list" class="w-8 h-8 mx-auto mb-2 opacity-30" />
-                        <p>Whitelist is empty</p>
-                     </div>
-                     <div v-else class="space-y-2">
-                        <div v-for="entry in whitelist" :key="entry.uuid" class="flex items-center justify-between p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
-                           <div class="flex items-center gap-3">
-                              <img :src="`https://mc-heads.net/avatar/${entry.name}/24`" class="w-6 h-6 rounded" :alt="entry.name" />
-                              <div>
-                                 <span class="font-medium text-sm">{{ entry.name }}</span>
-                                 <span class="text-xs text-gray-400 ml-2 font-mono">{{ entry.uuid.substring(0, 8) }}...</span>
+                           <div class="flex-1 overflow-y-auto min-h-0 -mx-4 px-4 space-y-1 custom-scrollbar">
+                              <div v-if="serverStatus !== 'online'" class="h-full flex flex-col items-center justify-center text-gray-500">
+                                 <div class="p-4 bg-gray-900/50 rounded-full mb-3">
+                                    <UIcon name="i-lucide-wifi-off" class="w-8 h-8 opacity-40" />
+                                 </div>
+                                 <p class="font-medium">Server is offline</p>
+                              </div>
+                              <div v-else-if="onlinePlayers.length === 0" class="h-full flex flex-col items-center justify-center text-gray-500">
+                                 <div class="p-4 bg-gray-900/50 rounded-full mb-3">
+                                   <UIcon name="i-lucide-user" class="w-8 h-8 opacity-40" />
+                                 </div>
+                                 <p class="font-medium">No players online</p>
+                              </div>
+                              <div v-else v-for="player in onlinePlayers" :key="player" class="flex items-center justify-between p-3 bg-gray-900/40 rounded-xl border border-transparent hover:border-gray-700/50 hover:bg-gray-800/60 transition-all group">
+                                 <div class="flex items-center gap-3">
+                                    <img :src="`https://mc-heads.net/avatar/${player}/40`" class="w-10 h-10 rounded-lg bg-gray-800 shadow-sm" :alt="player" />
+                                    <span class="font-bold text-gray-200">{{ player }}</span>
+                                 </div>
+                                 <div class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                                    <UTooltip text="Quick Actions">
+                                       <UDropdownMenu  :items="[
+                                          [{ label: 'Operator', icon: 'i-lucide-star', click: () => quickOp(player) }],
+                                          [{ label: 'Kick', icon: 'i-lucide-log-out', click: () => kickPlayer(player) }, { label: 'Ban', icon: 'i-lucide-ban', color: 'error', click: () => quickBan(player) }]
+                                       ]">
+                                          <UButton icon="i-lucide-more-horizontal" color="neutral" variant="ghost" size="xs" />
+                                       </UDropdownMenu >
+                                    </UTooltip>
+                                 </div>
                               </div>
                            </div>
-                           <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="removeFromWhitelist(entry.uuid)" />
-                        </div>
+                        </UCard>
                      </div>
-                  </UCard>
 
-                  <!-- Operators -->
-                  <UCard>
-                     <template #header>
+                     <!-- Whitelist -->
+                     <div class="space-y-4">
                         <div class="flex items-center justify-between">
                            <div class="flex items-center gap-2">
-                              <UIcon name="i-lucide-star" class="w-5 h-5 text-warning-500" />
-                              <h3 class="font-semibold">Operators</h3>
-                              <UBadge color="neutral" variant="subtle" size="xs">{{ operators.length }}</UBadge>
+                              <UIcon name="i-lucide-shield-check" class="w-5 h-5 text-emerald-400" />
+                              <h3 class="font-bold text-lg text-white">Whitelist</h3>
                            </div>
-                           <div class="flex items-center gap-2">
-                              <UInput v-model="newOperator" placeholder="Player name" size="xs" class="w-36" @keydown.enter="addOperator" />
-                              <UButton icon="i-lucide-plus" color="primary" size="xs" @click="addOperator" :disabled="!newOperator" />
-                           </div>
+                           <UBadge color="neutral" variant="subtle" size="md">{{ whitelist.length }} Allowed</UBadge>
                         </div>
-                     </template>
-                     
-                     <div v-if="loadingPlayers" class="flex justify-center py-6">
-                        <UIcon name="i-lucide-loader-2" class="w-6 h-6 animate-spin text-primary-500" />
-                     </div>
-                     <div v-else-if="operators.length === 0" class="text-center py-6 text-gray-500">
-                        <UIcon name="i-lucide-star-off" class="w-8 h-8 mx-auto mb-2 opacity-30" />
-                        <p>No operators</p>
-                     </div>
-                     <div v-else class="space-y-2">
-                        <div v-for="entry in operators" :key="entry.uuid" class="flex items-center justify-between p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
-                           <div class="flex items-center gap-3">
-                              <img :src="`https://mc-heads.net/avatar/${entry.name}/24`" class="w-6 h-6 rounded" :alt="entry.name" />
-                              <div>
-                                 <span class="font-medium text-sm">{{ entry.name }}</span>
-                                 <UBadge color="warning" variant="subtle" size="xs" class="ml-2">Level {{ entry.level }}</UBadge>
+                        
+                         <UCard class="h-[400px] flex flex-col">
+                           <template #header>
+                             <div class="flex items-center gap-2 py-1">
+                                <UInput 
+                                   v-model="newWhitelistPlayer" 
+                                   placeholder="Add player..." 
+                                   icon="i-lucide-user-plus"
+                                   size="sm" 
+                                   class="flex-1" 
+                                   :ui="{ icon: { leading: { pointer: '' } } }"
+                                   @keydown.enter="addToWhitelist" 
+                                />
+                                <UButton icon="i-lucide-plus" color="emerald" variant="solid" size="sm" @click="addToWhitelist" :disabled="!newWhitelistPlayer" />
+                             </div>
+                           </template>
+
+                           <div class="flex-1 overflow-y-auto min-h-0 -mx-4 px-4 space-y-1 custom-scrollbar">
+                              <div v-if="whitelist.length === 0" class="h-full flex flex-col items-center justify-center text-gray-500">
+                                 <UIcon name="i-lucide-list-x" class="w-10 h-10 mb-2 opacity-30" />
+                                 <p>Whitelist is empty</p>
+                              </div>
+                              <div v-else v-for="entry in whitelist" :key="entry.uuid" class="flex items-center justify-between p-3 bg-gray-900/40 rounded-xl border border-transparent hover:border-gray-700/50 hover:bg-gray-800/60 transition-all group">
+                                 <div class="flex items-center gap-3">
+                                    <img :src="`https://mc-heads.net/avatar/${entry.name}/40`" class="w-10 h-10 rounded-lg bg-gray-800 shadow-sm" :alt="entry.name" />
+                                    <div class="flex flex-col">
+                                       <span class="font-bold text-gray-200">{{ entry.name }}</span>
+                                       <span class="text-[10px] text-gray-500 font-mono">{{ entry.uuid.substring(0, 8) }}...</span>
+                                    </div>
+                                 </div>
+                                 <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" class="opacity-0 group-hover:opacity-100 transition-opacity" @click="removeFromWhitelist(entry.uuid)" />
                               </div>
                            </div>
-                           <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="removeOperator(entry.uuid)" />
-                        </div>
+                        </UCard>
                      </div>
-                  </UCard>
 
-                  <!-- Banned Players -->
-                  <UCard>
-                     <template #header>
+                     <!-- Operators -->
+                     <div class="space-y-4">
                         <div class="flex items-center justify-between">
                            <div class="flex items-center gap-2">
-                              <UIcon name="i-lucide-ban" class="w-5 h-5 text-error-500" />
-                              <h3 class="font-semibold">Banned Players</h3>
-                              <UBadge color="neutral" variant="subtle" size="xs">{{ bannedPlayers.length }}</UBadge>
+                              <UIcon name="i-lucide-crown" class="w-5 h-5 text-amber-400" />
+                              <h3 class="font-bold text-lg text-white">Operators</h3>
                            </div>
-                           <div class="flex items-center gap-2">
-                              <UInput v-model="newBannedPlayer" placeholder="Player name" size="xs" class="w-28" @keydown.enter="banPlayer" />
-                              <UInput v-model="banReason" placeholder="Reason" size="xs" class="w-28" @keydown.enter="banPlayer" />
-                              <UButton icon="i-lucide-plus" color="error" size="xs" @click="banPlayer" :disabled="!newBannedPlayer" />
-                           </div>
+                           <UBadge color="neutral" variant="subtle" size="md">{{ operators.length }} Admins</UBadge>
                         </div>
-                     </template>
-                     
-                     <div v-if="loadingPlayers" class="flex justify-center py-6">
-                        <UIcon name="i-lucide-loader-2" class="w-6 h-6 animate-spin text-primary-500" />
-                     </div>
-                     <div v-else-if="bannedPlayers.length === 0" class="text-center py-6 text-gray-500">
-                        <UIcon name="i-lucide-smile" class="w-8 h-8 mx-auto mb-2 opacity-30" />
-                        <p>No banned players</p>
-                     </div>
-                     <div v-else class="space-y-2">
-                        <div v-for="entry in bannedPlayers" :key="entry.uuid" class="flex items-center justify-between p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
-                           <div class="flex items-center gap-3">
-                              <img :src="`https://mc-heads.net/avatar/${entry.name}/24`" class="w-6 h-6 rounded" :alt="entry.name" />
-                              <div>
-                                 <span class="font-medium text-sm">{{ entry.name }}</span>
-                                 <span v-if="entry.reason" class="text-xs text-gray-400 ml-2">"{{ entry.reason }}"</span>
+                        
+                        <UCard class="h-[400px] flex flex-col">
+                           <template #header>
+                             <div class="flex items-center gap-2 py-1">
+                                <UInput 
+                                   v-model="newOperator" 
+                                   placeholder="Add operator..." 
+                                   icon="i-lucide-shield-alert"
+                                   size="sm" 
+                                   class="flex-1" 
+                                   :ui="{ icon: { leading: { pointer: '' } } }"
+                                   @keydown.enter="addOperator" 
+                                />
+                                <UButton icon="i-lucide-plus" color="amber" variant="solid" size="sm" @click="addOperator" :disabled="!newOperator" />
+                             </div>
+                           </template>
+                           
+                           <div class="flex-1 overflow-y-auto min-h-0 -mx-4 px-4 space-y-1 custom-scrollbar">
+                              <div v-if="operators.length === 0" class="h-full flex flex-col items-center justify-center text-gray-500">
+                                 <UIcon name="i-lucide-shield-off" class="w-10 h-10 mb-2 opacity-30" />
+                                 <p>No operators assigned</p>
+                              </div>
+                              <div v-else v-for="entry in operators" :key="entry.uuid" class="flex items-center justify-between p-3 bg-gray-900/40 rounded-xl border border-transparent hover:border-gray-700/50 hover:bg-gray-800/60 transition-all group">
+                                 <div class="flex items-center gap-3">
+                                    <img :src="`https://mc-heads.net/avatar/${entry.name}/40`" class="w-10 h-10 rounded-lg bg-gray-800 shadow-sm" :alt="entry.name" />
+                                    <div class="flex flex-col">
+                                       <span class="font-bold text-gray-200">{{ entry.name }}</span>
+                                       <UBadge color="amber" variant="subtle" size="xs" class="w-fit">Level {{ entry.level }}</UBadge>
+                                    </div>
+                                 </div>
+                                 <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" class="opacity-0 group-hover:opacity-100 transition-opacity" @click="removeOperator(entry.uuid)" />
                               </div>
                            </div>
-                           <UButton icon="i-lucide-check" color="success" variant="ghost" size="xs" @click="unbanPlayer(entry.uuid)" title="Unban" />
-                        </div>
+                        </UCard>
                      </div>
-                  </UCard>
+
+                     <!-- Bans -->
+                     <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                           <div class="flex items-center gap-2">
+                              <UIcon name="i-lucide-gavel" class="w-5 h-5 text-rose-400" />
+                              <h3 class="font-bold text-lg text-white">Bans</h3>
+                           </div>
+                           <UBadge color="neutral" variant="subtle" size="md">{{ bannedPlayers.length }} Banned</UBadge>
+                        </div>
+                        
+                        <UCard class="h-[400px] flex flex-col">
+                           <template #header>
+                             <div class="flex items-center gap-2 py-1">
+                                <UInput 
+                                   v-model="newBannedPlayer" 
+                                   placeholder="Player..." 
+                                   size="sm" 
+                                   class="flex-1" 
+                                   @keydown.enter="banPlayer" 
+                                />
+                                <UInput 
+                                   v-model="banReason" 
+                                   placeholder="Reason"
+                                   size="sm" 
+                                   class="flex-1" 
+                                   @keydown.enter="banPlayer" 
+                                />
+                                <UButton icon="i-lucide-gavel" color="rose" variant="solid" size="sm" @click="banPlayer" :disabled="!newBannedPlayer" />
+                             </div>
+                           </template>
+                           
+                           <div class="flex-1 overflow-y-auto min-h-0 -mx-4 px-4 space-y-1 custom-scrollbar">
+                              <div v-if="bannedPlayers.length === 0" class="h-full flex flex-col items-center justify-center text-gray-500">
+                                 <UIcon name="i-lucide-check-circle-2" class="w-10 h-10 mb-2 opacity-30" />
+                                 <p>No banned players</p>
+                              </div>
+                              <div v-else v-for="entry in bannedPlayers" :key="entry.uuid" class="flex items-center justify-between p-3 bg-gray-900/40 rounded-xl border border-transparent hover:border-gray-700/50 hover:bg-gray-800/60 transition-all group">
+                                 <div class="flex items-center gap-3">
+                                    <img :src="`https://mc-heads.net/avatar/${entry.name}/40`" class="w-10 h-10 rounded-lg bg-gray-800 shadow-sm" :alt="entry.name" />
+                                    <div class="flex flex-col min-w-0">
+                                       <span class="font-bold text-gray-200">{{ entry.name }}</span>
+                                       <span class="text-xs text-rose-400 truncate max-w-[150px]" :title="entry.reason">{{ entry.reason || 'No reason' }}</span>
+                                    </div>
+                                 </div>
+                                 <UButton icon="i-lucide-rotate-ccw" color="success" variant="ghost" size="xs" class="opacity-0 group-hover:opacity-100 transition-opacity" @click="unbanPlayer(entry.uuid)" tooltip="Unban" />
+                              </div>
+                           </div>
+                        </UCard>
+                     </div>
+                  </div>
                </div>
-           </template>
+            </template>
         </UTabs>
       </div>
       <!-- EULA Modal -->
@@ -1056,12 +1247,13 @@
 </template>
 
 <script setup lang="ts">
-import { readTextFile, writeTextFile, readDir, remove, exists, mkdir, writeFile, rename, BaseDirectory } from '@tauri-apps/plugin-fs'
+import { readTextFile, writeTextFile, readDir, remove, exists, mkdir, writeFile, rename, copyFile, readFile, BaseDirectory } from '@tauri-apps/plugin-fs'
 import { fetch } from '@tauri-apps/plugin-http'
 import { Command, type Child, open } from '@tauri-apps/plugin-shell'
+import { open as openDialog } from '@tauri-apps/plugin-dialog'
 import { join } from '@tauri-apps/api/path'
 import { documentDir } from '@tauri-apps/api/path'
-import { invoke } from '@tauri-apps/api/core'
+import { invoke, convertFileSrc } from '@tauri-apps/api/core'
 import { parseAnsiToHtml } from '~/utils/ansiParser'
 import { installModpack, installMrpack } from '~/utils/modpack'
 
@@ -1070,6 +1262,7 @@ const router = useRouter()
 const toast = useToast()
 const serverProcessStore = useServerProcessStore()
 const serversStore = useServersStore()
+const tunnelStore = useTunnelStore()
 
 let viewMode = ref<'grid' | 'list'>('grid')
 
@@ -1083,6 +1276,20 @@ const serverFolderName = computed(() => route.params.id as string)
 const loading = ref(true)
 const saving = ref(false)
 const server = ref<any>(null)
+const serverIconUrl = ref<string | null>(null)
+
+function updateServerIconUrl(blob: Blob) {
+    if (serverIconUrl.value) {
+        URL.revokeObjectURL(serverIconUrl.value)
+    }
+    serverIconUrl.value = URL.createObjectURL(blob)
+}
+
+onUnmounted(() => {
+    if (serverIconUrl.value) {
+        URL.revokeObjectURL(serverIconUrl.value)
+    }
+})
 
 // Settings
 const serverName = ref('')
@@ -1357,6 +1564,119 @@ const operators = ref<OperatorEntry[]>([])
 const bannedPlayers = ref<BannedPlayerEntry[]>([])
 const loadingPlayers = ref(false)
 
+// Track processed lines separately from consoleLines because we filter some out!
+const lastLogLineCount = ref(0)
+
+// Poll for online players (RCON fallback support)
+async function fetchOnlinePlayers() {
+   if (serverStatus.value !== 'online') {
+       onlinePlayers.value = []
+       // Reset log pointer when offline so next start works cleanly
+       lastLogLineCount.value = 0
+       return
+   }
+
+   // Fallback to RCON if no process or if specifically checking
+   // We prefer RCON for parsing cleanly if available
+   const rconPort = getPropertyValue('rcon.port') || '25575'
+   const rconPassword = getPropertyValue('rcon.password') || 'voidlink'
+   
+   if (!serverProcess.value || getPropertyValue('enable-rcon') === 'true') {
+      try {
+          const res = await invoke<{success: boolean, response: string}>('rcon_send_command', {
+              host: '127.0.0.1', 
+              port: parseInt(rconPort),
+              password: rconPassword,
+              command: 'list'
+          })
+          
+          if (res.success) {
+              // Parse: "There are 1 of 20 players online: VoIdLiNk"
+              // or "There are 0 of 20 players online: "
+              const match = res.response.match(/online:(.*)/)
+              if (match) {
+                  const names = match[1].split(',').map(n => n.trim()).filter(n => n)
+                  onlinePlayers.value = names
+              }
+          }
+      } catch(e) {
+          // RCON failed, ignore
+      }
+   }
+   
+   // If we have process, also send list to console just in case (optional, but keep console alive)
+   if (serverProcess.value) {
+       // We don't need to spam 'list' in console if we use RCON for the UI list.
+   }
+}
+
+// Log Tailing for Live Console (when process handle lost)
+async function tailLogs() {
+    if (serverStatus.value !== 'online' || serverProcess.value) {
+       // We only tail if online AND no process handle
+       // If we have process handle, we get logs via stdout event
+       // If offline, we reset pointer via fetchOnlinePlayers or here
+       return
+    }
+    
+    try {
+        const folder = serverFolderName.value
+        // Must use absolute path for Rust file reading if possible, or relative to app
+        // But our utils.rs expects a path. Let's resolve the path fully.
+        // We can construct it via documentDir
+        const docs = await documentDir()
+        const logPath = await join(docs, 'VoidLink', 'servers', folder, 'logs', 'latest.log')
+        
+        const result = await invoke<{content: string, new_offset: number}>('read_log_tail', {
+            path: logPath,
+            offset: lastLogLineCount.value // REUSED VARIABLE NAME: Using 'lastLogLineCount' as 'lastByteOffset' to avoid big refactor
+        })
+        
+        const newContent = result.content
+        if (!newContent) {
+           // No new content, check if we need to reset due to file shrink happens inside Rust?
+           // Rust command returns new_offset=0 if file shrank.
+        }
+        
+        // If offset reset to 0 (file shrank/rotated)
+        if (result.new_offset < lastLogLineCount.value) {
+             consoleLines.value.length = 0
+             lastLogLineCount.value = 0
+             // But we might have content from the new file start
+        }
+
+        if (newContent) {
+            const lines = newContent.split('\n')
+            for (const l of lines) {
+               // Filter RCON spam
+               if (l.trim() && !l.includes('Thread RCON Client /127.0.0.1')) {
+                  consoleLines.value.push(l)
+               }
+            }
+        }
+        
+        // Update offset
+        lastLogLineCount.value = result.new_offset
+        
+    } catch (e) {
+        // failed to read log, maybe locked or file not found
+    }
+}
+
+let playerPollInterval: any = null
+let logTailInterval: any = null
+
+onMounted(() => {
+    playerPollInterval = setInterval(fetchOnlinePlayers, 120000)
+    logTailInterval = setInterval(tailLogs, 2000) // Poll logs every 2s
+    fetchOnlinePlayers()
+})
+
+onUnmounted(() => {
+    if (playerPollInterval) clearInterval(playerPollInterval)
+    if (logTailInterval) clearInterval(logTailInterval)
+})
+
 // Input fields for adding new entries
 const newWhitelistPlayer = ref('')
 const newOperator = ref('')
@@ -1374,8 +1694,8 @@ async function toggleAddon(addon: AddonUI) {
    
    const newName = addon.enabled ? `${oldName}.disabled` : oldName.replace(/\.disabled$/, '')
    
-   const oldPath = `MineDash/servers/${folder}/${addonsFolder.value}/${oldName}`
-   const newPath = `MineDash/servers/${folder}/${addonsFolder.value}/${newName}`
+   const oldPath = `VoidLink/servers/${folder}/${addonsFolder.value}/${oldName}`
+   const newPath = `VoidLink/servers/${folder}/${addonsFolder.value}/${newName}`
    
    try {
        await rename(oldPath, newPath, { oldPathBaseDir: BaseDirectory.Document, newPathBaseDir: BaseDirectory.Document })
@@ -1544,19 +1864,89 @@ const serverStore = useServerProcessStore()
 const storeServerId = computed(() => serverFolderName.value)
 const serverState = computed(() => serverStore.getServer(storeServerId.value))
 
-// These are reactive references to the store - mutations work directly
+// These are reactive references to the store - use store methods for persistence
 const serverStatus = computed({
    get: () => serverState.value.status,
-   set: (val) => { serverState.value.status = val }
+   set: (val) => { serverStore.setStatus(storeServerId.value, val) }
 })
 const serverProcess = computed({
    get: () => serverState.value.process,
-   set: (val) => { serverState.value.process = val }
+   set: (val) => { serverStore.setProcess(storeServerId.value, val) }
 })
 
 // Direct reference to console lines array - mutations like .push() work
 const consoleLines = computed(() => serverState.value.consoleLines)
 const consoleRef = ref<HTMLElement | null>(null)
+const consoleInput = ref('')
+
+// Send command to server - uses stdin if available, fallback to RCON
+async function sendCommand() {
+   const cmd = consoleInput.value.trim()
+   if (!cmd) return
+   
+   consoleLines.value.push(`> ${cmd}`)
+   consoleInput.value = ''
+   
+   // Try using Child stdin first
+   if (serverProcess.value) {
+      try {
+         await serverProcess.value.write(cmd + '\n')
+         return
+      } catch (e) {
+         console.error('Failed to write to stdin:', e)
+      }
+   }
+   
+   // Fallback to RCON
+   const rconPort = getPropertyValue('rcon.port') || '25575'
+   const rconPassword = getPropertyValue('rcon.password') || 'voidlink'
+   
+   try {
+      const result = await invoke<{ success: boolean; response: string }>('rcon_send_command', {
+         host: '127.0.0.1',
+         port: parseInt(rconPort),
+         password: rconPassword,
+         command: cmd
+      })
+      if (result.response) {
+         consoleLines.value.push(result.response)
+      }
+   } catch (e) {
+      consoleLines.value.push(`[RCON Error] ${e}`)
+   }
+}
+
+// Load logs from file (for recovered servers after F5)
+async function loadLogsFromFile() {
+   try {
+      const folder = serverFolderName.value
+      const logPath = `VoidLink/servers/${folder}/logs/latest.log`
+      
+      if (!await exists(logPath, { baseDir: BaseDirectory.Document })) {
+         return
+      }
+      
+      const content = await readTextFile(logPath, { baseDir: BaseDirectory.Document })
+      const lines = content.split('\n').slice(-200) // Last 200 lines
+      
+      // Clear and add log lines
+      serverState.value.consoleLines.length = 0
+      for (const line of lines) {
+         if (line.trim()) {
+            serverState.value.consoleLines.push(line)
+         }
+      }
+   } catch (e) {
+      console.error('Failed to load logs from file:', e)
+   }
+}
+
+// Auto-load logs if server is recovered (no Child handle but online)
+watch(() => serverStatus.value, async (status) => {
+   if (status === 'online' && !serverProcess.value && consoleLines.value.length === 0) {
+      await loadLogsFromFile()
+   }
+}, { immediate: true })
 
 watch(() => consoleLines.value.length, async () => {
    await nextTick()
@@ -1587,7 +1977,7 @@ const addonsFolder = computed(() => {
 async function saveAddonsMeta() {
    try {
       const folder = serverFolderName.value
-      const path = `MineDash/servers/${folder}/addons.json`
+      const path = `VoidLink/servers/${folder}/addons.json`
       await writeTextFile(path, JSON.stringify(installedAddonsMeta.value, null, 2), { baseDir: BaseDirectory.Document })
    } catch (e) {
       console.error('Failed to save addons meta', e)
@@ -1600,8 +1990,8 @@ async function loadAddons() {
    addons.value = []
    try {
       const folder = serverFolderName.value
-      const path = `MineDash/servers/${folder}/${addonsFolder.value}`
-      const metaPath = `MineDash/servers/${folder}/addons.json`
+      const path = `VoidLink/servers/${folder}/${addonsFolder.value}`
+      const metaPath = `VoidLink/servers/${folder}/addons.json`
       
       // Load Meta
       if (await exists(metaPath, { baseDir: BaseDirectory.Document })) {
@@ -1656,7 +2046,7 @@ async function handleDrop(e: DragEvent) {
    for (const file of files) {
       if (file.name.endsWith('.jar')) {
          const buffer = await file.arrayBuffer()
-         const targetPath = `MineDash/servers/${serverFolderName.value}/${addonsFolder.value}/${file.name}`
+         const targetPath = `VoidLink/servers/${serverFolderName.value}/${addonsFolder.value}/${file.name}`
          await writeFile(targetPath, new Uint8Array(buffer), { baseDir: BaseDirectory.Document })
       }
    }
@@ -1823,7 +2213,7 @@ async function installFromModrinth(project: any) {
 
 async function downloadAddon(url: string, fileName: string) {
    const folder = serverFolderName.value
-   const targetPath = `MineDash/servers/${folder}/${addonsFolder.value}/${fileName}`
+   const targetPath = `VoidLink/servers/${folder}/${addonsFolder.value}/${fileName}`
    
    const res = await fetch(url)
    const buffer = await res.arrayBuffer()
@@ -1836,7 +2226,7 @@ async function downloadAddon(url: string, fileName: string) {
 async function deleteAddon(fileName: string) {
    try {
       const folder = serverFolderName.value
-      const path = `MineDash/servers/${folder}/${addonsFolder.value}/${fileName}`
+      const path = `VoidLink/servers/${folder}/${addonsFolder.value}/${fileName}`
       await remove(path, { baseDir: BaseDirectory.Document })
       
       if (installedAddonsMeta.value[fileName]) {
@@ -1863,7 +2253,7 @@ async function loadPlayerLists() {
       
       // Load whitelist.json
       try {
-         const whitelistPath = `MineDash/servers/${folder}/whitelist.json`
+         const whitelistPath = `VoidLink/servers/${folder}/whitelist.json`
          if (await exists(whitelistPath, { baseDir: BaseDirectory.Document })) {
             const content = await readTextFile(whitelistPath, { baseDir: BaseDirectory.Document })
             whitelist.value = JSON.parse(content)
@@ -1877,7 +2267,7 @@ async function loadPlayerLists() {
       
       // Load ops.json
       try {
-         const opsPath = `MineDash/servers/${folder}/ops.json`
+         const opsPath = `VoidLink/servers/${folder}/ops.json`
          if (await exists(opsPath, { baseDir: BaseDirectory.Document })) {
             const content = await readTextFile(opsPath, { baseDir: BaseDirectory.Document })
             operators.value = JSON.parse(content)
@@ -1891,7 +2281,7 @@ async function loadPlayerLists() {
       
       // Load banned-players.json
       try {
-         const bannedPath = `MineDash/servers/${folder}/banned-players.json`
+         const bannedPath = `VoidLink/servers/${folder}/banned-players.json`
          if (await exists(bannedPath, { baseDir: BaseDirectory.Document })) {
             const content = await readTextFile(bannedPath, { baseDir: BaseDirectory.Document })
             bannedPlayers.value = JSON.parse(content)
@@ -1913,7 +2303,7 @@ async function loadPlayerLists() {
 async function saveWhitelist() {
    try {
       const folder = serverFolderName.value
-      const path = `MineDash/servers/${folder}/whitelist.json`
+      const path = `VoidLink/servers/${folder}/whitelist.json`
       await writeTextFile(path, JSON.stringify(whitelist.value, null, 2), { baseDir: BaseDirectory.Document })
    } catch (e) {
       console.error('Failed to save whitelist', e)
@@ -1923,7 +2313,7 @@ async function saveWhitelist() {
 async function saveOperators() {
    try {
       const folder = serverFolderName.value
-      const path = `MineDash/servers/${folder}/ops.json`
+      const path = `VoidLink/servers/${folder}/ops.json`
       await writeTextFile(path, JSON.stringify(operators.value, null, 2), { baseDir: BaseDirectory.Document })
    } catch (e) {
       console.error('Failed to save operators', e)
@@ -1933,7 +2323,7 @@ async function saveOperators() {
 async function saveBannedPlayers() {
    try {
       const folder = serverFolderName.value
-      const path = `MineDash/servers/${folder}/banned-players.json`
+      const path = `VoidLink/servers/${folder}/banned-players.json`
       await writeTextFile(path, JSON.stringify(bannedPlayers.value, null, 2), { baseDir: BaseDirectory.Document })
    } catch (e) {
       console.error('Failed to save banned players', e)
@@ -2030,7 +2420,7 @@ async function banPlayer() {
       uuid: playerData.uuid, 
       name: playerData.name,
       created: new Date().toISOString(),
-      source: 'MineDash',
+      source: 'VoidLink',
       expires: 'forever',
       reason: banReason.value || 'Banned by administrator'
    })
@@ -2064,7 +2454,7 @@ async function kickPlayer(playerName: string) {
 
 async function quickBan(playerName: string) {
    if (serverStatus.value !== 'online' || !serverProcess.value) return
-   await serverProcess.value.write(`ban ${playerName} Banned via MineDash\n`)
+   await serverProcess.value.write(`ban ${playerName} Banned via VoidLink\n`)
    // Refresh lists
    setTimeout(() => {
       fetchOnlinePlayers()
@@ -2081,50 +2471,15 @@ async function quickOp(playerName: string) {
 
 async function quickWhitelist(playerName: string) {
    if (serverStatus.value !== 'online' || !serverProcess.value) return
-   await serverProcess.value.write(`whitelist add ${playerName}\n`)
+         await serverProcess.value.write(`whitelist add ${playerName}\n`)
    // Refresh whitelist
    setTimeout(() => loadPlayerLists(), 500)
-}
-
-async function fetchOnlinePlayers() {
-   if (serverStatus.value !== 'online' || !serverProcess.value) {
-      onlinePlayers.value = []
-      return
-   }
-   
-   // Wysyłamy komendę list do serwera
-   await serverProcess.value.write('list\n')
-   
-   // Czekamy na odpowiedź
-   await new Promise(r => setTimeout(r, 300))
-   
-   // Parsujemy odpowiedź z ostatnich linii konsoli
-   for (let i = consoleLines.value.length - 1; i >= Math.max(0, consoleLines.value.length - 15); i--) {
-      const line = consoleLines.value[i]
-      
-      // Format: "There are X of a max of Y players online: Player1, Player2"
-      // lub "There are X/Y players online: Player1, Player2" (niektóre serwery)
-      const match = line.match(/There are (\d+)(?:\s+of a max of\s+|\/)(\d+) players online:?\s*(.*)/)
-      if (match) {
-         const count = parseInt(match[1])
-         if (count === 0) {
-            onlinePlayers.value = []
-         } else {
-            // Lista graczy może być po dwukropku lub w następnej linii
-            const playerList = match[3].trim()
-            if (playerList) {
-               onlinePlayers.value = playerList.split(',').map(p => p.trim()).filter(p => p)
-            }
-         }
-         return
-      }
-   }
 }
 
 async function openServerFolder() {
     try {
         const folder = serverFolderName.value
-        const relative = `MineDash/servers/${folder}`
+        const relative = `VoidLink/servers/${folder}`
         const docDir = await documentDir()
         const fullPath = await join(docDir, relative)
         
@@ -2189,11 +2544,54 @@ watch(selectedTab, async () => {
 
 // --- Initialization ---
 
+let statsInterval: any | null = null
+
 onMounted(async () => {
    selectedTab.value = 'performance' // Ensure Console is selected by default
    await loadData()
    loadAddons() // Load addons after server data is loaded
+   
+   // Start stats polling
+   statsInterval = setInterval(() => {
+       if (serverStatus.value === 'online' || serverStatus.value === 'starting') {
+           serverProcessStore.refreshProcessInfo(serverId as string)
+       }
+   }, 2000)
 })
+
+onUnmounted(() => {
+    if (statsInterval) clearInterval(statsInterval)
+})
+
+async function changeServerIcon() {
+    try {
+        const selected = await openDialog({
+            multiple: false,
+            filters: [{
+                name: 'Image',
+                extensions: ['png', 'jpg', 'jpeg']
+            }]
+        })
+
+        if (Array.isArray(selected) || !selected) return
+
+        const folder = serverFolderName.value
+        // Destination: VoidLink/servers/<id>/server-logo.png
+        const iconRelPath = `VoidLink/servers/${folder}/server-logo.png`
+        
+        await copyFile(selected, iconRelPath, { toPathBaseDir: BaseDirectory.Document })
+        
+        // Update state
+        const bytes = await readFile(iconRelPath, { baseDir: BaseDirectory.Document })
+        const blob = new Blob([bytes], { type: 'image/png' })
+        updateServerIconUrl(blob)
+        
+        console.log('Icon updated')
+    } catch (e) {
+        console.error('Failed to change icon', e)
+        toast.add({ title: 'Failed to update icon', description: String(e), color: 'error' })
+    }
+}
 
 async function loadData() {
    loading.value = true
@@ -2203,7 +2601,7 @@ async function loadData() {
       // 1. Load server.json
       try {
          // Using plain path string construction because join from fs plugin was deprecated/moved
-         const metaPath = `MineDash/servers/${folder}/server.json`
+         const metaPath = `VoidLink/servers/${folder}/server.json`
          const metaContent = await readTextFile(metaPath, { baseDir: BaseDirectory.Document })
          server.value = JSON.parse(metaContent)
          serverName.value = server.value.name || ''
@@ -2211,7 +2609,7 @@ async function loadData() {
          // Load global settings for defaults
          let globalSettings = { memory: 4, path: 'java', flags: '' }
          try {
-            const globalContent = await readTextFile('MineDash/settings.json', { baseDir: BaseDirectory.Document })
+            const globalContent = await readTextFile('VoidLink/settings.json', { baseDir: BaseDirectory.Document })
             const gData = JSON.parse(globalContent)
             if (gData) {
                globalSettings = { ...globalSettings, ...gData, memory: gData.defaultMemory, flags: gData.defaultFlags }
@@ -2234,7 +2632,7 @@ async function loadData() {
 
       // 2. Load server.properties
       try {
-         const propsPath = `MineDash/servers/${folder}/server.properties`
+         const propsPath = `VoidLink/servers/${folder}/server.properties`
          const propsContent = await readTextFile(propsPath, { baseDir: BaseDirectory.Document })
          rawProperties.value = propsContent
          parsedProperties.value = parseProperties(propsContent)
@@ -2249,7 +2647,22 @@ async function loadData() {
          const sysInfo = await invoke<{ total_memory_bytes: number }>('get_system_info')
          systemRamGB.value = Math.floor(sysInfo.total_memory_bytes / (1024 * 1024 * 1024))
       } catch (e) {
-         console.log('Failed to get system info, using 32GB default')
+         console.log('Failed to check sys info', e)
+      }
+
+      // 4. Load Custom Icon
+      try {
+          const iconPath = `VoidLink/servers/${folder}/server-logo.png`
+          if (await exists(iconPath, { baseDir: BaseDirectory.Document })) {
+              const bytes = await readFile(iconPath, { baseDir: BaseDirectory.Document })
+              const blob = new Blob([bytes], { type: 'image/png' })
+              updateServerIconUrl(blob)
+          } else {
+             if (serverIconUrl.value) URL.revokeObjectURL(serverIconUrl.value)
+             serverIconUrl.value = null
+          }
+      } catch (e) {
+          console.error('Failed to load server icon', e)
       }
 
    } catch (e) {
@@ -2282,7 +2695,11 @@ function getDefaultProperties() {
       'difficulty': 'easy',
       'max-players': '20',
       'online-mode': 'true',
-      'motd': 'A Minecraft Server'
+      'motd': 'A Minecraft Server',
+      'enable-rcon': 'true',
+      'rcon.port': '25575',
+      'broadcast-rcon-to-ops': 'false',
+      'rcon.password': 'voidlink'
    }
 }
 
@@ -2298,6 +2715,9 @@ const propertyDefinitions = {
    'server-port': { type: 'number', group: 'Network' },
    'max-players': { type: 'number', group: 'Network' },
    'online-mode': { type: 'boolean', group: 'Network' },
+   'enable-rcon': { type: 'boolean', group: 'Network' },
+   'rcon.port': { type: 'number', group: 'Network' },
+   'rcon.password': { type: 'text', group: 'Network' },
    'view-distance': { type: 'number', group: 'Performance' },
    'simulation-distance': { type: 'number', group: 'Performance' },
    
@@ -2384,6 +2804,13 @@ function updateProperty(key: string, value: any) {
    parsedProperties.value[key] = strVal
 }
 
+function updateAccessProperty(key: string, value: boolean) {
+   updateProperty(key, value)
+   if (key === 'white-list' && value === false) {
+      updateProperty('enforce-whitelist', false)
+   }
+}
+
 // --- Saving ---
 
 async function saveAllSettings() {
@@ -2394,15 +2821,15 @@ async function saveAllSettings() {
       // 1. Save server.json (Name & Java Settings)
       server.value.javaSettings = { ...javaSettings }
       server.value.name = serverName.value
-      const metaPath = `MineDash/servers/${folder}/server.json`
+      const metaPath = `VoidLink/servers/${folder}/server.json`
       await writeTextFile(metaPath, JSON.stringify(server.value, null, 2), { baseDir: BaseDirectory.Document })
 
       // 2. Save server.properties
-      let content = '#Minecraft server properties\n#Generated by MineDash\n'
+      let content = '#Minecraft server properties\n#Generated by VoidLink\n'
       Object.entries(parsedProperties.value).forEach(([key, val]) => {
          content += `${key}=${val}\n`
       })
-      const propsPath = `MineDash/servers/${folder}/server.properties`
+      const propsPath = `VoidLink/servers/${folder}/server.properties`
       await writeTextFile(propsPath, content, { baseDir: BaseDirectory.Document })
       
       // Refresh raw properties view
@@ -2424,7 +2851,7 @@ async function saveAllSettings() {
 async function savePropertiesFromEditor() {
    try {
       const folder = serverFolderName.value
-      const propsPath = `MineDash/servers/${folder}/server.properties`
+      const propsPath = `VoidLink/servers/${folder}/server.properties`
       
       // Save raw content
       await writeTextFile(propsPath, propertiesEditorContent.value, { baseDir: BaseDirectory.Document })
@@ -2500,7 +2927,7 @@ async function performModpackUpdate() {
       }
 
       const folder = serverFolderName.value
-      const relativePath = `MineDash/servers/${folder}`
+      const relativePath = `VoidLink/servers/${folder}`
       const fullServerPath = await join(await documentDir(), relativePath)
 
       // 2. Clean mods and config folders
@@ -2558,6 +2985,24 @@ async function performModpackUpdate() {
 }
 
 
+// --- Status Logic ---
+const statusBgClass = computed(() => {
+   switch (serverStatus.value) {
+     case 'online': return 'bg-success-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]'
+     case 'starting': return 'bg-warning-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]'
+     case 'stopping': return 'bg-warning-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]'
+     default: return 'bg-neutral-500'
+   }
+})
+
+function copyId() {
+    if (server.value?.id) {
+        navigator.clipboard.writeText(server.value.id)
+            .then(() => console.log('Copied ID'))
+            .catch(e => console.error('Copy failed', e))
+    }
+}
+
 // --- Server Process Management Functions ---
 
 async function startServer() {
@@ -2565,7 +3010,7 @@ async function startServer() {
    
    // 1. Check EULA
    const folder = serverFolderName.value
-   const eulaPath = `MineDash/servers/${folder}/eula.txt`
+   const eulaPath = `VoidLink/servers/${folder}/eula.txt`
    
    try {
       if (await exists(eulaPath, { baseDir: BaseDirectory.Document })) {
@@ -2584,14 +3029,61 @@ async function startServer() {
       return
    }
 
+   // --- Voice Chat Auto-Config ---
+   try {
+      if (!tunnelStore.tunnels.length) {
+         await tunnelStore.fetchTunnels()
+      }
+      
+      const voiceTunnel = tunnelStore.activeTunnels.find(t => 
+         t.ports.some(p => p.protocol === 'udp' && p.label.toLowerCase().includes('voice'))
+      )
+      
+      if (voiceTunnel) {
+         const voicePort = voiceTunnel.ports.find(p => p.protocol === 'udp' && p.label.toLowerCase().includes('voice'))
+         if (voicePort) {
+             // Determine path based on server type
+             const type = server.value?.type || 'fabric'
+             const isPluginServer = ['paper', 'purpur', 'spigot', 'bukkit', 'velocity', 'folia'].includes(type)
+             const configBase = isPluginServer ? 'plugins/voicechat' : 'config/voicechat'
+             
+             const configPath = `VoidLink/servers/${folder}/${configBase}/voicechat-server.properties`
+             if (await exists(configPath, { baseDir: BaseDirectory.Document })) {
+                let content = await readTextFile(configPath, { baseDir: BaseDirectory.Document })
+                
+                // Update port
+                if (content.match(/^port=/m)) {
+                   content = content.replace(/^port=.*$/m, `port=${voicePort.public_port}`)
+                } else {
+                   content += `\nport=${voicePort.public_port}`
+                }
+                
+                // Update voice_host
+                // voiceTunnel.full_address is usually sub.domain.com
+                if (content.match(/^voice_host=/m)) {
+                   content = content.replace(/^voice_host=.*$/m, `voice_host=${voiceTunnel.full_address}`)
+                } else {
+                   content += `\nvoice_host=${voiceTunnel.full_address}`
+                }
+                
+                await writeTextFile(configPath, content, { baseDir: BaseDirectory.Document })
+                consoleLines.value.push(`[Auto-Config] Updated Voice Chat config: Port ${voicePort.public_port}, Host ${voiceTunnel.full_address}`)
+             }
+         }
+      }
+   } catch (e) {
+      console.warn('Voice Chat auto-config failed', e)
+   }
+   // ------------------------------
+
    serverStatus.value = 'starting'
    consoleLines.value.length = 0
    consoleLines.value.push('Starting server...')
    
    try {
       const folder = serverFolderName.value
-      const serverPath = `MineDash/servers/${folder}`
-      const fullServerPath = await join(await documentDir(), 'MineDash', 'servers', folder)
+      const serverPath = `VoidLink/servers/${folder}`
+      const fullServerPath = await join(await documentDir(), 'VoidLink', 'servers', folder)
       
       // Detect platform
       const isWindows = navigator.userAgent.includes('Windows')
@@ -2599,7 +3091,7 @@ async function startServer() {
       // Load global settings for Java installations
       let javaInstallations: any = {}
       try {
-         const settingsContent = await readTextFile('MineDash/settings.json', { baseDir: BaseDirectory.Document })
+         const settingsContent = await readTextFile('VoidLink/settings.json', { baseDir: BaseDirectory.Document })
          const globalSettings = JSON.parse(settingsContent)
          javaInstallations = globalSettings.javaInstallations || {}
       } catch (e) {
@@ -2668,6 +3160,9 @@ async function startServer() {
       })
       
       cmd.stdout.on('data', (line) => {
+         // Filter RCON spam
+         if (line.includes('Thread RCON Client /127.0.0.1')) return
+         
          consoleLines.value.push(line)
          if (line.includes('Done') && line.includes('!')) {
             serverStatus.value = 'online'
@@ -2688,16 +3183,25 @@ async function startServer() {
    }
 }
 async function killServer() {
+   // Try using Child handle first, fallback to persisted PID
+   const pid = serverStore.getPid(storeServerId.value)
+   
    if (serverProcess.value) {
       await serverProcess.value.kill()
       consoleLines.value.push('Server killed by user.')
+   } else if (pid) {
+      // No Child handle (e.g., after F5 refresh) - use Rust kill command
+      await invoke('kill_process', { pid })
+      consoleLines.value.push('Server killed by user (via PID).')
    }
+   
+   serverStatus.value = 'offline'
 }
 
 async function acceptEula() {
    try {
       const folder = serverFolderName.value
-      const eulaPath = `MineDash/servers/${folder}/eula.txt`
+      const eulaPath = `VoidLink/servers/${folder}/eula.txt`
       await writeTextFile(eulaPath, 'eula=true', { baseDir: BaseDirectory.Document })
       showEulaModal.value = false
       startServer()
@@ -2717,8 +3221,6 @@ async function stopServer() {
       console.error('Failed to send stop command', e)
    }
 }
-
-const consoleInput = ref('')
 
 const showDeleteModal = ref(false)
 const deleteConfirmation = ref('')
@@ -2744,7 +3246,7 @@ async function confirmDeleteServer() {
          await new Promise(r => setTimeout(r, 2000))
       }
 
-      const path = `MineDash/servers/${folder}`
+      const path = `VoidLink/servers/${folder}`
       await remove(path, { baseDir: BaseDirectory.Document, recursive: true })
       
       showDeleteModal.value = false
@@ -2760,23 +3262,6 @@ async function confirmDeleteServer() {
       alert(`Failed to delete server: ${e}`) 
    } finally {
       deletingServer.value = false
-   }
-}
-
-async function sendCommand() {
-   if (!consoleInput.value) return
-   if (!serverProcess.value) {
-      consoleLines.value.push('Error: No server process')
-      return
-   }
-
-   try {
-      consoleLines.value.push(`> ${consoleInput.value}`)
-      await serverProcess.value.write(consoleInput.value + '\n')
-      consoleInput.value = ''
-   } catch(e) {
-      console.error('Failed to send command', e)
-      consoleLines.value.push(`Failed to send command: ${e}`)
    }
 }
 

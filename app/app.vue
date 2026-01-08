@@ -13,14 +13,20 @@
 import { initTrayListener, cleanupTrayListener, updateTrayMenu } from '~/composables/useTray'
 import { useServersStore } from '~/stores/useServersStore'
 import { useSettingsStore } from '~/stores/useSettingsStore'
+import { useAuthStore } from '~/stores/useAuthStore'
+import { useTunnelStore } from '~/stores/useTunnelStore'
+import { useServerProcessStore } from '~/composables/useServerProcessStore'
 import { storeToRefs } from 'pinia'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
+import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
 
 const serversStore = useServersStore()
 const { servers } = storeToRefs(serversStore)
 const { loadServers, getServerStatus } = serversStore
 
+const authStore = useAuthStore()
+const tunnelStore = useTunnelStore()
 const settingsStore = useSettingsStore()
 // Ensure we have access to loaded settings
 const { loadSettings } = settingsStore
@@ -30,6 +36,59 @@ let trayUpdateInterval: ReturnType<typeof setInterval> | null = null
 let unlistenClose: (() => void) | null = null
 
 onMounted(async () => {
+  // Initialize Auth
+  await authStore.init()
+
+  // Recover running servers from previous session/reload
+  const processStore = useServerProcessStore()
+  await processStore.recoverRunningServers()
+
+  // Listen for deep links
+  try {
+    await onOpenUrl((urls) => {
+      console.log('Deep link received:', urls)
+      for (const url of urls) {
+        if (url.startsWith('voidlink://reset-password')) {
+          const code = new URL(url).searchParams.get('code')
+          if (code) {
+             console.log('Reset code found:', code)
+             authStore.pendingResetCode = code
+             tunnelStore.isManagerOpen = true
+             
+             // Focus window
+             const win = getCurrentWindow()
+             win.setFocus()
+             win.unminimize()
+          }
+        }
+      }
+    })
+
+    // Listen for single-instance deep link event (when app is already running)
+    const { listen } = await import('@tauri-apps/api/event')
+    await listen<string[]>('deep-link://new-url', (event) => {
+       console.log('Single instance deep link:', event.payload)
+       for (const url of event.payload) {
+        if (url.startsWith('voidlink://reset-password')) {
+          const code = new URL(url).searchParams.get('code')
+          if (code) {
+             console.log('Reset code found (single instance):', code)
+             authStore.pendingResetCode = code
+             tunnelStore.isManagerOpen = true
+             
+             // Focus window
+             const win = getCurrentWindow()
+             win.setFocus()
+             win.unminimize()
+          }
+        }
+       }
+    })
+    
+  } catch (e) {
+    console.error('Failed to register deep link listener:', e)
+  }
+
   // Initialize tray event listener
   await initTrayListener()
 
@@ -47,6 +106,10 @@ onMounted(async () => {
             event.preventDefault()
             await appWindow.hide()
          } else {
+            // Kill all running servers before exiting
+            const processStore = useServerProcessStore()
+            await processStore.killAllServers()
+            
             // Explicitly handle close to avoid ambiguity
             // We must unlisten to avoid infinite loop when we call close()
             if (unlistenClose) {
@@ -54,6 +117,7 @@ onMounted(async () => {
                 unlistenClose = null
             }
             // Use backend quit for reliable exit on all platforms (inc. MacOS)
+            // This also stops all FRP tunnels
             await invoke('quit_app')
          }
       } catch (e) {
