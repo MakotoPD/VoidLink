@@ -2,11 +2,11 @@
   <div class="min-h-screen bg-gray-950 p-8 pb-32">
     <div class=" mx-auto space-y-8">
       <!-- Header with Progress -->
-      <div class="relative bg-gray-900 border-b border-gray-800 pb-8 pt-6 px-8 -mx-8 -mt-8 mb-8 overflow-hidden sticky top-0 z-50">
+      <div data-tauri-drag-region class="relative bg-gray-900 border-b border-gray-800 pb-8 pt-6 px-8 -mx-8 -mt-8 mb-8 overflow-hidden sticky top-0 z-50">
         <!-- Background Gradients -->
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-neutral-900/20 via-gray-900/0 to-transparent pointer-events-none"></div>
-        <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-neutral-500/20 to-transparent"></div>
-        <div class="absolute inset-0 backdrop-blur-xl bg-gray-900/80"></div>
+        <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-neutral-500/20 to-transparent pointer-events-none"></div>
+        <div class="absolute inset-0 backdrop-blur-xl bg-gray-900/80 pointer-events-none"></div>
 
         <div class="relative z-10 max-w-4xl mx-auto space-y-6">
            <div class="flex items-center gap-4">

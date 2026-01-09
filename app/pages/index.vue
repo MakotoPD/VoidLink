@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-full flex flex-col">
     <!-- Header Section -->
-    <div class="relative bg-gray-900/70 border-b border-gray-800 pb-8 pt-8 px-8 overflow-hidden">
+    <div data-tauri-drag-region class="relative bg-gray-900/70 border-b border-gray-800 pb-8 pt-8 px-8 overflow-hidden">
       <!-- Background Gradients -->
       <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-900/20 via-gray-900/0 to-transparent pointer-events-none"></div>
       <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary-500/20 to-transparent"></div>

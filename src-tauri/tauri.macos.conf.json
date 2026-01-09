@@ -1,7 +1,7 @@
 {
 	"build": {
-		"beforeBuildCommand": "bash ../scripts/compile-macos-icon.sh",
-		"beforeBundleCommand": "bash ../scripts/compile-macos-icon.sh"
+		"beforeBuildCommand": "bash ./scripts/compile-macos-icon.sh && pnpm nuxt generate",
+		"beforeBundleCommand": "bash ./scripts/compile-macos-icon.sh"
 	},
 	"app": {
 		"windows": [
