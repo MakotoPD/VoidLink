@@ -1,7 +1,7 @@
 <template>
   <UApp>
     <NuxtLoadingIndicator color="aqua" errorColor="red"  />
-    <div class="bg-gray-950">
+    <div class="bg-gray-950 pt-2">
       <NuxtLayout>
           <NuxtPage />
       </NuxtLayout>
@@ -16,6 +16,7 @@ import { useSettingsStore } from '~/stores/useSettingsStore'
 import { useAuthStore } from '~/stores/useAuthStore'
 import { useTunnelStore } from '~/stores/useTunnelStore'
 import { useServerProcessStore } from '~/composables/useServerProcessStore'
+import { useAutoUpdate } from '~/composables/useAutoUpdate'
 import { storeToRefs } from 'pinia'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
@@ -38,6 +39,10 @@ let unlistenClose: (() => void) | null = null
 onMounted(async () => {
   // Initialize Auth
   await authStore.init()
+
+  // Check for updates (silent)
+  const { checkForUpdates } = useAutoUpdate()
+  checkForUpdates(true)
 
   // Recover running servers from previous session/reload
   const processStore = useServerProcessStore()

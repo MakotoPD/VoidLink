@@ -266,7 +266,7 @@
              <div class="space-y-6">
                 <div class="flex items-center justify-between">
                    <div class="space-y-1">
-                      <p class="text-sm text-gray-400">Current Version: <span class="text-white font-mono ml-1">{{ currentVersion }}</span></p>
+                      <p class="text-sm text-gray-400">Current Version: <span class="text-white font-mono ml-1">{{ currentAppVersion }}</span></p>
                       <p class="text-xs text-gray-500">Developed by <a href="http://makoto.com.pl" target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300 hover:underline transition-colors">MakotoPD</a></p>
                    </div>
                    <UButton 
@@ -281,7 +281,7 @@
                 </div>
                 
                 <!-- Update Available Banner -->
-                <div v-if="updateInfo?.available" class="p-6 bg-gradient-to-br from-primary-900/20 to-primary-900/5 border border-primary-500/30 rounded-xl relative overflow-hidden group">
+                <div v-if="updateAvailable" class="p-6 bg-gradient-to-br from-primary-900/20 to-primary-900/5 border border-primary-500/30 rounded-xl relative overflow-hidden group">
                    <div class="absolute inset-0 bg-primary-500/5 group-hover:bg-primary-500/10 transition-colors"></div>
                    
                    <div class="relative z-10 flex items-start gap-4">
@@ -291,22 +291,23 @@
                       <div class="flex-1">
                          <h4 class="text-lg font-bold text-white mb-1">New Version Available!</h4>
                          <p class="text-primary-200 mb-4">
-                            Update <strong>{{ updateInfo.latestVersion }}</strong> is ready to download. You are currently on <span class="opacity-75">{{ updateInfo.currentVersion }}</span>.
+                            Version <strong>{{ updateAvailable.version }}</strong> is ready to download.
                          </p>
                          <UButton 
                             color="primary"
-                            icon="i-lucide-external-link"
-                            @click="openReleasePage"
+                            icon="i-lucide-download-cloud"
+                            @click="handleUpdateDownload"
+                            :loading="isDownloadingUpdate"
                             class="shadow-lg shadow-primary-900/20"
                          >
-                            Download Update
+                            {{ isDownloadingUpdate ? 'Downloading & Installing...' : 'Update & Restart' }}
                          </UButton>
                       </div>
                    </div>
                 </div>
                 
                 <!-- Up to date message -->
-                <div v-else-if="updateInfo && !updateInfo.available" class="flex items-center gap-3 p-4 bg-success-500/5 border border-success-500/20 rounded-xl">
+                <div v-else-if="!checkingUpdate" class="flex items-center gap-3 p-4 bg-success-500/5 border border-success-500/20 rounded-xl">
                    <div class="p-1 bg-success-500/10 rounded-full">
                       <UIcon name="i-lucide-check-circle" class="w-5 h-5 text-success-500" />
                    </div>
@@ -327,10 +328,12 @@
 import { open as openDialog } from '@tauri-apps/plugin-dialog'
 import { open } from '@tauri-apps/plugin-shell'
 import { useJava } from '~/composables/useJava'
-import { useUpdateChecker } from '~/composables/useUpdateChecker'
 import { GITHUB_RELEASES_URL } from '~/utils/version'
 import { useSettingsStore } from '~/stores/useSettingsStore'
 import { storeToRefs } from 'pinia'
+import { check, type Update } from '@tauri-apps/plugin-updater'
+import { relaunch } from '@tauri-apps/plugin-process'
+import { getVersion } from '@tauri-apps/api/app'
 
 const loading = ref(true)
 const saving = ref(false)
@@ -342,8 +345,12 @@ const { installations, scanJava, validateJavaPath, downloadJava, fetchAdoptiumRe
 const downloadingVersion = ref<number | null>(null)
 import { join, downloadDir, appDataDir } from '@tauri-apps/api/path'
 
-// Update checker
-const { updateInfo, checking: checkingUpdate, checkForUpdates, currentVersion } = useUpdateChecker()
+// Update state
+const checkingUpdate = ref(false)
+const updateAvailable = ref<Update | null>(null)
+const currentAppVersion = ref('')
+const isDownloadingUpdate = ref(false)
+const updateDownloadProgress = ref(0)
 
 // Settings Store
 const settingsStore = useSettingsStore()
@@ -354,21 +361,51 @@ const detectingJava = ref(false)
 
 onMounted(async () => {
    loading.value = true
+   currentAppVersion.value = await getVersion()
    await loadSettings()
    loading.value = false
    
    checkJava()
+   checkUpdate()
 })
 
 async function checkUpdate() {
-   await checkForUpdates()
+   checkingUpdate.value = true
+   try {
+      const update = await check()
+      if (update) {
+         updateAvailable.value = update
+      } else {
+         updateAvailable.value = null
+      }
+   } catch (err) {
+      console.error('Failed to check for updates', err)
+   } finally {
+      checkingUpdate.value = false
+   }
+}
+
+async function handleUpdateDownload() {
+   if (!updateAvailable.value) return
+   
+   isDownloadingUpdate.value = true
+   try {
+      await updateAvailable.value.downloadAndInstall((event) => {
+         if (event.event === 'Progress') {
+            updateDownloadProgress.value += event.data.chunkLength
+         } else if (event.event === 'Finished') {
+            updateDownloadProgress.value = 100 // Just visual
+         }
+      })
+      await relaunch()
+   } catch (err) {
+      console.error('Failed to install update', err)
+      isDownloadingUpdate.value = false
+   }
 }
 
 async function openReleasePage() {
-   const url = updateInfo.value?.releaseUrl || GITHUB_RELEASES_URL
-   if (url) {
-      await open(url)
-   }
+   await open(GITHUB_RELEASES_URL)
 }
 
 async function checkJava() {
