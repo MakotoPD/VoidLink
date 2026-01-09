@@ -37,3 +37,5 @@ tokio = { version = "1", features = ["net", "io-util"] }
 reqwest = { version = "0.12", features = ["blocking", "json"] }
 zip = "0.6"
 anyhow = "1.0"
+tauri-plugin-os = "2"
+tauri-plugin-updater = "2"

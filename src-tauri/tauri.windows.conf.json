@@ -11,7 +11,7 @@
 				"minWidth": 1200,
 				"minHeight": 850,
 				"dragDropEnabled": false,
-				"decorations": true,
+				"decorations": false,
 				"windowEffects": {
 					"effects": [
 						"mica"

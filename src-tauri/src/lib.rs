@@ -252,6 +252,9 @@ pub fn run() {
                     }
                 })
                 .build(app)?;
+
+            #[cfg(desktop)]
+            let _ = app.handle().plugin(tauri_plugin_updater::Builder::new().build());
             
             Ok(())
         })
@@ -259,6 +262,7 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
           // Check for deep link in args
           for arg in argv {
