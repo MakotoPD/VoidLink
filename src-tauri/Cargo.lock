@@ -5880,10 +5880,11 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "void-link"
-version = "0.3.3"
+version = "0.3.7"
 dependencies = [
  "anyhow",
  "dirs 5.0.1",
+ "flate2",
  "local-ip-address",
  "log",
  "rcon",
@@ -5891,6 +5892,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sysinfo",
+ "tar",
  "tauri",
  "tauri-build",
  "tauri-plugin-deep-link",
