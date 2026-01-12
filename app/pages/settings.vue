@@ -498,7 +498,7 @@ async function handleJavaDownload(major: number) {
          description: `Installation target: ${installDir}`,
          icon: 'i-lucide-download',
          color: 'primary',
-         timeout: 5000
+         duration: 5000
       })
       
       // 2. Start Download
@@ -521,7 +521,7 @@ async function handleJavaDownload(major: number) {
          description: `Java ${major} is ready to use. Path updated in settings.`,
          icon: 'i-lucide-check-circle',
          color: 'success',
-         timeout: 6000
+         duration: 6000
       })
       
    } catch (e) {

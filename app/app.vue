@@ -1,7 +1,7 @@
 <template>
   <UApp>
     <NuxtLoadingIndicator color="aqua" errorColor="red"  />
-    <div class="bg-gray-950 dark h-screen w-screen overflow-hidden">
+    <div class="bg-gray-950 h-screen w-screen overflow-hidden">
       <NuxtLayout>
           <NuxtPage />
       </NuxtLayout>
@@ -36,10 +36,22 @@ onMounted(() => {
     console.log('[Security] F5 and right-click disabled for production')
   }
   
+  // Debug toggle (Alt+Shift+F12)
+  const handleDebugToggle = (e: KeyboardEvent) => {
+    if (e.altKey && e.shiftKey && e.key === 'F12') {
+       console.log('Opening DevTools via shortcut')
+       // @ts-ignore - openDevTools exists at runtime when devtools feature is enabled
+       ;(getCurrentWindow() as any).openDevTools()
+    }
+  }
+
+  document.addEventListener('keydown', handleDebugToggle)
+
   // Cleanup on unmount
   onUnmounted(() => {
     document.removeEventListener('keydown', handleKeyDown)
     document.removeEventListener('contextmenu', handleContextMenu)
+    document.removeEventListener('keydown', handleDebugToggle)
   })
 })
 

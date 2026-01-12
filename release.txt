@@ -1,4 +1,4 @@
-## Changes (v0.3.5)
+## Changes (v0.3.6)
 
 ### ✨ Features & Improvements
 - **Enhanced Java Detection**: The `Auto-Detect` feature now intelligently scans the application's local data directory. Java versions downloaded via VoidLink are now automatically discovered and configured without manual path selection.

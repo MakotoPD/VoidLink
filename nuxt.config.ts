@@ -11,6 +11,9 @@ export default defineNuxtConfig({
   },
   modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt'],
 
+  colorMode: {
+    preference: 'dark'
+  },
 
   css: ['~/assets/css/main.css'],
 
