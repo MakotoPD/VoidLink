@@ -118,6 +118,33 @@ Here is what we plan to add in upcoming updates:
 - [X] **Advanced Network**: Tunnel integration.
 - [X] **Multi-Version Support**: Better handling of Java versions manager for older Minecraft versions.
 
+## ⚠️ Windows Security Warning (False Positive)
+
+**Important Notice**: Due to unsigned binaries and the FRP sidecar, Windows Defender and other antivirus software may flag VoidLink as suspicious or potentially unwanted. **This is a false positive.**
+
+### Why does this happen?
+- The application includes FRP (Fast Reverse Proxy) binary for tunneling functionality
+- Unsigned applications trigger Windows SmartScreen warnings
+- Network tunneling tools are often flagged by antivirus software
+
+### How to safely install:
+
+1. **Download from official sources only**: 
+   - [GitHub Releases](https://github.com/MakotoPD/VoidLink/releases)
+   - Verify the SHA256 checksum provided in release notes
+
+2. **Windows SmartScreen**:
+   - Click **"More info"** → **"Run anyway"** when prompted
+
+3. **Windows Defender** (if blocked):
+   - Open **Windows Security** → **Virus & threat protection**
+   - Click **Protection history**
+   - Find VoidLink → **Actions** → **Allow**
+
+4. **Optional**: Add an exception for VoidLink installation directory in your antivirus
+
+We are working on code signing to eliminate these warnings in future releases.
+
 ## 🍎 macOS Troubleshooting (App is damaged)
 
 If you see a message saying **"VoidLink is damaged and can't be opened"**, this is a normal security check for apps not signed with a paid Apple Developer certificate.

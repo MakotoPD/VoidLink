@@ -117,35 +117,116 @@ export const useTunnelStore = defineStore('tunnels', () => {
 		error.value = null
 
 		try {
+			// Add timeout to prevent hanging requests (10 seconds)
+			const controller = new AbortController()
+			const timeoutId = setTimeout(() => controller.abort(), 10000)
+
 			const response = await fetch(`${API_BASE}/tunnels`, {
-				headers: authStore.getAuthHeaders()
+				headers: authStore.getAuthHeaders(),
+				signal: controller.signal
 			})
+
+			clearTimeout(timeoutId)
 
 			if (!response.ok) {
 				if (response.status === 401) {
-					await authStore.refresh()
-					return fetchTunnels()
+					// Token expired, refresh and retry once (not recursively)
+					console.log('[Tunnel] Token expired, attempting refresh...')
+					const refreshed = await authStore.refresh()
+					if (refreshed) {
+						// Retry the request once with new token
+						const retryResponse = await fetch(`${API_BASE}/tunnels`, {
+							headers: authStore.getAuthHeaders()
+						})
+
+						if (!retryResponse.ok) {
+							const data = await retryResponse.json()
+							error.value = data.error || 'Failed to fetch tunnels after refresh'
+							console.error('[Tunnel] Fetch failed after refresh:', error.value)
+							return false
+						}
+
+						const data = await retryResponse.json() as TunnelListResponse
+						await processTunnelData(data)
+						return true
+					} else {
+						error.value = 'Authentication failed'
+						console.error('[Tunnel] Token refresh failed')
+						return false
+					}
 				}
 				const data = await response.json()
 				error.value = data.error || 'Failed to fetch tunnels'
+				console.error('[Tunnel] Fetch failed:', error.value)
 				return false
 			}
 
 			const data = await response.json() as TunnelListResponse
-			// Preserve local connection state
-			const connectedIds = tunnels.value.filter(t => t.is_connected).map(t => t.id)
-			tunnels.value = (data.tunnels || []).map(t => ({
-				...t,
-				is_connected: connectedIds.includes(t.id)
-			}))
-			tunnelLimit.value = data.limit
+			await processTunnelData(data)
 			return true
-		} catch (e) {
-			error.value = 'Network error'
+		} catch (e: any) {
+			if (e.name === 'AbortError') {
+				error.value = 'Request timeout - check your connection'
+				console.error('[Tunnel] Request timed out')
+			} else {
+				error.value = 'Network error'
+				console.error('[Tunnel] Network error:', e)
+			}
 			return false
 		} finally {
 			loading.value = false
 		}
+	}
+
+	// Helper function to process tunnel data and sync with FRP status
+	async function processTunnelData(data: TunnelListResponse) {
+		console.log(`[Tunnel] Fetched ${data.tunnels?.length || 0} tunnels from API`)
+
+		// Preserve local connection state
+		const connectedIds = tunnels.value.filter(t => t.is_connected).map(t => t.id)
+
+		// Map tunnels and check actual FRP status
+		const updatedTunnels = await Promise.all((data.tunnels || []).map(async (t) => {
+			const tunnel = {
+				...t,
+				is_connected: connectedIds.includes(t.id)
+			}
+
+			// Check actual FRP client status
+			const frpStatus = await getFRPStatus(t.id)
+			if (frpStatus) {
+				tunnel.is_connected = frpStatus.is_running
+
+				// If server says active but FRP isn't running, try to auto-recover
+				if (t.is_active && !frpStatus.is_running) {
+					console.warn(`[Tunnel] ${t.name} marked active but FRP not running. Attempting auto-recovery...`)
+					// Try to start FRP client in background
+					startFRPClient(tunnel).then(success => {
+						if (success) {
+							console.log(`[Tunnel] Auto-recovery successful for ${t.name}`)
+							tunnel.is_connected = true
+						} else {
+							console.error(`[Tunnel] Auto-recovery failed for ${t.name}`)
+							// Update server state to match reality
+							tunnel.is_active = false
+						}
+					}).catch(err => {
+						console.error(`[Tunnel] Auto-recovery error for ${t.name}:`, err)
+						tunnel.is_active = false
+					})
+				}
+			} else if (t.is_active) {
+				// FRP status unknown but server says active - mark as not connected
+				console.warn(`[Tunnel] ${t.name} marked active but FRP status unknown`)
+				tunnel.is_connected = false
+			}
+
+			return tunnel
+		}))
+
+		tunnels.value = updatedTunnels
+		tunnelLimit.value = data.limit
+		console.log(`[Tunnel] Processed tunnels - Active: ${updatedTunnels.filter(t => t.is_active).length}, Connected: ${updatedTunnels.filter(t => t.is_connected).length}`)
 	}
 
 	async function createTunnel(name: string, ports: CreateTunnelPort[]): Promise<Tunnel | null> {

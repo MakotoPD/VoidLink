@@ -1,10 +1,14 @@
 <template>
-  <div class="min-h-screen bg-[#0b1116] text-gray-200 font-sans relative">
-    <!-- Custom Title Bar Area for Dragging -->
-    <div class="fixed top-0 left-0 right-0 h-8 z-40 backdrop-blur-sm" data-tauri-drag-region></div>
+  <div class="h-screen bg-[#0b1116] text-gray-200 font-sans flex flex-col overflow-hidden relative">
+    <!-- Custom Title Bar Area for Dragging - Fixed Header -->
+    <div class="h-8 z-40 backdrop-blur-sm shrink-0 w-full" data-tauri-drag-region>
+      <WindowControls />
+    </div>
     
-    <WindowControls />
-    <slot />
+    <!-- Main Content Area - Scrollable -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar relative">
+      <slot />
+    </div>
   </div>
 </template>
 

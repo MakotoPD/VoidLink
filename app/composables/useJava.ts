@@ -28,9 +28,10 @@ export interface AdoptiumRelease {
 }
 
 export const useJava = () => {
-	const installations = ref<JavaInstallation[]>([])
-	const loading = ref(false)
-	const error = ref<string | null>(null)
+	// Global state shared across all components
+	const installations = useState<JavaInstallation[]>('java-installations', () => [])
+	const loading = useState('java-loading', () => false)
+	const error = useState<string | null>('java-error', () => null)
 
 	const scanJava = async () => {
 		loading.value = true
@@ -72,23 +73,34 @@ export const useJava = () => {
 
 	/**
 	 * Returns the best matching Java installation for a given major version.
-	 * If no exact match is found, returns the highest version available if allowable,
-	 * or undefined.
+	 * Minecraft has STRICT maximum Java version requirements:
+	 * - MC < 1.17: Java 8 ONLY
+	 * - MC 1.17-1.20.4: Java 17 ONLY (Java 21 breaks compatibility)
+	 * - MC >= 1.20.5: Java 21+ (can use higher)
+	 * 
+	 * @param entries - Array of available Java installations
+	 * @param requiredMajor - Minimum required Java major version
+	 * @param maxMajor - Maximum allowed Java major version (optional, defaults to requiredMajor for strict matching)
 	 */
-	const getJavaForVersion = (entries: JavaInstallation[], requiredMajor: number): JavaInstallation | undefined => {
-		// 1. Try to find exact major match with validation
+	const getJavaForVersion = (
+		entries: JavaInstallation[],
+		requiredMajor: number,
+		maxMajor?: number
+	): JavaInstallation | undefined => {
+		// If no max specified, use strict matching (max = required)
+		const maxAllowed = maxMajor ?? requiredMajor
+
+		// 1. Try to find exact major match first (preferred)
 		const exact = entries.find(j => j.major === requiredMajor && j.is_valid)
 		if (exact) return exact
 
-		// 2. If we need Java 8, we strictly need Java 8 usually (though newer *can* run it, older MCs are picky)
-		// But generally for MC, newer Java runs newer MC. 
-		// If we need Java 17, Java 21 is usually fine.
-		// If we need Java 21, Java 17 is NOT fine.
-
-		// So look for any valid java >= requiredMajor, sorted by version ascending (closest match)
+		// 2. Look for valid Java within the allowed range [requiredMajor, maxAllowed]
 		const compatible = entries
-			.filter(j => j.is_valid && (j.major || 0) >= requiredMajor)
-			.sort((a, b) => (a.major || 0) - (b.major || 0))
+			.filter(j => {
+				const major = j.major || 0
+				return j.is_valid && major >= requiredMajor && major <= maxAllowed
+			})
+			.sort((a, b) => (a.major || 0) - (b.major || 0)) // Prefer closest to required
 
 		return compatible[0]
 	}

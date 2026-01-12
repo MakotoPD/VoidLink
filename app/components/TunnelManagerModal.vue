@@ -122,7 +122,7 @@
             <!-- Tunnel Header -->
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3">
-                <div :class="['w-3 h-3 rounded-full', tunnel.is_active ? 'bg-success-500 animate-pulse' : 'bg-gray-500']"></div>
+                <div :class="['w-3 h-3 rounded-full', tunnel.is_connected ? 'bg-success-500 animate-pulse' : 'bg-gray-500']"></div>
                 <div>
                   <h4 class="font-medium">{{ tunnel.name }}</h4>
                   <p class="text-xs text-gray-500">{{ tunnel.subdomain }}</p>

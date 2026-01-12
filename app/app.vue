@@ -1,7 +1,7 @@
 <template>
   <UApp>
     <NuxtLoadingIndicator color="aqua" errorColor="red"  />
-    <div class="bg-gray-950 pt-2">
+    <div class="bg-gray-950 dark h-screen w-screen overflow-hidden">
       <NuxtLayout>
           <NuxtPage />
       </NuxtLayout>
@@ -10,6 +10,39 @@
 </template>
 
 <script setup lang="ts">
+// Disable F5 refresh and right-click context menu in production
+// to prevent accidental app refresh and improve UX
+onMounted(() => {
+  // Block F5 key (refresh)
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'F5' || e.keyCode === 116) {
+      e.preventDefault()
+      console.log('[Security] F5 refresh blocked')
+      return false
+    }
+  }
+  
+  // Block right-click context menu
+  const handleContextMenu = (e: MouseEvent) => {
+    e.preventDefault()
+    return false
+  }
+  
+  // Only in production - allow in dev for debugging
+  if (!import.meta.env.DEV) {
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('contextmenu', handleContextMenu)
+    
+    console.log('[Security] F5 and right-click disabled for production')
+  }
+  
+  // Cleanup on unmount
+  onUnmounted(() => {
+    document.removeEventListener('keydown', handleKeyDown)
+    document.removeEventListener('contextmenu', handleContextMenu)
+  })
+})
+
 import { initTrayListener, cleanupTrayListener, updateTrayMenu } from '~/composables/useTray'
 import { useServersStore } from '~/stores/useServersStore'
 import { useSettingsStore } from '~/stores/useSettingsStore'
