@@ -1,3 +1,8 @@
+## Changes (v0.3.11)
+
+### 🐛 Bug Fixes
+- **Auto-Update**: Release pipeline configuration changes to resolve artifacts signing issues.
+
 ## Changes (v0.3.10)
 
 ### 🐛 Bug Fixes
