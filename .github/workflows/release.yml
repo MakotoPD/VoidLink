@@ -88,8 +88,9 @@ jobs:
           
           RELEASE_BODY
           
-          # Replace version placeholder
-          sed -i "s/\${VERSION}/${VERSION#v}/g" release_body.md
+          # Replace version placeholder (cross-platform compatible)
+          VERSION_NUM="${VERSION#v}"
+          sed "s/\${VERSION}/${VERSION_NUM}/g" release_body.md > release_body_tmp.md && mv release_body_tmp.md release_body.md
           
           # Append changelog
           echo "## 📝 What's Changed" >> release_body.md
