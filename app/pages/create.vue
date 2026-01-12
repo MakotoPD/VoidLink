@@ -841,7 +841,7 @@
        </div>
     </div>
       <!-- Modpack Detail Modal -->
-      <UModal v-model:open="showModpackModal" fullscreen>
+      <UModal v-model:open="showModpackModal" fullscreen class="dark ">
 
         <template #header>
           <div class="w-full flex items-start gap-5 p-6">

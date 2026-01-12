@@ -168,7 +168,7 @@
     </header>
 
     <!-- Update Modal -->
-    <UModal v-model:open="showUpdateModal">
+    <UModal v-model:open="showUpdateModal" class="dark ">
       <template #body>
         <div class="p-6">
           <h3 class="text-xl font-bold mb-4">
@@ -787,6 +787,7 @@
                 v-model:open="showDeleteModal"
                 title="Delete server"
                 description="Are you sure you want to delete?"
+                class="dark "
               >
                 <template #body>
                   <div class="p-6 space-y-4">
@@ -942,6 +943,7 @@
               <UModal
                 v-model:open="showReportModal"
                 fullscreen
+                class="dark "
               >
                 <template #header>
                   <div class="flex items-center justify-between p-4 border-b border-gray-800 bg-gray-900">
@@ -1302,6 +1304,7 @@
                 v-model:open="showModrinthModal"
                 fullscreen
                 :ui="{ base: 'bg-gray-950', ring: 'ring-1 ring-gray-800' }"
+                class="dark "
               >
                 <template #header>
                   <div class="flex items-center justify-between w-full gap-4 py-2">
@@ -1901,7 +1904,7 @@
         </UTabs>
       </div>
       <!-- EULA Modal -->
-      <UModal v-model:open="showEulaModal">
+      <UModal v-model:open="showEulaModal" class="dark ">
         <template #header>
           <div class="flex items-center gap-2 text-warning-500">
             <UIcon
@@ -1949,7 +1952,7 @@
       </UModal>
 
       <!-- Properties Editor Modal -->
-      <UModal v-model:open="showPropertiesEditor">
+      <UModal v-model:open="showPropertiesEditor" class="dark ">
         <template #header>
           <div class="flex items-center gap-2">
             <UIcon

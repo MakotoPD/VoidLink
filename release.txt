@@ -1,3 +1,9 @@
+## Changes (v0.3.7)
+
+### 🐛 Bug Fixes
+- **Linux Java Download**: Fixed an issue where downloading Java on Linux failed with "unsupported archive format: gz". Added support for `.tar.gz` extraction.
+- **Dark Mode**: Fixed inconsistent dark theme application for Modals and Toasts.
+
 ## Changes (v0.3.6)
 
 ### ✨ Features & Improvements

@@ -1,5 +1,5 @@
 <template>
-  <UModal v-model:open="isOpen" class="max-w-md">
+  <UModal v-model:open="isOpen" class="max-w-md dark">
     <template #header>
       <div class="flex justify-between items-center w-full">
         <div class="flex items-center gap-3">

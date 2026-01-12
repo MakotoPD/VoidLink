@@ -1,6 +1,6 @@
 [package]
 name = "void-link"
-version = "0.3.6"
+version = "0.3.7"
 description = "VoidLink minecraft server dashboard"
 authors = ["MakotoPD"]
 license = "MIT"
@@ -37,5 +37,7 @@ tokio = { version = "1", features = ["net", "io-util"] }
 reqwest = { version = "0.12", features = ["blocking", "json"] }
 zip = "0.6"
 anyhow = "1.0"
+flate2 = "1.0"
+tar = "0.4"
 tauri-plugin-os = "2"
 tauri-plugin-updater = "2"

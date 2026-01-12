@@ -1,5 +1,5 @@
 <template>
-  <UModal v-model:open="isOpen" class="max-w-2xl" description="">
+  <UModal v-model:open="isOpen" class="max-w-2xl dark" description="">
     <template #header>
       <div class="flex justify-between items-center w-full">
         <div class="flex items-center gap-3">
@@ -189,7 +189,7 @@
   <AuthModal v-model:open="showAuthModal" @success="onAuthSuccess" />
 
   <!-- Create Tunnel Modal -->
-  <UModal v-model:open="showCreateModal" class="max-w-md">
+  <UModal v-model:open="showCreateModal" class="max-w-md dark">
     <template #header>
       <div class="flex justify-between items-center w-full">
         <h3 class="text-lg font-semibold">Create Tunnel</h3>

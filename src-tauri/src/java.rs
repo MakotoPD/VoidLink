@@ -459,6 +459,28 @@ fn extract_archive(archive: &Path, dest: &Path) -> Result<PathBuf> {
         
         zip.extract(dest).map_err(|e| anyhow::anyhow!(e))?;
         Ok(dest.join(root))
+    } else if extension == "gz" || extension == "tgz" {
+        // Handle .tar.gz
+        // First pass: peek at the first entry to get the root directory name
+        let file_peek = fs::File::open(archive).map_err(|e| anyhow::anyhow!(e))?;
+        let tar_peek = GzDecoder::new(file_peek);
+        let mut archive_peek = Archive::new(tar_peek);
+        
+        let root_name = archive_peek.entries()
+            .map_err(|e| anyhow::anyhow!(e))?
+            .filter_map(|e| e.ok())
+            .next()
+            .map(|e| e.path().unwrap().into_owned().to_string_lossy().split('/').next().unwrap_or("").to_string())
+            .unwrap_or_default();
+
+        // Second pass: actual extraction
+        let file = fs::File::open(archive).map_err(|e| anyhow::anyhow!(e))?;
+        let tar = GzDecoder::new(file);
+        let mut archive = Archive::new(tar);
+        
+        archive.unpack(dest).map_err(|e| anyhow::anyhow!(e))?;
+        
+        Ok(dest.join(root_name))
     } else {
         Err(anyhow::anyhow!("Unsupported archive format: {}", extension))
     }
