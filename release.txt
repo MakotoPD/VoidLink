@@ -1,3 +1,8 @@
+## Changes (v0.3.14)
+
+### 🐛 Bug Fixes
+- **CPU Usage Display**: Normalized CPU usage to 0-100% range by dividing by the number of CPU cores. Previously showed values like 500%+ on multi-core systems.
+
 ## Changes (v0.3.13)
 
 ### 🐛 Bug Fixes

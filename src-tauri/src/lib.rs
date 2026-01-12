@@ -82,7 +82,6 @@ fn get_process_info(pid: u32) -> Option<ProcessInfo> {
         if let Some(proc) = sys.process(pid) {
             mem += proc.memory();
             cpu += proc.cpu_usage();
-            // log::info!("PID: {}, RAM: {} bytes", pid, proc.memory());
         }
         
         // Find direct children
@@ -102,12 +101,18 @@ fn get_process_info(pid: u32) -> Option<ProcessInfo> {
     }
 
     let (total_mem, total_cpu) = sum_stats(&sys, target_pid, &mut visited);
-
-    // log::info!("Total for PID {}: {} bytes", pid, total_mem);
+    
+    // Normalize CPU usage by number of cores to get 0-100% range
+    let cpu_count = sys.cpus().len() as f32;
+    let normalized_cpu = if cpu_count > 0.0 {
+        total_cpu / cpu_count
+    } else {
+        total_cpu
+    };
 
     Some(ProcessInfo {
         memory_bytes: total_mem,
-        cpu_usage: total_cpu,
+        cpu_usage: normalized_cpu,
     })
 }
 
