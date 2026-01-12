@@ -66,12 +66,20 @@ fn get_process_info(pid: u32) -> Option<ProcessInfo> {
         return None;
     }
 
-    // Use a visited set to avoid any potential double counting loops,
-    // although tree traversal shouldn't loop, process graphs can be weird.
+    // Use a visited set to avoid any potential double counting loops
     use std::collections::HashSet;
     let mut visited = HashSet::new();
 
-    fn sum_stats(sys: &System, pid: Pid, visited: &mut HashSet<Pid>) -> (u64, f32) {
+    // Limit recursion depth to prevent runaway collection
+    const MAX_DEPTH: usize = 10;
+    const MAX_PROCESSES: usize = 100;
+
+    fn sum_stats(sys: &System, pid: Pid, visited: &mut HashSet<Pid>, depth: usize) -> (u64, f32) {
+        // Stop if we've gone too deep or collected too many processes
+        if depth > MAX_DEPTH || visited.len() >= MAX_PROCESSES {
+            return (0, 0.0);
+        }
+        
         if !visited.insert(pid) {
             return (0, 0.0);
         }
@@ -84,23 +92,25 @@ fn get_process_info(pid: u32) -> Option<ProcessInfo> {
             cpu += proc.cpu_usage();
         }
         
-        // Find direct children
-        // Note: sys.processes() is a flat list of all processes. 
-        // Iterating it for every node is O(N^2) or worse depending on depth.
-        // But for a single server tree it's usually acceptable.
-        for (child_pid, child_proc) in sys.processes() {
-            if let Some(parent) = child_proc.parent() {
-                if parent == pid {
-                    let (c_mem, c_cpu) = sum_stats(sys, *child_pid, visited);
-                    mem += c_mem;
-                    cpu += c_cpu;
+        // Find direct children - only if we haven't exceeded limits
+        if visited.len() < MAX_PROCESSES {
+            for (child_pid, child_proc) in sys.processes() {
+                if let Some(parent) = child_proc.parent() {
+                    if parent == pid {
+                        let (c_mem, c_cpu) = sum_stats(sys, *child_pid, visited, depth + 1);
+                        mem += c_mem;
+                        cpu += c_cpu;
+                    }
                 }
             }
         }
         (mem, cpu)
     }
 
-    let (total_mem, total_cpu) = sum_stats(&sys, target_pid, &mut visited);
+    let (total_mem, total_cpu) = sum_stats(&sys, target_pid, &mut visited, 0);
+    
+    log::info!("Process {} stats: {} processes, {} bytes, {}% CPU", 
+        pid, visited.len(), total_mem, total_cpu);
     
     // Normalize CPU usage by number of cores to get 0-100% range
     let cpu_count = sys.cpus().len() as f32;
