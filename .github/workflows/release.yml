@@ -57,6 +57,51 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
+      - name: Generate release notes
+        id: release_notes
+        shell: bash
+        run: |
+          VERSION="${{ github.ref_name }}"
+          
+          # Extract changelog for current version from release.txt
+          CHANGELOG=$(awk "/^## Changes \(${VERSION}\)/{flag=1; next} /^## Changes \(v[0-9]/{if(flag) exit} flag" release.txt)
+          
+          # If no changelog found, use default message
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="No specific changes documented for this version."
+          fi
+          
+          # Build the release body with nice formatting
+          cat << 'RELEASE_BODY' > release_body.md
+          ## 📥 Downloads
+          
+          | Platform | Architecture | File |
+          |----------|-------------|------|
+          | 🪟 Windows | x64 | `VoidLink_${VERSION}_x64-setup.exe` |
+          | 🍎 macOS | Apple Silicon (M1/M2) | `VoidLink_${VERSION}_aarch64.dmg` |
+          | 🍎 macOS | Intel | `VoidLink_${VERSION}_x64.dmg` |
+          | 🐧 Linux | x64 | `VoidLink_${VERSION}_amd64.AppImage` |
+          | 🐧 Linux | x64 (deb) | `VoidLink_${VERSION}_amd64.deb` |
+          | 🐧 Linux | x64 (rpm) | `VoidLink_${VERSION}.x86_64.rpm` |
+          
+          ---
+          
+          RELEASE_BODY
+          
+          # Replace version placeholder
+          sed -i "s/\${VERSION}/${VERSION#v}/g" release_body.md
+          
+          # Append changelog
+          echo "## 📝 What's Changed" >> release_body.md
+          echo "" >> release_body.md
+          echo "$CHANGELOG" >> release_body.md
+          
+          # Set output (escape newlines for GitHub Actions)
+          BODY=$(cat release_body.md)
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Build and release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -66,7 +111,8 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'VoidLink ${{ github.ref_name }}'
-          releaseBody: 'See the assets below to download and install VoidLink.'
+          releaseBody: ${{ steps.release_notes.outputs.body }}
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
