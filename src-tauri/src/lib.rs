@@ -49,14 +49,6 @@ pub struct TrayServer {
 #[tauri::command]
 fn get_process_info(pid: u32) -> Option<ProcessInfo> {
     let mut sys = System::new();
-    
-    // First refresh to initialize CPU measurement baseline
-    sys.refresh_processes(ProcessesToUpdate::All, true);
-    
-    // Wait a short time for CPU measurement (sysinfo needs two samples)
-    std::thread::sleep(std::time::Duration::from_millis(200));
-    
-    // Second refresh to get actual CPU usage
     sys.refresh_processes(ProcessesToUpdate::All, true);
     
     let target_pid = Pid::from_u32(pid);
@@ -65,65 +57,153 @@ fn get_process_info(pid: u32) -> Option<ProcessInfo> {
     if sys.process(target_pid).is_none() {
         return None;
     }
+    
+    // Windows: Find the actual Java child process (the shell wrapper doesn't use CPU)
+    let cpu_pid = if cfg!(target_os = "windows") {
+        find_java_child(&sys, target_pid).unwrap_or(pid)
+    } else {
+        pid
+    };
+    
+    // Get memory - sum child processes on Windows
+    let mem = if cfg!(target_os = "windows") {
+        use std::collections::HashSet;
+        let mut visited = HashSet::new();
 
-    // Use a visited set to avoid any potential double counting loops
-    use std::collections::HashSet;
-    let mut visited = HashSet::new();
-
-    // Limit recursion depth to prevent runaway collection
-    const MAX_DEPTH: usize = 10;
-    const MAX_PROCESSES: usize = 100;
-
-    fn sum_stats(sys: &System, pid: Pid, visited: &mut HashSet<Pid>, depth: usize) -> (u64, f32) {
-        // Stop if we've gone too deep or collected too many processes
-        if depth > MAX_DEPTH || visited.len() >= MAX_PROCESSES {
-            return (0, 0.0);
-        }
-        
-        if !visited.insert(pid) {
-            return (0, 0.0);
-        }
-
-        let mut mem = 0;
-        let mut cpu = 0.0;
-        
-        if let Some(proc) = sys.process(pid) {
-            mem += proc.memory();
-            cpu += proc.cpu_usage();
-        }
-        
-        // Find direct children - only if we haven't exceeded limits
-        if visited.len() < MAX_PROCESSES {
+        fn sum_memory(sys: &System, pid: Pid, visited: &mut HashSet<Pid>) -> u64 {
+            if !visited.insert(pid) {
+                return 0;
+            }
+            let mut mem = 0;
+            if let Some(proc) = sys.process(pid) {
+                mem += proc.memory();
+            }
             for (child_pid, child_proc) in sys.processes() {
                 if let Some(parent) = child_proc.parent() {
                     if parent == pid {
-                        let (c_mem, c_cpu) = sum_stats(sys, *child_pid, visited, depth + 1);
-                        mem += c_mem;
-                        cpu += c_cpu;
+                        mem += sum_memory(sys, *child_pid, visited);
                     }
                 }
             }
+            mem
         }
-        (mem, cpu)
-    }
-
-    let (total_mem, total_cpu) = sum_stats(&sys, target_pid, &mut visited, 0);
-    
-    log::info!("Process {} stats: {} processes, {} bytes, {}% CPU", 
-        pid, visited.len(), total_mem, total_cpu);
-    
-    // Normalize CPU usage by number of cores to get 0-100% range
-    let cpu_count = sys.cpus().len() as f32;
-    let normalized_cpu = if cpu_count > 0.0 {
-        total_cpu / cpu_count
+        sum_memory(&sys, target_pid, &mut visited)
     } else {
-        total_cpu
+        // Linux: Only main process (avoid shared lib double-counting)
+        sys.process(target_pid)?.memory()
     };
-
+    
+    // CPU: Platform-specific measurement
+    let cpu = get_process_cpu(cpu_pid);
+    
+    log::info!("Process {} (cpu_pid={}): {} bytes, {}% CPU", pid, cpu_pid, mem, cpu);
+    
     Some(ProcessInfo {
-        memory_bytes: total_mem,
-        cpu_usage: normalized_cpu,
+        memory_bytes: mem,
+        cpu_usage: cpu,
     })
+}
+
+// Find Java child process (recursive search) - Windows only
+#[cfg(target_os = "windows")]
+fn find_java_child(sys: &System, parent_pid: Pid) -> Option<u32> {
+    for (child_pid, child_proc) in sys.processes() {
+        if let Some(parent) = child_proc.parent() {
+            if parent == parent_pid {
+                let name = child_proc.name().to_string_lossy().to_lowercase();
+                if name.contains("java") || name.contains("openjdk") {
+                    log::info!("Found Java child: PID {} ({})", child_pid.as_u32(), name);
+                    return Some(child_pid.as_u32());
+                }
+                // Recursively check children
+                if let Some(java_pid) = find_java_child(sys, *child_pid) {
+                    return Some(java_pid);
+                }
+            }
+        }
+    }
+    None
+}
+
+#[cfg(target_os = "windows")]
+fn get_process_cpu(pid: u32) -> f32 {
+    use windows::Win32::System::Threading::{
+        OpenProcess, GetProcessTimes, PROCESS_QUERY_INFORMATION,
+    };
+    use windows::Win32::Foundation::{CloseHandle, FILETIME};
+    
+    unsafe {
+        let handle = match OpenProcess(PROCESS_QUERY_INFORMATION, false, pid) {
+            Ok(h) => h,
+            Err(e) => {
+                log::warn!("Failed to open process {}: {:?}", pid, e);
+                return 0.0;
+            }
+        };
+        
+        let mut creation = FILETIME::default();
+        let mut exit = FILETIME::default();
+        let mut kernel1 = FILETIME::default();
+        let mut user1 = FILETIME::default();
+        
+        if GetProcessTimes(handle, &mut creation, &mut exit, &mut kernel1, &mut user1).is_err() {
+            log::warn!("GetProcessTimes failed for PID {}", pid);
+            let _ = CloseHandle(handle);
+            return 0.0;
+        }
+        
+        let time1 = std::time::Instant::now();
+        std::thread::sleep(std::time::Duration::from_millis(200));
+        
+        let mut kernel2 = FILETIME::default();
+        let mut user2 = FILETIME::default();
+        
+        if GetProcessTimes(handle, &mut creation, &mut exit, &mut kernel2, &mut user2).is_err() {
+            let _ = CloseHandle(handle);
+            return 0.0;
+        }
+        
+        let elapsed = time1.elapsed().as_nanos() as u64 / 100;
+        let _ = CloseHandle(handle);
+        
+        let kernel_diff = filetime_to_u64(kernel2).saturating_sub(filetime_to_u64(kernel1));
+        let user_diff = filetime_to_u64(user2).saturating_sub(filetime_to_u64(user1));
+        let cpu_time = kernel_diff + user_diff;
+        
+        if elapsed > 0 {
+            let raw = (cpu_time as f32 / elapsed as f32) * 100.0;
+            let cpu_count = std::thread::available_parallelism()
+                .map(|n| n.get() as f32)
+                .unwrap_or(1.0);
+            let normalized = raw / cpu_count;
+            log::info!("PID {} CPU: raw={}%, cores={}, normalized={}%", pid, raw, cpu_count, normalized);
+            normalized
+        } else {
+            0.0
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn filetime_to_u64(ft: windows::Win32::Foundation::FILETIME) -> u64 {
+    ((ft.dwHighDateTime as u64) << 32) | (ft.dwLowDateTime as u64)
+}
+
+#[cfg(not(target_os = "windows"))]
+fn get_process_cpu(pid: u32) -> f32 {
+    let mut sys = System::new();
+    sys.refresh_processes(ProcessesToUpdate::All, true);
+    std::thread::sleep(std::time::Duration::from_millis(200));
+    sys.refresh_processes(ProcessesToUpdate::All, true);
+    
+    let target_pid = Pid::from_u32(pid);
+    if let Some(proc) = sys.process(target_pid) {
+        let cpu = proc.cpu_usage();
+        let cpu_count = sys.cpus().len() as f32;
+        if cpu_count > 0.0 { cpu / cpu_count } else { cpu }
+    } else {
+        0.0
+    }
 }
 
 #[tauri::command]
