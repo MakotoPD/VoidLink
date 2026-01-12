@@ -103,12 +103,24 @@ download_icon() {
     echo -e "${BLUE}→ Downloading icon...${NC}"
     
     local icon_url="https://raw.githubusercontent.com/${GITHUB_REPO}/main/src-tauri/icons/128x128.png"
-    local icon_path="${ICONS_DIR}/voidlink.png"
     
-    curl -sSL "$icon_url" -o "$icon_path" 2>/dev/null || true
+    # Install to hicolor theme (standard location for most DEs)
+    local hicolor_dir="$HOME/.local/share/icons/hicolor/128x128/apps"
+    mkdir -p "$hicolor_dir"
     
-    if [ -f "$icon_path" ]; then
-        echo -e "  ${GREEN}Icon saved${NC}"
+    curl -sSL "$icon_url" -o "${hicolor_dir}/voidlink.png" 2>/dev/null || true
+    
+    # Also copy to a fallback location
+    mkdir -p "$ICONS_DIR"
+    cp "${hicolor_dir}/voidlink.png" "${ICONS_DIR}/voidlink.png" 2>/dev/null || true
+    
+    # Update icon cache if available
+    if command -v gtk-update-icon-cache &> /dev/null; then
+        gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+    fi
+    
+    if [ -f "${hicolor_dir}/voidlink.png" ]; then
+        echo -e "  ${GREEN}Icon installed${NC}"
     fi
 }
 
@@ -118,28 +130,40 @@ create_desktop_entry() {
     
     local desktop_file="${APPLICATIONS_DIR}/voidlink.desktop"
     local exec_path="${INSTALL_DIR}/${APP_NAME}.AppImage"
-    local icon_path="${ICONS_DIR}/voidlink.png"
     
-    cat > "$desktop_file" << EOF
+    # Use icon name without path - will be found in hicolor theme
+    cat > "$desktop_file" << 'DESKTOP_EOF'
 [Desktop Entry]
 Name=VoidLink
+GenericName=Minecraft Server Manager
 Comment=Minecraft Server Dashboard
-Exec=${exec_path}
-Icon=${icon_path}
+Exec=EXEC_PATH_PLACEHOLDER
+Icon=voidlink
 Terminal=false
 Type=Application
-Categories=Game;Utility;
+Categories=Game;Utility;Network;
+Keywords=minecraft;server;dashboard;
 StartupWMClass=VoidLink
-EOF
+StartupNotify=true
+DESKTOP_EOF
+    
+    # Replace placeholder with actual path
+    sed -i "s|EXEC_PATH_PLACEHOLDER|${exec_path}|g" "$desktop_file"
     
     chmod +x "$desktop_file"
     
-    # Update desktop database if available
+    # Update desktop database
     if command -v update-desktop-database &> /dev/null; then
         update-desktop-database "$APPLICATIONS_DIR" 2>/dev/null || true
     fi
     
+    # Some DEs need this to refresh
+    if command -v xdg-desktop-menu &> /dev/null; then
+        xdg-desktop-menu forceupdate 2>/dev/null || true
+    fi
+    
     echo -e "  ${GREEN}Desktop entry created${NC}"
+    echo -e "  ${YELLOW}Note: You may need to log out and back in for the app to appear in menus${NC}"
 }
 
 # Add to PATH if needed
