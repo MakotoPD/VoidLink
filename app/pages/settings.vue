@@ -133,10 +133,13 @@
                     </div>
                     
                     <!-- Progress Overlay -->
-                    <div v-if="downloadingVersion !== null" class="mt-4 space-y-2">
+                     <div v-if="downloadingVersion !== null" class="mt-4 space-y-2">
                         <div class="flex justify-between text-xs text-primary-200">
                            <span>Downloading Java {{ downloadingVersion }}...</span>
                            <span class="animate-pulse">Please wait</span>
+                        </div>
+                        <div v-if="currentInstallPath" class="text-[10px] bg-primary-900/40 p-1.5 rounded border border-primary-500/20 font-mono text-primary-300 break-all">
+                           <span class="opacity-50">Target:</span> {{ currentInstallPath }}
                         </div>
                         <UProgress animation="carousel" color="primary" size="sm" />
                     </div>
@@ -343,6 +346,7 @@ const javaStatus = ref({ installed: false, version: '', details: '' })
 const { installations, scanJava, validateJavaPath, downloadJava, fetchAdoptiumRelease } = useJava()
 
 const downloadingVersion = ref<number | null>(null)
+const currentInstallPath = ref<string>('')
 import { join, downloadDir, appDataDir } from '@tauri-apps/api/path'
 
 // Update state
@@ -358,6 +362,7 @@ const { settings, systemRamGB } = storeToRefs(settingsStore)
 const { loadSettings, saveSettings } = settingsStore
 
 const detectingJava = ref(false)
+const toast = useToast()
 
 onMounted(async () => {
    loading.value = true
@@ -484,8 +489,17 @@ async function handleJavaDownload(major: number) {
       // 1. Get Install Dir
       const appData = await appDataDir()
       const installDir = await join(appData, 'java', major.toString())
+      currentInstallPath.value = installDir
       
       console.log(`Downloading Java ${major} to ${installDir}`)
+
+      toast.add({
+         title: `Downloading Java ${major}`,
+         description: `Installation target: ${installDir}`,
+         icon: 'i-lucide-download',
+         color: 'primary',
+         timeout: 5000
+      })
       
       // 2. Start Download
       const javaPath = await downloadJava(major, installDir)
@@ -501,14 +515,26 @@ async function handleJavaDownload(major: number) {
       checkJava()
       
       // Notify
-      // (Using console for now, maybe toast later if available)
       console.log('Java installed successfully!')
+      toast.add({
+         title: 'Java Installed Successfully',
+         description: `Java ${major} is ready to use. Path updated in settings.`,
+         icon: 'i-lucide-check-circle',
+         color: 'success',
+         timeout: 6000
+      })
       
    } catch (e) {
       console.error('Download failed', e)
-      // Error handling UI?
+      toast.add({
+         title: 'Download Failed',
+         description: String(e),
+         icon: 'i-lucide-alert-circle',
+         color: 'error'
+      })
    } finally {
       downloadingVersion.value = null
+      currentInstallPath.value = ''
    }
 }
 

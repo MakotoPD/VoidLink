@@ -144,6 +144,7 @@ onMounted(async () => {
             event.preventDefault()
             await appWindow.hide()
          } else {
+            event.preventDefault() // Prevent native close to ensure we can run cleanup and backend quit
             // Kill all running servers before exiting
             const processStore = useServerProcessStore()
             await processStore.killAllServers()

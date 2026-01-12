@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use reqwest::blocking::Client;
 use std::fs;
 use anyhow::Result;
+use tauri::Manager;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct JavaInstallation {
@@ -45,8 +46,8 @@ struct JavaVersionInfo {
 // === Commands ===
 
 #[tauri::command]
-pub fn detect_java_installations_cmd() -> Result<Vec<JavaInstallation>, String> {
-    Ok(detect_installations())
+pub fn detect_java_installations_cmd(app_handle: tauri::AppHandle) -> Result<Vec<JavaInstallation>, String> {
+    Ok(detect_installations(&app_handle))
 }
 
 #[tauri::command]
@@ -70,11 +71,11 @@ pub async fn download_java_cmd(major: u32, install_dir: String) -> Result<String
 
 // === Implementation ===
 
-pub fn detect_installations() -> Vec<JavaInstallation> {
+pub fn detect_installations(app: &tauri::AppHandle) -> Vec<JavaInstallation> {
     let mut installations = Vec::new();
     let mut seen_paths = std::collections::HashSet::new();
 
-    let candidates = collect_java_candidates();
+    let candidates = collect_java_candidates(app);
 
     for path in candidates {
         let path_str = path.to_string_lossy().to_string();
@@ -253,9 +254,13 @@ fn detect_architecture(output: &str) -> Option<String> {
     }
 }
 
-fn collect_java_candidates() -> Vec<PathBuf> {
+fn collect_java_candidates(app: &tauri::AppHandle) -> Vec<PathBuf> {
     let mut candidates = Vec::new();
 
+    // 1. Check VoidLink's own managed Java versions
+    collect_voidlink_candidates(app, &mut candidates);
+
+    // 2. Check JAVA_HOME
     if let Ok(java_home) = std::env::var("JAVA_HOME") {
         let java_bin = Path::new(&java_home).join("bin").join(java_executable_name());
         candidates.push(java_bin);
@@ -268,6 +273,24 @@ fn collect_java_candidates() -> Vec<PathBuf> {
     collect_unix_candidates(&mut candidates);
 
     candidates
+}
+
+fn collect_voidlink_candidates(app: &tauri::AppHandle, candidates: &mut Vec<PathBuf>) {
+    if let Ok(app_data) = app.path().app_data_dir() {
+        let java_root = app_data.join("java");
+        if java_root.exists() {
+             if let Ok(entries) = std::fs::read_dir(&java_root) {
+                for entry in entries.flatten() {
+                    if entry.path().is_dir() {
+                        // Scan inside version dirs (e.g. java/17/jdk-17.../bin/java)
+                        if let Some(bin) = find_java_executable(&entry.path()) {
+                            candidates.push(bin);
+                        }
+                    }
+                }
+             }
+        }
+    }
 }
 
 fn java_executable_name() -> &'static str {
