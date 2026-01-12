@@ -59,14 +59,14 @@ fn get_process_info(pid: u32) -> Option<ProcessInfo> {
     }
     
     // Windows: Find the actual Java child process (the shell wrapper doesn't use CPU)
-    let cpu_pid = if cfg!(target_os = "windows") {
-        find_java_child(&sys, target_pid).unwrap_or(pid)
-    } else {
-        pid
-    };
+    #[cfg(target_os = "windows")]
+    let cpu_pid = find_java_child(&sys, target_pid).unwrap_or(pid);
+    #[cfg(not(target_os = "windows"))]
+    let cpu_pid = pid;
     
     // Get memory - sum child processes on Windows
-    let mem = if cfg!(target_os = "windows") {
+    #[cfg(target_os = "windows")]
+    let mem = {
         use std::collections::HashSet;
         let mut visited = HashSet::new();
 
@@ -88,9 +88,13 @@ fn get_process_info(pid: u32) -> Option<ProcessInfo> {
             mem
         }
         sum_memory(&sys, target_pid, &mut visited)
-    } else {
-        // Linux: Only main process (avoid shared lib double-counting)
-        sys.process(target_pid)?.memory()
+    };
+    
+    // Linux/macOS: Only main process (avoid shared lib double-counting)
+    #[cfg(not(target_os = "windows"))]
+    let mem = match sys.process(target_pid) {
+        Some(proc) => proc.memory(),
+        None => return None,
     };
     
     // CPU: Platform-specific measurement
