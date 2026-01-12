@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "VoidLink",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "identifier": "pl.makotopd.voidlink",
   "build": {
     "frontendDist": "../.output/public",
@@ -35,7 +35,7 @@
       "endpoints": [
         "https://github.com/MakotoPD/VoidLink/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDBGMDY1NzgwRUExMzVFQUUKUldTdVhoUHFnRmNHRDR2NEtJMWN6TTR5NnBJRERXc3NCZHMydmgwRWwyWmttUU8zRGszODF5bGcK"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ4MUMzOTg5NkExRUUzREMKUldUYzR4NXFpVGtjMlBxRUVENzdJa2N5S2NKMElRazczcVVBZ2dXMm55dFVmZmNmOUxIL09zY2MK"
     },
     "deep-link": {
       "desktop": {

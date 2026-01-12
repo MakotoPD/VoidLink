@@ -1,3 +1,8 @@
+## Changes (v0.3.12)
+
+### 🐛 Bug Fixes
+- **Auto-Update**: Final fix for artifact signing configuration.
+
 ## Changes (v0.3.11)
 
 ### 🐛 Bug Fixes
