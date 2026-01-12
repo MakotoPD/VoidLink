@@ -19,7 +19,6 @@ APP_NAME="VoidLink"
 GITHUB_REPO="MakotoPD/VoidLink"
 INSTALL_DIR="$HOME/.local/bin"
 APPLICATIONS_DIR="$HOME/.local/share/applications"
-ICONS_DIR="$HOME/.local/share/icons"
 
 echo -e "${BLUE}"
 echo "  ╦  ╦╔═╗╦╔╦╗╦  ╦╔╗╔╦╔═"
@@ -30,21 +29,36 @@ echo -e "${GREEN}VoidLink Installer${NC}"
 echo "================================"
 echo ""
 
+# Detect desktop environment
+detect_de() {
+    if [ "$XDG_CURRENT_DESKTOP" ]; then
+        echo "$XDG_CURRENT_DESKTOP"
+    elif [ "$DESKTOP_SESSION" ]; then
+        echo "$DESKTOP_SESSION"
+    else
+        echo "unknown"
+    fi
+}
+
+# Detect distro
+detect_distro() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        echo "$ID"
+    else
+        echo "unknown"
+    fi
+}
+
+DE=$(detect_de)
+DISTRO=$(detect_distro)
+echo -e "Detected: ${BLUE}${DISTRO}${NC} with ${BLUE}${DE}${NC}"
+echo ""
+
 # Check for required tools
 check_requirements() {
-    local missing=()
-    
     if ! command -v curl &> /dev/null; then
-        missing+=("curl")
-    fi
-    
-    if ! command -v jq &> /dev/null; then
-        echo -e "${YELLOW}Note: jq not found, will use grep fallback${NC}"
-    fi
-    
-    if [ ${#missing[@]} -ne 0 ]; then
-        echo -e "${RED}Error: Missing required tools: ${missing[*]}${NC}"
-        echo "Please install them and try again."
+        echo -e "${RED}Error: curl is required${NC}"
         exit 1
     fi
 }
@@ -71,57 +85,39 @@ get_latest_release() {
     echo -e "  Latest version: ${GREEN}${VERSION}${NC}"
 }
 
-# Create directories if they don't exist
+# Create directories
 setup_directories() {
     mkdir -p "$INSTALL_DIR"
     mkdir -p "$APPLICATIONS_DIR"
-    mkdir -p "$ICONS_DIR"
+    mkdir -p "$HOME/.local/share/icons/hicolor/128x128/apps"
+    mkdir -p "$HOME/.local/share/icons/hicolor/256x256/apps"
 }
 
 # Download the AppImage
 download_appimage() {
-    local filename="${APP_NAME}.AppImage"
-    local filepath="${INSTALL_DIR}/${filename}"
+    local filepath="${INSTALL_DIR}/${APP_NAME}.AppImage"
     
     echo -e "${BLUE}→ Downloading ${APP_NAME} ${VERSION}...${NC}"
     
-    # Remove old version if exists
-    if [ -f "$filepath" ]; then
-        echo -e "  Removing old version..."
-        rm -f "$filepath"
-    fi
-    
-    # Download new version
+    rm -f "$filepath" 2>/dev/null || true
     curl -sSL "$APPIMAGE_URL" -o "$filepath"
     chmod +x "$filepath"
     
     echo -e "  ${GREEN}Downloaded to: ${filepath}${NC}"
 }
 
-# Download icon
-download_icon() {
-    echo -e "${BLUE}→ Downloading icon...${NC}"
+# Download icons
+download_icons() {
+    echo -e "${BLUE}→ Downloading icons...${NC}"
     
-    local icon_url="https://raw.githubusercontent.com/${GITHUB_REPO}/main/src-tauri/icons/128x128.png"
+    # Download multiple sizes for better compatibility
+    curl -sSL "https://raw.githubusercontent.com/${GITHUB_REPO}/main/src-tauri/icons/128x128.png" \
+        -o "$HOME/.local/share/icons/hicolor/128x128/apps/voidlink.png" 2>/dev/null || true
     
-    # Install to hicolor theme (standard location for most DEs)
-    local hicolor_dir="$HOME/.local/share/icons/hicolor/128x128/apps"
-    mkdir -p "$hicolor_dir"
+    curl -sSL "https://raw.githubusercontent.com/${GITHUB_REPO}/main/src-tauri/icons/128x128@2x.png" \
+        -o "$HOME/.local/share/icons/hicolor/256x256/apps/voidlink.png" 2>/dev/null || true
     
-    curl -sSL "$icon_url" -o "${hicolor_dir}/voidlink.png" 2>/dev/null || true
-    
-    # Also copy to a fallback location
-    mkdir -p "$ICONS_DIR"
-    cp "${hicolor_dir}/voidlink.png" "${ICONS_DIR}/voidlink.png" 2>/dev/null || true
-    
-    # Update icon cache if available
-    if command -v gtk-update-icon-cache &> /dev/null; then
-        gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
-    fi
-    
-    if [ -f "${hicolor_dir}/voidlink.png" ]; then
-        echo -e "  ${GREEN}Icon installed${NC}"
-    fi
+    echo -e "  ${GREEN}Icons installed${NC}"
 }
 
 # Create desktop entry
@@ -131,49 +127,64 @@ create_desktop_entry() {
     local desktop_file="${APPLICATIONS_DIR}/voidlink.desktop"
     local exec_path="${INSTALL_DIR}/${APP_NAME}.AppImage"
     
-    # Use icon name without path - will be found in hicolor theme
-    cat > "$desktop_file" << 'DESKTOP_EOF'
+    cat > "$desktop_file" << EOF
 [Desktop Entry]
+Version=1.0
+Type=Application
 Name=VoidLink
 GenericName=Minecraft Server Manager
 Comment=Minecraft Server Dashboard
-Exec=EXEC_PATH_PLACEHOLDER
+Exec=${exec_path} %U
 Icon=voidlink
 Terminal=false
-Type=Application
-Categories=Game;Utility;Network;
+Categories=Game;Utility;
 Keywords=minecraft;server;dashboard;
 StartupWMClass=VoidLink
 StartupNotify=true
-DESKTOP_EOF
+EOF
     
-    # Replace placeholder with actual path
-    sed -i "s|EXEC_PATH_PLACEHOLDER|${exec_path}|g" "$desktop_file"
+    # Validate desktop file if desktop-file-validate is available
+    if command -v desktop-file-validate &> /dev/null; then
+        if desktop-file-validate "$desktop_file" 2>/dev/null; then
+            echo -e "  ${GREEN}Desktop file validated${NC}"
+        fi
+    fi
     
-    chmod +x "$desktop_file"
+    echo -e "  ${GREEN}Desktop entry created: ${desktop_file}${NC}"
+}
+
+# Refresh desktop database based on DE
+refresh_desktop_database() {
+    echo -e "${BLUE}→ Refreshing desktop database...${NC}"
     
     # Update desktop database
     if command -v update-desktop-database &> /dev/null; then
         update-desktop-database "$APPLICATIONS_DIR" 2>/dev/null || true
     fi
     
-    # Some DEs need this to refresh
+    # Update icon cache
+    if command -v gtk-update-icon-cache &> /dev/null; then
+        gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+    fi
+    
+    # GNOME specific - restart shell for immediate effect
+    if [[ "$DE" == *"GNOME"* ]]; then
+        echo -e "  ${YELLOW}GNOME detected - you may need to press Alt+F2, type 'r' and press Enter to refresh${NC}"
+    fi
+    
+    # KDE specific
+    if [[ "$DE" == *"KDE"* ]] || [[ "$DE" == *"plasma"* ]]; then
+        if command -v kbuildsycoca5 &> /dev/null; then
+            kbuildsycoca5 2>/dev/null || true
+        fi
+    fi
+    
+    # xdg-desktop-menu
     if command -v xdg-desktop-menu &> /dev/null; then
         xdg-desktop-menu forceupdate 2>/dev/null || true
     fi
     
-    echo -e "  ${GREEN}Desktop entry created${NC}"
-    echo -e "  ${YELLOW}Note: You may need to log out and back in for the app to appear in menus${NC}"
-}
-
-# Add to PATH if needed
-setup_path() {
-    if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
-        echo -e "${YELLOW}Note: ${INSTALL_DIR} is not in your PATH${NC}"
-        echo -e "Add this to your ~/.bashrc or ~/.zshrc:"
-        echo -e "  ${BLUE}export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
-        echo ""
-    fi
+    echo -e "  ${GREEN}Done${NC}"
 }
 
 # Main installation
@@ -185,21 +196,22 @@ main() {
     get_latest_release
     setup_directories
     download_appimage
-    download_icon
+    download_icons
     create_desktop_entry
-    setup_path
+    refresh_desktop_database
     
     echo ""
     echo -e "${GREEN}════════════════════════════════════════${NC}"
     echo -e "${GREEN}✓ VoidLink ${VERSION} installed successfully!${NC}"
     echo -e "${GREEN}════════════════════════════════════════${NC}"
     echo ""
-    echo -e "You can now:"
-    echo -e "  • Launch from your application menu"
-    echo -e "  • Run: ${BLUE}${INSTALL_DIR}/${APP_NAME}.AppImage${NC}"
+    echo -e "Installation locations:"
+    echo -e "  • App:     ${BLUE}${INSTALL_DIR}/${APP_NAME}.AppImage${NC}"
+    echo -e "  • Desktop: ${BLUE}${APPLICATIONS_DIR}/voidlink.desktop${NC}"
     echo ""
-    echo -e "${YELLOW}Note: Auto-updates are built-in. VoidLink will"
-    echo -e "notify you when a new version is available.${NC}"
+    echo -e "${YELLOW}If you don't see VoidLink in your app menu:${NC}"
+    echo -e "  1. Log out and log back in"
+    echo -e "  2. Or run: ${BLUE}${INSTALL_DIR}/${APP_NAME}.AppImage${NC}"
     echo ""
 }
 
@@ -209,11 +221,12 @@ uninstall() {
     
     rm -f "${INSTALL_DIR}/${APP_NAME}.AppImage"
     rm -f "${APPLICATIONS_DIR}/voidlink.desktop"
-    rm -f "${ICONS_DIR}/voidlink.png"
+    rm -f "$HOME/.local/share/icons/hicolor/128x128/apps/voidlink.png"
+    rm -f "$HOME/.local/share/icons/hicolor/256x256/apps/voidlink.png"
     
-    if command -v update-desktop-database &> /dev/null; then
-        update-desktop-database "$APPLICATIONS_DIR" 2>/dev/null || true
-    fi
+    # Refresh
+    update-desktop-database "$APPLICATIONS_DIR" 2>/dev/null || true
+    gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
     
     echo -e "${GREEN}VoidLink has been uninstalled.${NC}"
 }
