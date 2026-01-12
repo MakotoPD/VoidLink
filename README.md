@@ -4,6 +4,8 @@
 
 A modern, powerful, and easy-to-use desktop application for creating and managing Minecraft servers. Built with **Tauri 2.0**, **Nuxt 3**, and **TypeScript**.
 
+🌐 **Website**: [makotopd.github.io/VoidLink](https://makotopd.github.io/VoidLink/) — Download links and Linux one-line installer
+
 ##  Images
 
 ![main menu](https://i.imgur.com/SW6SLiH.png)
