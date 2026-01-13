@@ -116,11 +116,12 @@ This application uses our custom tunneling solution: [VoidLink-Tunnels](https://
 Here is what we plan to add in upcoming updates:
 
 - [X] **Modpack Installer**: One-click installation of popular modpacks (CurseForge/Modrinth).
-- [ ] **Backup System**: Automated and manual world backups with restore functionality.
+- [X] **Backup System**: Automated and manual world backups with restore functionality.
 - [X] **Player Manager**: GUI for managing Whitelist, Ops, and Banned players.
 - [ ] **Scheduled Tasks**: Auto-restart and scheduled commands.
 - [X] **Advanced Network**: Tunnel integration.
 - [X] **Multi-Version Support**: Better handling of Java versions manager for older Minecraft versions.
+- [ ] **Multi-Games Support**: Support for multiple Games. Not only Minecraft.
 
 ## ⚠️ Windows Security Warning (False Positive)
 
