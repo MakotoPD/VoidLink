@@ -614,8 +614,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "145052bdd345b87320e369255277e3fb5152762ad123a901ef5c262dd38fe8d2"
 dependencies = [
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-link 0.2.1",
 ]
 
@@ -5890,9 +5892,10 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "void-link"
-version = "0.3.17"
+version = "0.4.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "dirs 5.0.1",
  "flate2",
  "local-ip-address",
@@ -5916,6 +5919,7 @@ dependencies = [
  "tauri-plugin-single-instance",
  "tauri-plugin-updater",
  "tokio",
+ "walkdir",
  "windows 0.58.0",
  "zip 0.6.6",
 ]

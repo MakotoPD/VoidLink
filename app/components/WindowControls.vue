@@ -1,11 +1,11 @@
 <template>
   <div v-if="isWindows" class="flex items-center justify-between h-full ml-auto px-2 space-x-1" data-tauri-drag-region>
     <div>
-      <p class="font-bold text-white/40">VoidLink</p>
+      <p class="font-bold text-gray-700/40 dark:text-white/40">VoidLink</p>
     </div>
     <div class="flex justify-end items-center">
       <button
-        class="p-2 hover:bg-white/10 rounded-md transition-colors text-gray-400 hover:text-white"
+        class="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-md transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
         title="Minimize"
         @click="minimize"
       >
@@ -15,7 +15,7 @@
       </button>
       
       <button
-        class="p-2 hover:bg-white/10 rounded-md transition-colors text-gray-400 hover:text-white"
+        class="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-md transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
         :title="isMaximized ? 'Restore' : 'Maximize'"
         @click="toggleMaximize"
       >
@@ -41,7 +41,7 @@
       </button>
 
       <button
-        class="p-2 hover:bg-red-500 hover:text-white rounded-md transition-colors text-gray-400"
+        class="p-2 hover:bg-red-500 hover:text-white rounded-md transition-colors text-gray-500 dark:text-gray-400"
         title="Close"
         @click="close"
       >

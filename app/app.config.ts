@@ -6,14 +6,14 @@ export default defineAppConfig({
     },
     modal: {
       slots: {
-        overlay: 'fixed inset-0 z-50 bg-gray-950/75 backdrop-blur-sm transition-opacity',
-        content: 'fixed z-50 w-full bg-gray-900/90 backdrop-blur-xl border border-gray-800 shadow-2xl focus:outline-none flex flex-col transition-all duration-300',
-        header: 'flex items-center gap-3 p-6 min-h-16 border-b border-gray-800/50',
+        overlay: 'fixed inset-0 z-50 bg-gray-900/50 dark:bg-gray-950/75 backdrop-blur-sm transition-opacity',
+        content: 'fixed z-50 w-full bg-white dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200 dark:border-gray-800 shadow-2xl focus:outline-none flex flex-col transition-all duration-300',
+        header: 'flex items-center gap-3 p-6 min-h-16 border-b border-gray-200 dark:border-gray-800/50',
         body: 'flex-1 p-6 overflow-y-auto custom-scrollbar',
-        footer: 'flex items-center gap-3 p-6 border-t border-gray-800/50 bg-gray-900/50',
-        title: 'text-white text-xl font-bold tracking-tight',
-        description: 'mt-1 text-gray-400 text-sm',
-        close: 'absolute top-5 right-5 p-1 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/10'
+        footer: 'flex items-center gap-3 p-6 border-t border-gray-200 dark:border-gray-800/50 bg-gray-50 dark:bg-gray-900/50',
+        title: 'text-gray-900 dark:text-white text-xl font-bold tracking-tight',
+        description: 'mt-1 text-gray-600 dark:text-gray-400 text-sm',
+        close: 'absolute top-5 right-5 p-1 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/10'
       },
       variants: {
         transition: {

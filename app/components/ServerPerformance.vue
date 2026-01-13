@@ -3,10 +3,10 @@
     <!-- Top Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <!-- CPU Card -->
-      <div class="relative bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
-        <div class="absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] from-red-500/10 to-transparent to-75%"></div>
+      <div class="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between">
+        <div class="absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] from-red-500/5 dark:from-red-500/10 to-transparent to-75%"></div>
         <div>
-          <p class="text-sm text-gray-400 font-medium">CPU Usage</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">CPU Usage</p>
           <p class="text-2xl font-bold text-red-500 mt-1">{{ cpuUsage.toFixed(1) }}%</p>
         </div>
         <div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
@@ -15,10 +15,10 @@
       </div>
 
       <!-- RAM Card -->
-      <div class="relative bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
-        <div class="absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] from-yellow-500/10 to-transparent to-75%"></div>
+      <div class="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between">
+        <div class="absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] from-yellow-500/5 dark:from-yellow-500/10 to-transparent to-75%"></div>
         <div>
-          <p class="text-sm text-gray-400 font-medium">RAM Usage</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">RAM Usage</p>
           <div class="mt-1">
             <p class="text-2xl font-bold text-yellow-500">{{ formatBytes(memoryBytes) }}</p>
           </div>
@@ -29,26 +29,26 @@
       </div>
 
       <!-- Uptime / Status Card -->
-      <div class="relative bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+      <div class="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between">
         <div :class="['absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] to-75% ',statusColorClassGradient]" class=""></div>
         <div>
-          <p class="text-sm text-gray-400 font-medium">Server Status</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Server Status</p>
           <div class="mt-1 flex items-center gap-2">
             <div :class="['w-2 h-2 rounded-full', statusColorClass]"></div>
-            <p class="text-xl font-bold text-white capitalize">{{ status }}</p>
+            <p class="text-xl font-bold text-gray-900 dark:text-white capitalize">{{ status }}</p>
           </div>
            <p v-if="status === 'online'" class="text-xs text-green-500 mt-1 font-mono">Online</p>
         </div>
-        <div class="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center">
+        <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
            <UIcon name="i-lucide-activity" :class="['w-6 h-6', statusIconClass]" />
         </div>
       </div>
 
       <!-- TPS Card -->
-      <div class="relative bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+      <div class="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between">
         <div :class="['absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] to-transparent to-75% ' ,tpsColorClassGradient]"></div>
         <div>
-          <p class="text-sm text-gray-400 font-medium">TPS</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">TPS</p>
           <p :class="['text-2xl font-bold mt-1', tpsColorClass]">{{ tps.toFixed(1) }}</p>
         </div>
         <div :class="['w-10 h-10 rounded-lg flex items-center justify-center', tpsBgClass]">
@@ -58,9 +58,9 @@
     </div>
 
     <!-- Graph Section -->
-    <div class="flex-1 bg-gray-900 border border-gray-800 rounded-xl p-4 flex flex-col min-h-[400px]">
+    <div class="flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-col min-h-[400px]">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-lg text-white">Performance Graph</h3>
+        <h3 class="font-bold text-lg text-gray-900 dark:text-white">Performance Graph</h3>
         <div class="flex gap-2">
            <!-- Potential time range selector here -->
            <UBadge color="neutral" variant="soft">Real-time</UBadge>

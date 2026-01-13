@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen bg-[#0b1116] text-gray-200 font-sans flex flex-col overflow-hidden relative">
+  <div class="h-screen bg-gray-50 dark:bg-[#0b1116] text-gray-900 dark:text-gray-200 font-sans flex flex-col overflow-hidden relative">
     <!-- Custom Title Bar Area for Dragging - Fixed Header -->
     <div v-if="isWindows" class="h-8 z-40 backdrop-blur-sm shrink-0 w-full" data-tauri-drag-region>
       <WindowControls />

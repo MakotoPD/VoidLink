@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   ignore: ['**/src-tauri/**'],
   ssr: false,
 
-  devtools: { enabled: true },
+  devtools: { enabled: false },
 
   devServer: {
     port: 3000,
@@ -12,8 +12,7 @@ export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt'],
 
   colorMode: {
-    preference: 'dark',
-    classSuffix: ''
+    preference: 'system',
   },
 
   css: ['~/assets/css/main.css'],

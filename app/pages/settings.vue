@@ -1,11 +1,11 @@
 <template>
   <div class="min-h-full flex flex-col">
-    <!-- Header Section -->
-    <div data-tauri-drag-region class="relative bg-gray-900 border-b border-gray-800 pb-8 pt-8 px-8 overflow-hidden">
+  <!-- Header Section -->
+    <div data-tauri-drag-region class="relative bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 pb-8 pt-8 px-8 overflow-hidden">
       <!-- Background Gradients -->
-      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-neutral-900/20 via-gray-900/0 to-transparent pointer-events-none"></div>
-      <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-neutral-500/20 to-transparent"></div>
-      
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gray-100 dark:from-neutral-900/20 via-gray-50/0 dark:via-gray-900/0 to-transparent pointer-events-none"></div>
+      <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gray-300 dark:via-neutral-500/20 to-transparent"></div>
+
       <div class="relative z-10">
         <div class="flex items-center gap-4 mb-2">
            <UButton
@@ -13,17 +13,17 @@
              color="neutral"
              variant="ghost"
              to="/"
-             class="hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+             class="hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
            />
            <div class="flex items-center gap-2 text-sm text-gray-500 font-medium uppercase tracking-wider">
-              <span class="w-1.5 h-1.5 rounded-full bg-neutral-500"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500"></span>
               Global Configuration
            </div>
         </div>
         
         <div class="ml-12">
-            <h1 class="text-4xl font-bold text-white tracking-tight mb-2">Settings</h1>
-            <p class="text-gray-400 text-lg max-w-2xl">Configure global defaults for your servers and manage application preferences.</p>
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-2">Settings</h1>
+            <p class="text-gray-600 dark:text-gray-400 text-lg max-w-2xl">Configure global defaults for your servers and manage application preferences.</p>
         </div>
       </div>
     </div>
@@ -31,25 +31,55 @@
     <!-- Main Content -->
     <div class="flex-1 p-8">
        <div class="max-w-4xl mx-auto space-y-8">
+
+         <!-- App Colormode Card -->
+          <div class="bg-white dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden p-6 hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
+             <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800/50">
+                <div class="p-3 bg-yellow-500/10 rounded-xl ring-1 ring-yellow-500/20 flex jsutify-center items-center">
+                   <UIcon name="i-lucide-sun" class="w-6 h-6 text-yellow-400" />
+                </div>
+                <div>
+                   <h3 class="text-xl font-bold text-gray-900 dark:text-white">Color Mode</h3>
+                   <p class="text-sm text-gray-500 dark:text-gray-400">Change color mode of application</p>
+                </div>
+             </div>
+             
+             <div class="space-y-6">
+                <div class="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-950/30 rounded-xl border border-gray-200 dark:border-gray-800/50">
+                   <div class="flex items-start gap-4">
+                      <div class="p-2 bg-white dark:bg-gray-900 rounded-lg flex jsutify-center items-center">
+                         <UIcon name="i-lucide-moon" class="w-5 h-5 text-gray-400" />
+                      </div>
+                      <div>
+                         <h4 class="font-medium text-gray-900 dark:text-white">Select color mode</h4>
+                         <p class="text-xs text-gray-500 mt-1">Select color mode of application</p>
+                      </div>
+                   </div>
+                   <div>
+                     <UColorModeSelect />
+                   </div>
+                </div>
+             </div>
+          </div>
           
           <!-- Java Defaults Card -->
-          <div class="bg-gray-900/40 backdrop-blur-sm border border-gray-800 rounded-2xl overflow-hidden p-6 hover:border-gray-700 transition-colors">
-             <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-800/50">
+          <div class="bg-white dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden p-6 hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
+             <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800/50">
                 <div class="p-3 bg-primary-500/10 rounded-xl ring-1 ring-primary-500/20 flex jsutify-center items-center">
                    <UIcon name="i-lucide-coffee" class="w-6 h-6 text-primary-400" />
                 </div>
                 <div>
-                   <h3 class="text-xl font-bold text-white">Java Configuration</h3>
-                   <p class="text-sm text-gray-400">Manage Java versions and default startup parameters</p>
+                   <h3 class="text-xl font-bold text-gray-900 dark:text-white">Java Configuration</h3>
+                   <p class="text-sm text-gray-500 dark:text-gray-400">Manage Java versions and default startup parameters</p>
                 </div>
              </div>
 
              <div class="space-y-8">
                 <!-- Java Status --> 
-                <div class="p-4 rounded-xl border border-gray-800 bg-gray-950/50">
+                <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950/50">
                     <div class="flex items-center justify-between mb-3">
                        <div class="flex items-center gap-3">
-                          <h4 class="font-semibold text-gray-200">System Java Status</h4>
+                          <h4 class="font-semibold text-gray-800 dark:text-gray-200">System Java Status</h4>
                           <UBadge :color="javaStatus.installed ? 'success' : 'warning'" variant="subtle" size="xs">
                              {{ javaStatus.installed ? 'Detected' : 'Not Found' }}
                           </UBadge>
@@ -59,7 +89,7 @@
                        </UButton>
                     </div>
                     
-                    <div v-if="javaStatus.installed" class="flex items-center gap-2 text-sm text-gray-400 bg-gray-900/50 p-2 rounded-lg border border-gray-800/50 font-mono ">
+                    <div v-if="javaStatus.installed" class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/50 p-2 rounded-lg border border-gray-200 dark:border-gray-800/50 font-mono ">
                        <UIcon name="i-lucide-terminal" class="w-4 h-4 text-gray-500" />
                        {{ javaStatus.version }}
                     </div>
@@ -76,10 +106,10 @@
                 <div class="space-y-4">
                    <div class="flex justify-between items-center">
                      <div>
-                        <label class="text-base font-medium text-white">Default Memory (RAM)</label>
+                        <label class="text-base font-medium text-gray-900 dark:text-white">Default Memory (RAM)</label>
                         <p class="text-xs text-gray-500 mt-1">Allocated memory for new servers</p>
                      </div>
-                     <span class="text-2xl font-bold text-primary-400">{{ settings.defaultMemory }} <span class="text-sm text-gray-500 font-normal">GB</span></span>
+                     <span class="text-2xl font-bold text-primary-500 dark:text-primary-400">{{ settings.defaultMemory }} <span class="text-sm text-gray-500 font-normal">GB</span></span>
                    </div>
                    <div class="px-2">
                       <USlider v-model="settings.defaultMemory" :min="1" :max="systemRamGB" :step="0.5" color="primary" size="lg" />
@@ -93,7 +123,7 @@
                 <!-- Default Flags -->
                 <div class="space-y-3">
                    <div>
-                      <label class="text-base font-medium text-white">Global Startup Flags</label>
+                      <label class="text-base font-medium text-gray-900 dark:text-white">Global Startup Flags</label>
                       <p class="text-xs text-gray-500 mt-1">Arguments added to every server launch command</p>
                    </div>
                    <UTextarea 
@@ -110,15 +140,15 @@
                 <div class="p-4 rounded-xl border border-primary-500/30 bg-primary-500/5 relative overflow-hidden">
                     <div class="flex items-center justify-between relative z-10">
                        <div>
-                          <h4 class="font-semibold text-white flex items-center gap-2">
+                          <h4 class="font-semibold text-black dark:text-white flex items-center gap-2">
                              <UIcon name="i-lucide-download-cloud" class="w-4 h-4 text-primary-400" />
                              Install Java
                           </h4>
-                          <p class="text-xs text-primary-200/70 mt-0.5">Download official Eclipse Temurin runtimes</p>
+                          <p class="text-xs text-primary-500/70 dark:text-primary-200/70 mt-0.5">Download official Eclipse Temurin runtimes</p>
                        </div>
                        <div class="flex gap-2">
                           <UButton 
-                             v-for="ver in [8, 17, 21]" 
+                             v-for="ver in [8, 11, 17, 21]" 
                              :key="ver"
                              size="xs"
                              color="primary" 
@@ -146,10 +176,10 @@
                 </div>
                 
                 <!-- Java Installations -->
-                <div class="pt-6 border-t border-gray-800/50">
+                <div class="pt-6 border-t border-gray-200 dark:border-gray-800/50">
                     <div class="flex items-center justify-between mb-4">
                        <div>
-                          <h4 class="font-semibold text-white">Java Installations</h4>
+                          <h4 class="font-semibold text-gray-900 dark:text-white">Java Installations</h4>
                           <p class="text-xs text-gray-500">Configure paths for specific Java versions</p>
                        </div>
                        <UButton size="sm" color="neutral" variant="soft" icon="i-lucide-scan" @click="detectAllJavaVersions" :loading="detectingJava">
@@ -159,10 +189,10 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                        <!-- Java 8 -->
-                       <div class="p-4 bg-gray-950/30 rounded-xl border border-gray-800/50 group hover:border-gray-700 transition-colors">
+                       <div class="p-4 bg-gray-100 dark:bg-gray-950/30 rounded-xl border border-gray-200 dark:border-gray-800/50 group hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
                           <div class="flex items-center justify-between mb-3">
                              <div class="flex items-center gap-2">
-                                <span class="font-medium text-gray-200">Java 8</span>
+                                <span class="font-medium text-gray-800 dark:text-gray-200">Java 8</span>
                                 <UBadge color="neutral" variant="subtle" size="xs">MC 1.12.x-</UBadge>
                              </div>
                              <div v-if="settings.javaInstallations.java8" class="w-2 h-2 rounded-full bg-success-500"></div>
@@ -175,10 +205,10 @@
                        </div>
 
                        <!-- Java 11 -->
-                       <div class="p-4 bg-gray-950/30 rounded-xl border border-gray-800/50 group hover:border-gray-700 transition-colors">
+                       <div class="p-4 bg-gray-100 dark:bg-gray-950/30 rounded-xl border border-gray-200 dark:border-gray-800/50 group hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
                           <div class="flex items-center justify-between mb-3">
                              <div class="flex items-center gap-2">
-                                <span class="font-medium text-gray-200">Java 11</span>
+                                <span class="font-medium text-gray-800 dark:text-gray-200">Java 11</span>
                                 <UBadge color="neutral" variant="subtle" size="xs">MC 1.13-1.16</UBadge>
                              </div>
                              <div v-if="settings.javaInstallations.java11" class="w-2 h-2 rounded-full bg-success-500"></div>
@@ -191,10 +221,10 @@
                        </div>
 
                        <!-- Java 17 -->
-                       <div class="p-4 bg-gray-950/30 rounded-xl border border-gray-800/50 group hover:border-gray-700 transition-colors">
+                       <div class="p-4 bg-gray-100 dark:bg-gray-950/30 rounded-xl border border-gray-200 dark:border-gray-800/50 group hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
                           <div class="flex items-center justify-between mb-3">
                              <div class="flex items-center gap-2">
-                                <span class="font-medium text-gray-200">Java 17</span>
+                                <span class="font-medium text-gray-800 dark:text-gray-200">Java 17</span>
                                 <UBadge color="primary" variant="subtle" size="xs">MC 1.17-1.20.4</UBadge>
                              </div>
                              <div v-if="settings.javaInstallations.java17" class="w-2 h-2 rounded-full bg-success-500"></div>
@@ -207,10 +237,10 @@
                        </div>
 
                        <!-- Java 21 -->
-                       <div class="p-4 bg-gray-950/30 rounded-xl border border-gray-800/50 group hover:border-gray-700 transition-colors">
+                       <div class="p-4 bg-gray-100 dark:bg-gray-950/30 rounded-xl border border-gray-200 dark:border-gray-800/50 group hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
                           <div class="flex items-center justify-between mb-3">
                              <div class="flex items-center gap-2">
-                                <span class="font-medium text-gray-200">Java 21</span>
+                                <span class="font-medium text-gray-800 dark:text-gray-200">Java 21</span>
                                 <UBadge color="neutral" variant="subtle" size="xs">MC 1.20.5+</UBadge>
                              </div>
                              <div v-if="settings.javaInstallations.java21" class="w-2 h-2 rounded-full bg-success-500"></div>
@@ -227,25 +257,25 @@
           </div>
           
           <!-- App Settings Card -->
-          <div class="bg-gray-900/40 backdrop-blur-sm border border-gray-800 rounded-2xl overflow-hidden p-6 hover:border-gray-700 transition-colors">
-             <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-800/50">
-                <div class="p-3 bg-neutral-500/10 rounded-xl ring-1 ring-neutral-500/20 flex jsutify-center items-center">
-                   <UIcon name="i-lucide-monitor" class="w-6 h-6 text-neutral-400" />
+          <div class="bg-white dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden p-6 hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
+             <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800/50">
+                <div class="p-3 bg-violet-500/10 rounded-xl ring-1 ring-violet-500/20 flex jsutify-center items-center">
+                   <UIcon name="i-lucide-monitor" class="w-6 h-6 text-violet-400" />
                 </div>
                 <div>
-                   <h3 class="text-xl font-bold text-white">Application</h3>
-                   <p class="text-sm text-gray-400">Customize MineDash behavior</p>
+                   <h3 class="text-xl font-bold text-gray-900 dark:text-white">Application</h3>
+                   <p class="text-sm text-gray-500 dark:text-gray-400">Customize MineDash behavior</p>
                 </div>
              </div>
              
              <div class="space-y-6">
-                <div class="flex items-center justify-between p-4 bg-gray-950/30 rounded-xl border border-gray-800/50">
+                <div class="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-950/30 rounded-xl border border-gray-200 dark:border-gray-800/50">
                    <div class="flex items-start gap-4">
-                      <div class="p-2 bg-gray-900 rounded-lg flex jsutify-center items-center">
+                      <div class="p-2 bg-white dark:bg-gray-900 rounded-lg flex jsutify-center items-center">
                          <UIcon name="i-lucide-minimize-2" class="w-5 h-5 text-gray-400" />
                       </div>
                       <div>
-                         <h4 class="font-medium text-white">Minimize to Tray</h4>
+                         <h4 class="font-medium text-gray-900 dark:text-white">Minimize to Tray</h4>
                          <p class="text-xs text-gray-500 mt-1">Keep the application running in the background when closed</p>
                       </div>
                    </div>
@@ -255,21 +285,21 @@
           </div>
 
           <!-- About Card -->
-          <div class="bg-gray-900/40 backdrop-blur-sm border border-gray-800 rounded-2xl overflow-hidden p-6 hover:border-gray-700 transition-colors">
-             <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-800/50">
-                <div class="p-3 bg-neutral-500/10 rounded-xl ring-1 ring-neutral-500/20 flex jsutify-center items-center">
-                   <UIcon name="i-lucide-info" class="w-6 h-6 text-gray-400" />
+          <div class="bg-white dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden p-6 hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
+             <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800/50">
+                <div class="p-3 bg-pink-500/10 rounded-xl ring-1 ring-pink-500/20 flex jsutify-center items-center">
+                   <UIcon name="i-lucide-info" class="w-6 h-6 text-pink-400" />
                 </div>
                 <div>
-                   <h3 class="text-xl font-bold text-white">About VoidLink</h3>
-                   <p class="text-sm text-gray-400">Version information and updates</p>
+                   <h3 class="text-xl font-bold text-gray-900 dark:text-white">About VoidLink</h3>
+                   <p class="text-sm text-gray-500 dark:text-gray-400">Version information and updates</p>
                 </div>
              </div>
 
              <div class="space-y-6">
                 <div class="flex items-center justify-between">
                    <div class="space-y-1">
-                      <p class="text-sm text-gray-400">Current Version: <span class="text-white font-mono ml-1">{{ currentAppVersion }}</span></p>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">Current Version: <span class="text-gray-900 dark:text-white font-mono ml-1">{{ currentAppVersion }}</span></p>
                       <p class="text-xs text-gray-500">Developed by <a href="http://makoto.com.pl" target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300 hover:underline transition-colors">MakotoPD</a></p>
                    </div>
                    <UButton 
@@ -311,7 +341,7 @@
                 
                 <!-- Up to date message -->
                 <div v-else-if="!checkingUpdate" class="flex items-center gap-3 p-4 bg-success-500/5 border border-success-500/20 rounded-xl">
-                   <div class="p-1 bg-success-500/10 rounded-full">
+                   <div class="p-1 bg-success-500/10 rounded-full flex justify-center items-center">
                       <UIcon name="i-lucide-check-circle" class="w-5 h-5 text-success-500" />
                    </div>
                    <span class="text-sm font-medium text-success-400">You are running the latest version of VoidLink.</span>

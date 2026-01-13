@@ -1,6 +1,6 @@
 [package]
 name = "void-link"
-version = "0.3.18"
+version = "0.4.0"
 description = "VoidLink minecraft server dashboard"
 authors = ["MakotoPD"]
 license = "MIT"
@@ -40,6 +40,8 @@ anyhow = "1.0"
 flate2 = "1.0"
 tar = "0.4"
 tauri-plugin-os = "2"
+walkdir = "2"
+chrono = "0.4"
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
 

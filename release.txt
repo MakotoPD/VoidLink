@@ -1,3 +1,12 @@
+## Changes (v0.4.0)
+
+### ✨ Features & Improvements
+- **Light/Dark Mode**: Fully implemented light and dark themes across the entire application. The interface now automatically adapts to your system preference or can be toggled manually in settings.
+- **Enhanced UI**: Refreshed design for Addons, Backups, Crash Reports, and Tunnel Manager tabs with improved readability and consistent styling for both themes.
+- **Addons Management**: Updated Modrinth browser and addon lists with theme-aware cards and controls.
+- **Server Management**: Backups and Crash Reports sections now feature improved layouts, stats displays, and cleaner modals.
+- **Backup System**: Implemented a comprehensive backup system with a high-performance Rust backend and a user-friendly frontend interface. Features include manual/auto backups, compression, restoration, and management.
+
 ## Changes (v0.3.18)
 
 ### 🐛 Bug Fixes

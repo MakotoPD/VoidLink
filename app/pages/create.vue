@@ -1,30 +1,30 @@
 <template>
-  <div class="min-h-screen bg-gray-950 p-8 pb-32">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-950 p-8 pb-32">
     <div class=" mx-auto space-y-8">
       <!-- Header with Progress -->
-      <div data-tauri-drag-region class="relative bg-gray-900 border-b border-gray-800 pb-8 pt-6 px-8 -mx-8 -mt-8 mb-8 overflow-hidden sticky top-0 z-50">
+      <div data-tauri-drag-region class="relative bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 pb-8 pt-6 px-8 -mx-8 -mt-8 mb-8 overflow-hidden sticky top-0 z-50">
         <!-- Background Gradients -->
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-neutral-900/20 via-gray-900/0 to-transparent pointer-events-none"></div>
-        <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-neutral-500/20 to-transparent pointer-events-none"></div>
-        <div class="absolute inset-0 backdrop-blur-xl bg-gray-900/80 pointer-events-none"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gray-100 dark:from-neutral-900/20 via-gray-50/0 dark:via-gray-900/0 to-transparent pointer-events-none"></div>
+        <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gray-300 dark:via-neutral-500/20 to-transparent pointer-events-none"></div>
+        <div class="absolute inset-0 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 pointer-events-none"></div>
 
         <div class="relative z-10 max-w-4xl mx-auto space-y-6">
            <div class="flex items-center gap-4">
-             <UButton
+              <UButton
                icon="i-lucide-arrow-left"
                color="neutral"
                variant="ghost"
                size="lg"
                @click="goBack"
-               class="hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+               class="hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
              />
              <div class="flex-1">
-               <h1 class="text-3xl font-bold tracking-tight text-white mb-1 flex items-center gap-3">
+               <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-1 flex items-center gap-3">
                  <span class="bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">Create Server</span>
-                 <span class="text-gray-600 text-2xl font-light">/</span>
-                 <span class="text-2xl font-medium text-white">{{ stepTitles[step - 1] }}</span>
+                 <span class="text-gray-400 dark:text-gray-600 text-2xl font-light">/</span>
+                 <span class="text-2xl font-medium text-gray-900 dark:text-white">{{ stepTitles[step - 1] }}</span>
                </h1>
-               <p class="text-gray-400 text-sm">
+               <p class="text-gray-600 dark:text-gray-400 text-sm">
                  {{ stepDescriptions[step - 1] }}
                </p>
              </div>
@@ -43,14 +43,14 @@
                      ? 'bg-success-500 border-success-500 text-white' 
                      : step === i + 1 
                        ? 'bg-primary-500 border-primary-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' 
-                       : 'bg-transparent border-gray-700 text-gray-500 group-hover:border-gray-600'"
+                       : 'bg-transparent border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-500 group-hover:border-gray-400 dark:group-hover:border-gray-600'"
                  >
                    <UIcon v-if="step > i + 1" name="i-lucide-check" class="w-4 h-4" />
                    <span v-else>{{ i + 1 }}</span>
                  </div>
                  <span 
                    class="text-sm font-medium transition-colors hidden sm:block"
-                   :class="step === i + 1 ? 'text-white' : 'text-gray-500 group-hover:text-gray-400'"
+                   :class="step === i + 1 ? 'text-black dark:text-white' : 'text-gray-500 group-hover:text-gray-400'"
                  >
                    {{ title }}
                  </span>
@@ -58,7 +58,7 @@
                <div 
                  v-if="i < stepTitles.length - 1" 
                  class="flex-1 h-0.5 rounded-full transition-all duration-500"
-                 :class="step > i + 1 ? 'bg-success-500/50' : 'bg-gray-800'"
+                 :class="step > i + 1 ? 'bg-success-500/50' : 'bg-gray-200 dark:bg-gray-800'"
                />
              </template>
            </div>
@@ -73,8 +73,8 @@
             :key="type.id"
             class="relative p-6 rounded-2xl border transition-all duration-300 group cursor-pointer backdrop-blur-md"
             :class="selectedType === type.id 
-              ? 'border-primary-500/50 bg-primary-900/20 ring-1 ring-primary-500/50 shadow-[0_0_30px_rgba(59,130,246,0.15)]' 
-              : 'border-gray-800 bg-gray-900/40 hover:border-gray-700 hover:bg-gray-900/60'"
+              ? 'border-primary-500/50 bg-primary-100 dark:bg-primary-900/20 ring-1 ring-primary-500/50 shadow-[0_0_30px_rgba(59,130,246,0.15)]' 
+              : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/40 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/60'"
             @click="selectType(type.id)"
           >
             <!-- Badge -->
@@ -91,8 +91,8 @@
             <!-- Icon & Name -->
             <div class="flex flex-col items-center text-center mb-6">
               <div 
-                class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-300 shadow-lg border border-white/5"
-                :class="selectedType === type.id ? 'bg-primary-500/20' : 'bg-gray-800/50'"
+                class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-300 shadow-lg border border-gray-200/50 dark:border-white/5"
+                :class="selectedType === type.id ? 'bg-primary-100 dark:bg-primary-500/20' : 'bg-gray-100 dark:bg-gray-800/50'"
               >
                 <UIcon 
                   :name="type.icon" 
@@ -100,7 +100,7 @@
                   :class="selectedType === type.id ? 'text-primary-400' : 'text-gray-400 group-hover:text-gray-300'"
                 />
               </div>
-              <h3 class="font-bold text-xl text-white">{{ type.name }}</h3>
+              <h3 class="font-bold text-xl text-gray-900 dark:text-white">{{ type.name }}</h3>
             </div>
 
             <!-- Description -->
@@ -124,7 +124,7 @@
                         {{ type.performance === 'excellent' ? 'Excellent' : type.performance === 'good' ? 'Good' : 'Moderate' }}
                      </span>
                   </div>
-                  <div class="h-1.5 bg-gray-800/50 rounded-full overflow-hidden">
+                  <div class="h-1.5 bg-gray-100 dark:bg-gray-800/50 rounded-full overflow-hidden">
                      <div 
                         class="h-full rounded-full transition-all duration-500 ease-out"
                         :class="{
@@ -137,16 +137,16 @@
                </div>
 
                <!-- Features -->
-               <div class="flex items-center justify-center gap-4 py-3 border-t border-gray-800/50">
+               <div class="flex items-center justify-center gap-4 py-3 border-t border-gray-200/50 dark:border-gray-800/50">
                   <UTooltip text="Plugin Support" :popper="{ arrow: true }">
-                     <div class="flex items-center gap-1.5" :class="type.supportsPlugins ? 'text-gray-200' : 'text-gray-600 opacity-50'">
+                     <div class="flex items-center gap-1.5" :class="type.supportsPlugins ? 'text-black dark:text-gray-200' : 'text-gray-600 opacity-50'">
                         <UIcon name="i-lucide-toy-brick" class="w-4 h-4" />
                         <span class="text-xs font-medium">{{ type.supportsPlugins ? 'Plugins' : 'No Plugins' }}</span>
                      </div>
                   </UTooltip>
                   <div class="w-px h-8 bg-gray-800/50"></div>
                   <UTooltip text="Mod Support" :popper="{ arrow: true }">
-                     <div class="flex items-center gap-1.5" :class="type.supportsMods ? 'text-gray-200' : 'text-gray-600 opacity-50'">
+                     <div class="flex items-center gap-1.5" :class="type.supportsMods ? 'text-black dark:text-gray-200' : 'text-gray-600 opacity-50'">
                         <UIcon name="i-lucide-puzzle" class="w-4 h-4" />
                         <span class="text-xs font-medium">{{ type.supportsMods ? 'Mods' : 'No Mods' }}</span>
                      </div>
@@ -159,7 +159,7 @@
                class="mt-2 py-2.5 rounded-xl font-medium text-sm text-center transition-all duration-300 relative overflow-hidden"
                :class="selectedType === type.id 
                   ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25' 
-                  : 'bg-gray-800/50 text-gray-400 group-hover:bg-gray-800 group-hover:text-gray-200'"
+                  : 'bg-gray-100 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 group-hover:bg-gray-200 dark:group-hover:bg-gray-800 group-hover:text-gray-900 dark:group-hover:text-gray-200'"
             >
                <span class="relative z-10 flex items-center justify-center gap-2">
                   <UIcon v-if="selectedType === type.id" name="i-lucide-check" class="w-4 h-4" />
@@ -176,11 +176,11 @@
         <!-- Modpack Browser -->
         <div v-if="selectedType === 'modpack'" class="max-w-6xl mx-auto space-y-6">
           <div class="text-center space-y-2 mb-8">
-             <h2 class="text-3xl font-bold text-white tracking-tight">Select Modpack</h2>
-             <p class="text-gray-400 max-w-lg mx-auto">Browse thousands of community modpacks from Modrinth, or import your own .mrpack or .zip file.</p>
+             <h2 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Select Modpack</h2>
+             <p class="text-gray-500 dark:text-gray-400 max-w-lg mx-auto">Browse thousands of community modpacks from Modrinth, or import your own .mrpack or .zip file.</p>
           </div>
 
-          <div class="bg-gray-900/40 border border-gray-800 p-1.5 rounded-xl flex gap-1 max-w-sm mx-auto backdrop-blur-sm">
+          <div class="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 p-1.5 rounded-xl flex gap-1 max-w-sm mx-auto backdrop-blur-sm">
              <div 
                 class="flex-1 rounded-lg py-2.5 text-sm font-medium cursor-pointer transition-all text-center"
                 :class="!customModpackPath 
@@ -217,7 +217,7 @@
 
           <!-- Search & Filter -->
           <div class="space-y-4" v-if="!customModpackPath">
-              <div class="flex flex-col md:flex-row gap-4 bg-gray-900/40 border border-gray-800 p-4 rounded-2xl backdrop-blur-sm">
+              <div class="flex flex-col md:flex-row gap-4 bg-gray-100 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl backdrop-blur-sm">
                  <UInput 
                    v-model="modpackSearch" 
                    icon="i-lucide-search" 
@@ -278,7 +278,7 @@
               </div>
 
               <div class="flex justify-between items-center px-2">
-                 <p class="text-sm text-gray-400">Found <span class="text-white font-medium">{{ modpackTotal.toLocaleString() }}</span> modpacks</p>
+                 <p class="text-sm text-gray-400">Found <span class="text-black dark:text-white font-medium">{{ modpackTotal.toLocaleString() }}</span> modpacks</p>
                  
                  <!-- Pagination Top (Optional / Compact) -->
               </div>
@@ -296,7 +296,7 @@
                v-for="pack in modpacksList" 
                :key="pack.project_id"
                @click="openModpackDetails(pack)"
-               class="bg-gray-900/40 hover:bg-gray-800/60 border border-gray-800 hover:border-gray-600 rounded-2xl p-5 cursor-pointer transition-all flex gap-5 group backdrop-blur-sm relative overflow-hidden"
+               class="bg-gray-100 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 hover:bg-gray-200 hover:border-gray-400 dark:hover:bg-gray-800/60 dark:hover:border-gray-600 rounded-2xl p-5 cursor-pointer transition-all flex gap-5 group backdrop-blur-sm relative overflow-hidden"
                :class="{ 'ring-2 ring-primary-500 bg-primary-900/10': selectedModpack?.id === pack.project_id }"
              >
                 <!-- Selection Overlay -->
@@ -310,13 +310,13 @@
                 <div class="flex-1 min-w-0 flex flex-col justify-between py-1">
                    <div>
                       <div class="flex justify-between items-start gap-4">
-                         <h3 class="font-bold text-lg text-white truncate group-hover:text-primary-400 transition-colors">{{ pack.title }}</h3>
+                         <h3 class="font-bold text-lg text-black dark:text-white truncate group-hover:text-primary-400 transition-colors">{{ pack.title }}</h3>
                          <!-- Categories Pill -->
                          <div class="flex gap-1" v-if="pack.loaders && pack.loaders.length">
                             <UBadge color="neutral" variant="solid" size="xs" class="capitalize opacity-70 group-hover:opacity-100 transition-opacity">{{ pack.loaders[0] }}</UBadge>
                          </div>
                       </div>
-                      <p class="text-sm text-gray-400 line-clamp-2 leading-relaxed mt-1 group-hover:text-gray-300 transition-colors pr-2">{{ pack.description }}</p>
+                      <p class="text-sm text-gray-400 line-clamp-2 leading-relaxed mt-1 group-hover:text-gray-800 dark:group-hover:text-gray-300 transition-colors pr-2">{{ pack.description }}</p>
                    </div>
                    
                    <div class="flex items-center gap-5 text-xs text-gray-500 font-medium mt-auto pt-3">
@@ -349,7 +349,7 @@
                 size="md"
              />
              
-             <div class="flex items-center gap-1 bg-gray-900/50 rounded-lg p-1 border border-gray-800">
+             <div class="flex items-center gap-1 bg-gray-200 dark:bg-gray-900/50 rounded-lg p-1 border border-gray-800">
                 <template v-for="(p, i) in visiblePages" :key="i">
                    <div v-if="p === '...'" class="w-8 h-8 flex items-center justify-center text-gray-600">...</div>
                    <UButton 
@@ -379,18 +379,18 @@
         <!-- Classic Version Selection -->
         <div v-else class="max-w-xl mx-auto space-y-6">
           <div class="text-center space-y-2 mb-8 animate-in slide-in-from-bottom-4 fade-in duration-500">
-             <h2 class="text-3xl font-bold text-white tracking-tight">Select Version</h2>
-             <p class="text-gray-400">Choose the version of Minecraft you want to install.</p>
+             <h2 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Select Version</h2>
+             <p class="text-gray-500 dark:text-gray-400">Choose the version of Minecraft you want to install.</p>
           </div>
 
           <!-- Selected Engine Summary -->
-          <div class="flex items-center gap-5 p-5 rounded-2xl bg-gray-900/40 border border-gray-800 backdrop-blur-sm">
-            <div class="w-14 h-14 rounded-xl flex items-center justify-center bg-gray-800 shrink-0 border border-white/5 shadow-inner">
+          <div class="flex items-center gap-5 p-5 rounded-2xl bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 backdrop-blur-sm">
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 shrink-0 border border-gray-200/50 dark:border-white/5 shadow-inner">
                <UIcon :name="selectedTypeData?.icon || 'i-lucide-box'" class="w-7 h-7 text-gray-300" />
             </div>
             <div>
               <p class="text-xs font-medium text-primary-400 uppercase tracking-wider mb-1">Selected Engine</p>
-              <h3 class="font-bold text-xl text-white mb-0.5">{{ selectedTypeData?.name }}</h3>
+              <h3 class="font-bold text-xl text-black dark:text-white mb-0.5">{{ selectedTypeData?.name }}</h3>
               <p class="text-sm text-gray-500">{{ selectedTypeData?.description }}</p>
             </div>
             <div class="ml-auto">
@@ -451,9 +451,9 @@
           </div>
 
           <!-- Version Selection -->
-          <div v-else class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-sm space-y-4">
+          <div v-else class="bg-gray-200 dark:bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-sm space-y-4">
             <div class="flex justify-between items-center">
-              <label class="text-sm font-medium text-gray-200">Game Version</label>
+              <label class="text-sm font-medium text-black dark:text-gray-200">Game Version</label>
               <div v-if="canToggleSnapshots" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900 rounded-lg border border-gray-800">
                 <span class="text-xs text-gray-400 font-medium">{{ toggleLabel }}</span>
                 <USwitch v-model="includeSnapshots" size="sm" color="primary" />
@@ -494,7 +494,7 @@
         
         <!-- World Type Cards -->
         <div class="space-y-4">
-          <h3 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
              <UIcon name="i-lucide-globe" class="w-5 h-5 text-primary-400" />
              World Type
           </h3>
@@ -502,10 +502,10 @@
             <div 
               v-for="wt in worldTypes" 
               :key="wt.value"
-              class="relative p-5 rounded-2xl border transition-all duration-300 cursor-pointer group bg-gray-900/40 backdrop-blur-sm"
+              class="relative p-5 rounded-2xl border transition-all duration-300 cursor-pointer group bg-white dark:bg-gray-900/40 backdrop-blur-sm"
               :class="worldType === wt.value 
-                ? 'border-primary-500/50 bg-primary-900/20 ring-1 ring-primary-500/30' 
-                : 'border-gray-800 hover:border-gray-600 hover:bg-gray-800/50'"
+                ? 'border-primary-500/50 bg-primary-100 dark:bg-primary-900/20 ring-1 ring-primary-500/30' 
+                : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50'"
               @click="worldType = wt.value"
             >
               <!-- Selection indicator -->
@@ -517,32 +517,32 @@
               </div>
               
               <div 
-                 class="p-3 w-12 h-12 rounded-xl mb-4 flex items-center justify-center transition-colors border border-white/5"
-                 :class="worldType === wt.value ? 'bg-primary-500/20 text-primary-400' : 'bg-gray-800 text-gray-400'"
+                 class="p-3 w-12 h-12 rounded-xl mb-4 flex items-center justify-center transition-colors border border-gray-200/50 dark:border-white/5"
+                 :class="worldType === wt.value ? 'bg-primary-100 dark:bg-primary-500/20 text-primary-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'"
               >
                 <UIcon :name="wt.icon" class="w-6 h-6" />
               </div>
-              <h4 class="font-bold text-base text-white mb-1.5">{{ wt.label }}</h4>
+              <h4 class="font-bold text-base text-gray-900 dark:text-white mb-1.5">{{ wt.label }}</h4>
               <p class="text-xs text-gray-400 leading-relaxed">{{ wt.description }}</p>
             </div>
           </div>
         </div>
 
-        <div class="h-px bg-gradient-to-r from-transparent via-gray-800 to-transparent w-full"></div>
+        <div class="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-800 to-transparent w-full"></div>
 
         <!-- Two Column Layout -->
         <div class="grid md:grid-cols-2 gap-8">
           <!-- World Settings -->
           <div class="space-y-4">
-            <h3 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
                <UIcon name="i-lucide-settings-2" class="w-5 h-5 text-primary-400" />
                Generator Settings
             </h3>
             
             <!-- World Seed -->
-            <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-5 backdrop-blur-sm space-y-4">
+            <div class="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 backdrop-blur-sm space-y-4">
                <div class="flex justify-between items-center">
-                 <label class="text-sm font-medium text-gray-200">World Seed</label>
+                 <label class="text-sm font-medium text-gray-700 dark:text-gray-200">World Seed</label>
                  <UButton 
                    size="xs" 
                    color="primary" 
@@ -568,20 +568,20 @@
 
           <!-- Features -->
           <div class="space-y-4">
-            <h3 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
                <UIcon name="i-lucide-sparkles" class="w-5 h-5 text-primary-400" />
                Game Rules
             </h3>
             
-            <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-1 backdrop-blur-sm divide-y divide-gray-800/50">
+            <div class="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-2xl p-1 backdrop-blur-sm divide-y divide-gray-200/50 dark:divide-gray-800/50">
                <!-- Generate Structures -->
-               <div class="flex items-center justify-between p-4 hover:bg-gray-800/30 transition-colors rounded-t-xl">
+               <div class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors rounded-t-xl">
                  <div class="flex items-start gap-3">
                    <div class="p-2 rounded-lg bg-blue-500/10 shrink-0">
                      <UIcon name="i-lucide-landmark" class="w-5 h-5 text-blue-400" />
                    </div>
                    <div>
-                     <p class="font-bold text-sm text-gray-200">Generate Structures</p>
+                     <p class="font-bold text-sm text-gray-700 dark:text-gray-200">Generate Structures</p>
                      <p class="text-xs text-gray-500 mt-0.5">Villages, dungeons, strongholds...</p>
                    </div>
                  </div>
@@ -589,13 +589,13 @@
                </div>
    
                <!-- Hardcore Mode -->
-               <div class="flex items-center justify-between p-4 hover:bg-gray-800/30 transition-colors rounded-b-xl">
+               <div class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors rounded-b-xl">
                  <div class="flex items-start gap-3">
                    <div class="p-2 rounded-lg bg-red-500/10 shrink-0">
                      <UIcon name="i-lucide-skull" class="w-5 h-5 text-red-400" />
                    </div>
                    <div>
-                     <p class="font-bold text-sm text-gray-200">Hardcore Mode</p>
+                     <p class="font-bold text-sm text-gray-700 dark:text-gray-200">Hardcore Mode</p>
                      <p class="text-xs text-gray-500 mt-0.5">One life only. World deleted on death.</p>
                    </div>
                  </div>
@@ -609,7 +609,7 @@
       <!-- Step 4: Server Settings -->
       <div v-else-if="step === 4" class="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-300">
         <!-- Java Version Info -->
-        <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 backdrop-blur-sm relative overflow-hidden">
+        <div class="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 backdrop-blur-sm relative overflow-hidden">
            <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
            
            <div class="flex items-center justify-between mb-6">
@@ -617,7 +617,7 @@
                  <div class="p-2.5 bg-amber-500/10 rounded-xl">
                     <UIcon name="i-lucide-coffee" class="w-5 h-5 text-amber-500" />
                  </div>
-                 <h3 class="font-bold text-lg text-white">Java Runtime</h3>
+                 <h3 class="font-bold text-lg text-gray-900 dark:text-white">Java Runtime</h3>
               </div>
               <UBadge color="neutral" variant="soft" size="md" class="font-mono">
                  <UIcon name="i-lucide-terminal" class="w-3 h-3 mr-1" />
@@ -646,17 +646,17 @@
         </div>
 
         <!-- Server Name & RAM -->
-        <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-8 backdrop-blur-sm space-y-8 relative overflow-hidden">
+        <div class="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 backdrop-blur-sm space-y-8 relative overflow-hidden">
            <div class="absolute -top-10 -left-10 w-40 h-40 bg-primary-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
-           <h3 class="font-bold text-xl text-white flex items-center gap-2">
+           <h3 class="font-bold text-xl text-gray-900 dark:text-white flex items-center gap-2">
               <UIcon name="i-lucide-slider" class="w-5 h-5 text-primary-400" />
               Configuration
            </h3>
            
            <!-- Server Name -->
            <div class="space-y-3 flex flex-col">
-             <label class="text-sm font-medium text-gray-200">Server Name</label>
+             <label class="text-sm font-medium text-gray-700 dark:text-gray-200">Server Name</label>
              <UInput
                v-model="serverName"
                placeholder="My Awesome Server"
@@ -691,7 +691,7 @@
                  min="1" 
                  :max="systemRamGB" 
                  step="1"
-                 class="w-full h-3 bg-gray-800 rounded-full appearance-none cursor-pointer accent-primary-500 hover:accent-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
+                 class="w-full h-3 bg-gray-200 dark:bg-gray-800 rounded-full appearance-none cursor-pointer accent-primary-500 hover:accent-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
                />
                <div class="flex justify-between text-xs font-mono text-gray-500 mt-3 px-1">
                  <span>1 GB</span>
@@ -721,55 +721,55 @@
 
       <!-- Step 5: Summary -->
       <div v-else-if="step === 5" class="max-w-xl mx-auto space-y-6 animate-in fade-in duration-300">
-        <div class="bg-gray-900/40 border border-gray-800 rounded-2xl overflow-hidden backdrop-blur-sm">
-           <div class="bg-gray-900/50 border-b border-gray-800/80 p-6 flex flex-col items-center text-center">
+        <div class="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden backdrop-blur-sm">
+           <div class="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800/80 p-6 flex flex-col items-center text-center">
               <div class="w-16 h-16 rounded-2xl bg-success-500/10 flex items-center justify-center mb-4 ring-1 ring-success-500/20 shadow-[0_0_30px_rgba(34,197,94,0.1)]">
                  <UIcon name="i-lucide-rocket" class="w-8 h-8 text-success-500" />
               </div>
-              <h2 class="text-2xl font-bold text-white mb-1">Ready to Launch!</h2>
-              <p class="text-gray-400 text-sm">Review your configuration before creating the server.</p>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">Ready to Launch!</h2>
+              <p class="text-gray-500 dark:text-gray-400 text-sm">Review your configuration before creating the server.</p>
            </div>
            
-           <div class="divide-y divide-gray-800/50">
+           <div class="divide-y divide-gray-200/50 dark:divide-gray-800/50">
              <div v-if="selectedType === 'modpack'" class="p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
                <span class="text-gray-500 text-sm font-medium">Modpack</span>
                <span class="font-bold text-primary-400 text-right">{{ selectedModpack?.title }}</span>
              </div>
              
-             <div class="p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
+             <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                <span class="text-gray-500 text-sm font-medium">Engine</span>
                <div class="flex items-center gap-2">
                   <UIcon :name="selectedTypeData?.icon" class="w-4 h-4 text-gray-400" />
-                  <span class="font-medium text-white">{{ selectedTypeData?.name }}</span>
+                  <span class="font-medium text-gray-900 dark:text-white">{{ selectedTypeData?.name }}</span>
                </div>
              </div>
              
-             <div class="p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
+             <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                <span class="text-gray-500 text-sm font-medium">Version</span>
                <UBadge color="neutral" variant="soft" class="font-bold">{{ selectedType === 'custom' ? customJarName : selectedVersion }}</UBadge>
              </div>
              
-             <div class="p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
+             <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                <span class="text-gray-500 text-sm font-medium">World Type</span>
-               <span class="font-medium text-white">{{ worldTypes.find(t => t.value === worldType)?.label }}</span>
+               <span class="font-medium text-black/60 dark:text-white">{{ worldTypes.find(t => t.value === worldType)?.label }}</span>
              </div>
              
-             <div class="p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
+             <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                <span class="text-gray-500 text-sm font-medium">Seed</span>
                <span class="font-mono text-xs text-gray-300 bg-gray-950 px-2 py-1 rounded">{{ worldSeed || 'Random' }}</span>
              </div>
              
-             <div class="p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
+             <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                <span class="text-gray-500 text-sm font-medium">Server Name</span>
-               <span class="font-medium text-white">{{ serverName }}</span>
+               <span class="font-medium text-black/60 dark:text-white">{{ serverName }}</span>
              </div>
              
-             <div class="p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
+             <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                <span class="text-gray-500 text-sm font-medium">RAM Allocation</span>
-               <span class="font-bold text-white">{{ ramLimit }} GB</span>
+               <span class="font-bold text-black/60 dark:text-white">{{ ramLimit }} GB</span>
              </div>
              
-             <div class="p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
+             <div class="p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                <span class="text-gray-500 text-sm font-medium">Java Version</span>
                <span class="font-mono text-xs text-gray-400">{{ detectedJavaVersion || 'System default' }}</span>
              </div>
@@ -778,7 +778,7 @@
 
         <!-- Status Message -->
         <div v-if="statusMessage" class="text-center animate-in fade-in slide-in-from-bottom-2">
-          <span class="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-gray-900 border border-gray-700 text-white text-sm font-medium shadow-lg">
+          <span class="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm font-medium shadow-lg">
             <UIcon name="i-lucide-loader-2" class="w-4 h-4 animate-spin text-primary-500" />
             {{ statusMessage }}
           </span>
@@ -786,7 +786,7 @@
       </div>
 
       <!-- Footer Actions -->
-      <div class="fixed bottom-0 left-0 right-0 p-6 bg-gray-900/80 backdrop-blur-xl border-t border-gray-800 z-50">
+      <div class="fixed bottom-0 left-0 right-0 p-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 z-50">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
           <UButton
             v-if="step > 1"
@@ -841,7 +841,7 @@
        </div>
     </div>
       <!-- Modpack Detail Modal -->
-      <UModal v-model:open="showModpackModal" fullscreen class="dark ">
+      <UModal v-model:open="showModpackModal" fullscreen class=" ">
 
         <template #header>
           <div class="w-full flex items-start gap-5 p-6">
@@ -885,7 +885,7 @@
         </template>
 
         <template #body>
-          <div class="flex flex-col h-full bg-gray-950 text-white">
+          <div class="flex flex-col h-full bg-gray-100 dark:bg-gray-950 text-white">
               <!-- Modal Content (Scrollable) -->
               <div class="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
                 <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -896,7 +896,7 @@
                           <UIcon name="i-lucide-loader-2" class="w-10 h-10 animate-spin text-primary-500" />
                       </div>
                       <div v-else>
-                          <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                          <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-black dark:text-white">
                               <UIcon name="i-lucide-file-text" class="w-5 h-5 text-gray-500" />
                               Description
                           </h3>
@@ -910,42 +910,74 @@
                     <!-- Right: Sidebar -->
                     <div class="lg:col-span-1 space-y-6">
                       <!-- Version Selector -->
-                      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                      <div class="bg-gray-200 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-xl p-4">
                           <h3 class="font-bold mb-3 flex items-center gap-2 text-primary-400">
                             <UIcon name="i-lucide-history" class="w-4 h-4" />
                             Select Version
                           </h3>
                           
                           <div class="space-y-4" v-if="modpackVersions.length">
-                            <USelectMenu
-                                v-model="selectedModpackVersion"
-                                :items="modpackVersions"
-                                option-attribute="name"
-                                searchable
-                                searchable-placeholder="Search version..."
-                                placeholder="Select a version"
-                                class="w-full"
-                            >
-                                <template #item="{ item }">
-                                  <div class="flex flex-col gap-0.5 truncate py-1">
-                                      <span class="truncate font-medium">{{ item.name }}</span>
-                                      <span class="text-xs text-gray-500 flex items-center gap-2">
-                                        <span>{{ item.version_number }}</span>
-                                        <span>•</span>
-                                        <span>{{ new Date(item.date_published).toLocaleDateString() }}</span>
-                                      </span>
-                                  </div>
-                                </template>
-                            </USelectMenu>
+                            <!-- Loader Selector (only if multiple loaders) -->
+                            <div v-if="availableModalLoaders.length > 1">
+                              <label class="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Loader</label>
+                              <USelectMenu
+                                  v-model="selectedModalLoader"
+                                  :items="availableModalLoaders"
+                                  placeholder="All Loaders"
+                                  class="w-full capitalize"
+                                  :portal="true"
+                                  :ui="{ content: 'z-[100]' }"
+                              />
+                            </div>
                             
-                            <div v-if="selectedModpackVersion" class="space-y-2 text-xs text-gray-400 bg-gray-950/50 p-3 rounded border border-gray-800">
+                            <!-- Game Version Selector -->
+                            <div>
+                              <label class="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Minecraft Version</label>
+                              <USelectMenu
+                                  v-model="selectedModalGameVersion"
+                                  :items="availableModalGameVersions"
+                                  placeholder="All Versions"
+                                  searchable
+                                  searchable-placeholder="Search version..."
+                                  class="w-full"
+                                  :portal="true"
+                                  :ui="{ content: 'z-[100]' }"
+                              />
+                            </div>
+                            
+                            <!-- Modpack Version Selector -->
+                            <div>
+                              <label class="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Modpack Version</label>
+                              <USelectMenu
+                                  v-model="selectedModpackVersion"
+                                  :items="filteredModalVersions"
+                                  option-attribute="name"
+                                  placeholder="Select a version"
+                                  class="w-full"
+                                  :portal="true"
+                                  :ui="{ content: 'z-[100]' }"
+                              >
+                                  <template #item="{ item }">
+                                    <div class="flex flex-col gap-0.5 truncate py-1">
+                                        <span class="truncate font-medium">{{ item.name }}</span>
+                                        <span class="text-xs text-gray-500 flex items-center gap-2">
+                                          <span>{{ item.version_number }}</span>
+                                          <span>•</span>
+                                          <span>{{ new Date(item.date_published).toLocaleDateString() }}</span>
+                                        </span>
+                                    </div>
+                                  </template>
+                              </USelectMenu>
+                            </div>
+                            
+                            <div v-if="selectedModpackVersion" class="space-y-2 text-xs text-gray-700 dark:text-gray-400 bg-gray-200 dark:bg-gray-950/50 p-3 rounded border border-gray-300 dark:border-gray-800">
                                 <div class="flex justify-between">
                                   <span>Minecraft</span>
-                                  <span class="text-white">{{ selectedModpackVersion.game_versions.join(', ') }}</span>
+                                  <span class="text-black dark:text-white">{{ selectedModpackVersion.game_versions?.join(', ') }}</span>
                                 </div>
                                 <div class="flex justify-between">
                                   <span>Loader</span>
-                                  <span class="text-white capitalize">{{ selectedModpackVersion.loaders.join(', ') }}</span>
+                                  <span class="text-black dark:text-white capitalize">{{ selectedModpackVersion.loaders?.join(', ') }}</span>
                                 </div>
                                 <div class="flex justify-between">
                                   <span>Type</span>
@@ -957,7 +989,7 @@
                                 </div>
                                 <div class="flex justify-between">
                                   <span>Files</span>
-                                  <span class="text-white">{{ selectedModpackVersion.files?.length || 0 }}</span>
+                                  <span class="text-black dark:text-white">{{ selectedModpackVersion.files?.length || 0 }}</span>
                                 </div>
                             </div>
                           </div>
@@ -965,7 +997,7 @@
                       </div>
                       
                       <!-- Categories -->
-                      <div v-if="detailedModpack?.categories?.length" class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                      <div v-if="detailedModpack?.categories?.length" class="bg-gray-200 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-xl p-4">
                           <h3 class="font-bold mb-3 flex items-center gap-2 text-primary-400">
                             <UIcon name="i-lucide-tag" class="w-4 h-4" />
                             Categories
@@ -978,12 +1010,12 @@
                       </div>
                       
                       <!-- License -->
-                      <div v-if="detailedModpack?.license" class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                      <div v-if="detailedModpack?.license" class="bg-gray-200 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-xl p-4">
                           <h3 class="font-bold mb-3 flex items-center gap-2 text-primary-400">
                             <UIcon name="i-lucide-scale" class="w-4 h-4" />
                             License
                           </h3>
-                          <p class="text-sm text-gray-300">{{ detailedModpack.license.name || detailedModpack.license.id }}</p>
+                          <p class="text-sm text-gray-700 dark:text-gray-300">{{ detailedModpack.license.name || detailedModpack.license.id }}</p>
                       </div>
 
                     </div>
@@ -991,7 +1023,7 @@
               </div>
 
               <!-- Footer Actions -->
-              <div class="p-4 border-t border-gray-800 bg-gray-900 flex justify-end gap-3 rounded-b-lg">
+              <div class="p-4 border-t border-gray-300 dark:border-gray-800 bg-gray-200 dark:bg-gray-900 flex justify-end gap-3 rounded-b-lg">
                 <UButton color="neutral" variant="ghost" size="lg" @click="showModpackModal = false">
                     Cancel
                 </UButton>
@@ -1133,6 +1165,68 @@ const modpackVersions = ref<any[]>([])
 const selectedModpackVersion = ref<any>(null)
 const modpackDescriptionHtml = ref('')
 const loadingDetails = ref(false)
+
+// Cascading filter state for modal
+const selectedModalLoader = ref<string | undefined>(undefined)
+const selectedModalGameVersion = ref<string | undefined>(undefined)
+
+watch(selectedModalLoader, () => {
+  selectedModalGameVersion.value = undefined
+  selectedModpackVersion.value = null
+})
+
+watch(selectedModalGameVersion, () => {
+  selectedModpackVersion.value = null
+})
+
+// Computed: unique loaders from all versions
+const availableModalLoaders = computed(() => {
+  const loaders = new Set<string>()
+  modpackVersions.value.forEach((v: any) => {
+    v.loaders?.forEach((l: string) => loaders.add(l))
+  })
+  return Array.from(loaders).sort()
+})
+
+// Computed: unique game versions, filtered by selected loader
+const availableModalGameVersions = computed(() => {
+  let versions = modpackVersions.value
+  if (selectedModalLoader.value) {
+    versions = versions.filter((v: any) => 
+      v.loaders?.includes(selectedModalLoader.value)
+    )
+  }
+  const gameVersions = new Set<string>()
+  versions.forEach((v: any) => {
+    v.game_versions?.forEach((gv: string) => gameVersions.add(gv))
+  })
+  // Sort by version number (newest first)
+  return Array.from(gameVersions).sort((a, b) => {
+    const parseVer = (v: string) => v.split('.').map(n => parseInt(n) || 0)
+    const aVer = parseVer(a)
+    const bVer = parseVer(b)
+    for (let i = 0; i < Math.max(aVer.length, bVer.length); i++) {
+      if ((bVer[i] || 0) !== (aVer[i] || 0)) return (bVer[i] || 0) - (aVer[i] || 0)
+    }
+    return 0
+  })
+})
+
+// Computed: filtered modpack versions based on loader and game version
+const filteredModalVersions = computed(() => {
+  let versions = modpackVersions.value
+  if (selectedModalLoader.value) {
+    versions = versions.filter((v: any) => 
+      v.loaders?.includes(selectedModalLoader.value)
+    )
+  }
+  if (selectedModalGameVersion.value) {
+    versions = versions.filter((v: any) => 
+      v.game_versions?.includes(selectedModalGameVersion.value)
+    )
+  }
+  return versions
+})
 
 const availableMcVersions = ref<string[]>([])
 const availableLoaders = ['fabric', 'forge', 'neoforge', 'quilt']
@@ -1295,7 +1389,7 @@ const toggleLabel = computed(() => 'Show Snapshots')
 const javaCompatibility = computed(() => {
   if (!detectedJavaVersion.value) {
     return {
-      class: 'bg-gray-800 text-gray-400',
+      class: 'bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
       icon: 'i-lucide-info',
       title: 'Detecting Java...',
       message: 'Checking your system for Java installation'
@@ -1314,14 +1408,14 @@ const javaCompatibility = computed(() => {
 
   if (javaVer >= requiredJava) {
     return {
-      class: 'bg-success-900/30 text-success-400',
+      class: 'bg-success-100/50 dark:bg-success-900/30 text-success-400',
       icon: 'i-lucide-check-circle',
       title: 'Java Compatible',
       message: `Java ${javaVer} meets the requirement of Java ${requiredJava}+ for Minecraft ${mcVersion || 'this version'}`
     }
   } else {
     return {
-      class: 'bg-warning-900/30 text-warning-400',
+      class: 'bg-warning-100/50 dark:bg-warning-900/30 text-warning-400',
       icon: 'i-lucide-alert-triangle',
       title: 'Java Update Recommended',
       message: `Minecraft ${mcVersion} requires Java ${requiredJava}+. You have Java ${javaVer}.`
@@ -1429,9 +1523,20 @@ async function openModpackDetails(pack: any) {
      const versions = await versionsRes.json()
      modpackVersions.value = versions
 
-     // Pre-select latest release
+     // Pre-select latest release and set filters
      if (versions.length > 0) {
         const latest = versions.find((v: any) => v.version_type === 'release') || versions[0]
+        
+        // Auto-fill filters based on selection
+        if (latest.loaders && latest.loaders.length > 0) {
+           selectedModalLoader.value = latest.loaders[0]
+        }
+        if (latest.game_versions && latest.game_versions.length > 0) {
+           selectedModalGameVersion.value = latest.game_versions[0]
+        }
+        
+        // Set the version after filters so it appears invalid if filters don't match (though we just matched them)
+        // Actually best to set it directly.
         selectedModpackVersion.value = latest
      }
 

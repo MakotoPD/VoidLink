@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gray-950 flex flex-col">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
     <!-- Header -->
     <header
       data-tauri-drag-region
-      class="relative bg-gray-900 border-b border-gray-800 p-6 overflow-hidden"
+      class="relative bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6 overflow-hidden"
     >
       <!-- Gradient Background Mesh -->
       <div class="absolute inset-0 z-0 pointer-events-none">
@@ -23,7 +23,7 @@
 
           <div
             v-if="loading"
-            class="h-16 w-64 bg-gray-800 animate-pulse rounded-xl"
+            class="h-16 w-64 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-xl"
           />
           <div
             v-else
@@ -34,7 +34,7 @@
               @click="changeServerIcon"
             >
               <div class="absolute inset-0 bg-primary-500/20 rounded-2xl blur-lg group-hover:bg-primary-500/30 transition-all duration-500" />
-              <div class="relative w-16 h-16 rounded-2xl bg-gray-900 border border-gray-700 flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+              <div class="relative w-16 h-16 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300 overflow-hidden">
                 <img
                   v-if="serverIconUrl"
                   :src="serverIconUrl"
@@ -63,7 +63,7 @@
 
             <div>
               <div class="flex items-center gap-3">
-                <h1 class="font-bold text-2xl text-white tracking-tight">
+                <h1 class="font-bold text-2xl text-gray-900 dark:text-white tracking-tight">
                   {{ server?.name }}
                 </h1>
                 <UBadge
@@ -75,19 +75,19 @@
                   {{ serverStatus }}
                 </UBadge>
               </div>
-              <div class="flex items-center gap-2 mt-1 text-sm text-gray-400">
-                <span class="flex items-center gap-1.5 bg-gray-800/50 px-2 py-0.5 rounded-md border border-gray-700/50">
+              <div class="flex items-center gap-2 mt-1 text-sm text-gray-600 dark:text-gray-400">
+                <span class="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800/50 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-700/50">
                   <UIcon
                     name="i-lucide-layers"
                     class="w-3.5 h-3.5"
                   />
                   {{ server?.typeName }}{{ server?.modpack?.loader ? ` (${server.modpack.loader})` : '' }}
                 </span>
-                <span class="hidden sm:inline text-gray-600">•</span>
-                <span class="bg-gray-800/50 px-2 py-0.5 rounded-md border border-gray-700/50 font-mono text-xs">v{{ server?.version }}</span>
-                <span class="hidden sm:inline text-gray-600">•</span>
+                <span class="hidden sm:inline text-gray-400 dark:text-gray-600">•</span>
+                <span class="bg-gray-100 dark:bg-gray-800/50 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-700/50 font-mono text-xs">v{{ server?.version }}</span>
+                <span class="hidden sm:inline text-gray-400 dark:text-gray-600">•</span>
                 <span
-                  class="text-xs text-gray-500 font-mono cursor-pointer hover:text-white transition-colors"
+                  class="text-xs text-gray-500 font-mono cursor-pointer hover:text-gray-900 dark:hover:text-white transition-colors"
                   title="Click to copy ID"
                   @click="copyId"
                 >#{{ server?.id }}</span>
@@ -97,7 +97,7 @@
         </div>
 
         <!-- Actions Toolbar -->
-        <div class="flex items-center gap-3 bg-gray-800/30 p-1.5 rounded-xl border border-gray-700/50 backdrop-blur-sm shadow-sm">
+        <div class="flex items-center gap-3 bg-gray-100 dark:bg-gray-800/30 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700/50 backdrop-blur-sm shadow-sm">
           <!-- Primary Power Controls -->
           <div class="flex gap-1">
             <UButton
@@ -131,7 +131,7 @@
             </template>
           </div>
 
-          <div class="w-px h-8 bg-gray-700/50 mx-1" />
+          <div class="w-px h-8 bg-gray-300 dark:bg-gray-700/50 mx-1" />
 
           <!-- Secondary Actions -->
           <UTooltip text="Open Server Folder">
@@ -168,7 +168,7 @@
     </header>
 
     <!-- Update Modal -->
-    <UModal v-model:open="showUpdateModal" class="dark ">
+    <UModal v-model:open="showUpdateModal" class="">
       <template #body>
         <div class="p-6">
           <h3 class="text-xl font-bold mb-4">
@@ -222,7 +222,7 @@
           v-model="selectedTab"
           variant="pill"
           :items="tabs"
-          class="dark w-full flex-1 flex flex-col"
+          class="w-full flex-1 flex flex-col"
         >
           <!-- Performance -->
           <template #performance>
@@ -239,7 +239,7 @@
               <div class="relative">
                 <div
                   ref="consoleRef"
-                  class="flex-1 bg-black max-h-[68vh] rounded-lg border border-gray-800 p-4 font-mono text-xs md:text-sm text-gray-300 overflow-y-auto custom-scrollbar font-ligatures-none"
+                  class="flex-1 bg-gray-200 dark:bg-black max-h-[68vh] rounded-lg border border-gray-200 dark:border-gray-800 p-4 font-mono text-xs md:text-sm text-gray-700 dark:text-gray-300 overflow-y-auto custom-scrollbar font-ligatures-none"
                 >
                   <div
                     v-if="consoleLines.length === 0"
@@ -251,7 +251,7 @@
                   <div
                     v-for="(line, i) in consoleLines"
                     :key="i"
-                    class="flex items-start gap-2 py-0.5 group hover:bg-gray-800/30 px-1 -mx-1 rounded"
+                    class="flex items-start gap-2 py-0.5 group hover:bg-gray-100 dark:hover:bg-gray-800/30 px-1 -mx-1 rounded"
                   >
                     <!-- Parsed log line -->
                     <template v-if="parseLogLine(line)">
@@ -319,16 +319,16 @@
           <template #settings>
             <div class="max-w-6xl mx-auto space-y-6 py-6 px-4 pb-24">
               <!-- Header & Actions -->
-              <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-gray-900/80 border border-gray-800 p-4 rounded-xl shadow-lg sticky top-0 z-20 backdrop-blur-xl gap-4">
+              <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 p-4 rounded-xl shadow-lg sticky top-0 z-20 backdrop-blur-xl gap-4">
                 <div>
-                  <h2 class="font-bold text-xl text-white flex items-center gap-2">
+                  <h2 class="font-bold text-xl text-gray-900 dark:text-white flex items-center gap-2">
                     <UIcon
                       name="i-lucide-settings-2"
                       class="w-6 h-6 text-primary-500"
                     />
                     Server Configuration
                   </h2>
-                  <p class="text-sm text-gray-400">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
                     Manage general settings, gameplay, and system performance
                   </p>
                 </div>
@@ -360,7 +360,7 @@
                 <!-- Left Column: General & Gameplay -->
                 <div class="space-y-6">
                   <!-- General Settings -->
-                  <UCard :ui="{ root: 'bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-800' }">
+                  <UCard :ui="{ root: 'bg-gray-200 dark:bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-300 dark:ring-gray-800' }">
                     <template #header>
                       <div class="flex items-center gap-3">
                         <div class="p-2 bg-primary-500/10 rounded-lg flex items-center justify-center">
@@ -370,10 +370,10 @@
                           />
                         </div>
                         <div>
-                          <h3 class="font-bold text-white">
+                          <h3 class="font-bold text-black dark:text-white">
                             General Information
                           </h3>
-                          <p class="text-xs text-gray-500">
+                          <p class="text-xs text-black/50 dark:text-gray-500">
                             Basic server details
                           </p>
                         </div>
@@ -382,7 +382,7 @@
 
                     <div class="space-y-6">
                       <div class="space-y-2 flex flex-col gap-1">
-                        <label class="text-sm font-medium text-gray-300">Server Name</label>
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Server Name</label>
                         <UInput
                           v-model="serverName"
                           placeholder="My Awesome Server"
@@ -393,7 +393,7 @@
 
                       <!-- MOTD Editor -->
                       <div class="space-y-3">
-                        <label class="block text-sm font-medium text-gray-300">Message of the Day (MOTD)</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Message of the Day (MOTD)</label>
                         <div class="flex flex-wrap gap-1.5 mb-2 bg-gray-950/30 p-2 rounded-lg border border-gray-800/50">
                           <!-- Colors -->
                           <button
@@ -461,7 +461,7 @@
                   </UCard>
 
                   <!-- Gameplay Settings -->
-                  <UCard :ui="{ root: 'bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-800' }">
+                  <UCard :ui="{ root: 'bg-gray-200 dark:bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-300 dark:ring-gray-800' }">
                     <template #header>
                       <div class="flex items-center gap-3">
                         <div class="p-2 bg-emerald-500/10 rounded-lg flex items-center justify-center">
@@ -471,10 +471,10 @@
                           />
                         </div>
                         <div>
-                          <h3 class="font-bold text-white">
+                          <h3 class="font-bold text-black dark:text-white">
                             Gameplay Experience
                           </h3>
-                          <p class="text-xs text-gray-500">
+                          <p class="text-xs text-black/50 dark:text-gray-500">
                             Game rules and mechanics
                           </p>
                         </div>
@@ -484,7 +484,7 @@
                     <div class="space-y-6">
                       <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-2">
-                          <label class="block text-sm font-medium text-gray-300">Gamemode</label>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Gamemode</label>
                           <USelectMenu
                             class="w-full"
                             size="lg"
@@ -495,7 +495,7 @@
                           />
                         </div>
                         <div class="space-y-2">
-                          <label class="block text-sm font-medium text-gray-300">Difficulty</label>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Difficulty</label>
                           <USelectMenu
                             class="w-full"
                             size="lg"
@@ -508,7 +508,7 @@
                       </div>
 
                       <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-300">Server Port</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Server Port</label>
                         <UInput
                           type="number"
                           placeholder="25565"
@@ -530,10 +530,10 @@
                             { label: 'Hardcore Mode', desc: 'Players are banned upon death', prop: 'hardcore', icon: 'i-lucide-skull', color: 'text-rose-500' }
                           ]"
                           :key="idx"
-                          class="flex items-center justify-between p-4 bg-gray-800/30 border border-gray-800/50 rounded-xl hover:bg-gray-800/50 transition-colors group"
+                          class="flex items-center justify-between p-4 bg-gray-300 dark:bg-gray-800/30 border border-gray-300 dark:border-gray-800/50 rounded-xl hover:bg-gray-300/80 dark:hover:bg-gray-800/50 transition-colors group"
                         >
                           <div class="flex items-center gap-3">
-                            <div class="p-2 rounded-lg bg-gray-900 group-hover:bg-gray-800 flex items-center justify-center transition-colors">
+                            <div class="p-2 rounded-lg bg-gray-200 group-hover:bg-gray-200 dark:bg-gray-900 dark:group-hover:bg-gray-800 flex items-center justify-center transition-colors">
                               <UIcon
                                 :name="item.icon"
                                 class="w-5 h-5"
@@ -541,10 +541,10 @@
                               />
                             </div>
                             <div>
-                              <p class="font-medium text-white">
+                              <p class="font-medium text-black dark:text-white">
                                 {{ item.label }}
                               </p>
-                              <p class="text-xs text-gray-500">
+                              <p class="text-xs text-black/50 dark:text-gray-500">
                                 {{ item.desc }}
                               </p>
                             </div>
@@ -564,7 +564,7 @@
                 <!-- Right Column: System & Danger -->
                 <div class="space-y-6">
                   <!-- System & Performance -->
-                  <UCard :ui="{ root: 'bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-800' }">
+                  <UCard :ui="{ root: 'bg-gray-200 dark:bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-300 dark:ring-gray-800' }">
                     <template #header>
                       <div class="flex items-center gap-3">
                         <div class="p-2 bg-blue-500/10 rounded-lg flex items-center justify-center">
@@ -574,10 +574,10 @@
                           />
                         </div>
                         <div>
-                          <h3 class="font-bold text-white">
+                          <h3 class="font-bold text-black dark:text-white">
                             System & Performance
                           </h3>
-                          <p class="text-xs text-gray-500">
+                          <p class="text-xs text-black/50 dark:text-gray-500">
                             Allocations and limits
                           </p>
                         </div>
@@ -586,17 +586,17 @@
 
                     <div class="space-y-8">
                       <!-- Memory Slider -->
-                      <div class="space-y-4 bg-gray-800/20 p-5 rounded-xl border border-gray-800/50">
+                      <div class="space-y-4 bg-gray-300/80 dark:bg-gray-800/20 p-5 rounded-xl border border-gray-300 dark:border-gray-800/50">
                         <div class="flex justify-between items-end">
                           <div class="flex flex-col">
-                            <label class="text-sm font-medium text-gray-200 flex items-center gap-2">
+                            <label class="text-sm font-medium text-black dark:text-white flex items-center gap-2">
                               <UIcon
                                 name="i-lucide-memory-stick"
                                 class="w-4 h-4 text-primary-400"
                               />
                               RAM Allocation
                             </label>
-                            <span class="text-xs text-gray-500">Reserved memory for Java</span>
+                            <span class="text-xs text-black/50 dark:text-gray-500">Reserved memory for Java</span>
                           </div>
                           <span class="text-2xl font-bold text-primary-400 tracking-tight">{{ javaSettings.memory }} <span class="text-sm font-normal text-gray-500">GB</span></span>
                         </div>
@@ -618,7 +618,7 @@
                       <div class="grid grid-cols-2 gap-4">
                         <!-- Max Players -->
                         <div class="space-y-2">
-                          <label class="block text-sm font-medium text-gray-300">Max Players</label>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max Players</label>
                           <UInputNumber
                             size="lg"
                             class="w-full"
@@ -630,7 +630,7 @@
 
                         <!-- View Distance -->
                         <div class="space-y-2">
-                          <label class="block text-sm font-medium text-gray-300">View Distance</label>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">View Distance</label>
                           <UInputNumber
                             size="lg"
                             class="w-full"
@@ -644,7 +644,7 @@
 
                         <!-- Sim Distance -->
                         <div class="space-y-2">
-                          <label class="block text-sm font-medium text-gray-300">Sim Distance</label>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sim Distance</label>
                           <UInputNumber
                             size="lg"
                             class="w-full"
@@ -658,7 +658,7 @@
 
                         <!-- Spawn Protection -->
                         <div class="space-y-2">
-                          <label class="block text-sm font-medium text-gray-300">Spawn Radius</label>
+                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Spawn Radius</label>
                           <UInputNumber
                             size="lg"
                             class="w-full"
@@ -670,7 +670,7 @@
                       </div>
 
                       <div class="space-y-2 flex flex-col">
-                        <label class="text-sm font-medium text-gray-300 flex items-center gap-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                           <UIcon
                             name="i-lucide-code-2"
                             class="w-4 h-4"
@@ -690,7 +690,7 @@
                   </UCard>
 
                   <!-- Security -->
-                  <UCard :ui="{ root: 'bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-800' }">
+                  <UCard :ui="{ root: 'bg-gray-200 dark:bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-300 dark:ring-gray-800' }">
                     <template #header>
                       <div class="flex items-center gap-3">
                         <div class="p-2 bg-indigo-500/10 rounded-lg flex items-center justify-center">
@@ -700,10 +700,10 @@
                           />
                         </div>
                         <div>
-                          <h3 class="font-bold text-white">
+                          <h3 class="font-bold  text-black dark:text-white">
                             Access Control
                           </h3>
-                          <p class="text-xs text-gray-500">
+                          <p class="text-xs  text-black/50 dark:text-gray-500">
                             Whitelist and verification
                           </p>
                         </div>
@@ -712,26 +712,29 @@
                     <div class="space-y-3">
                       <div
                         v-for="(item, idx) in [
-                          { label: 'Enable Whitelist', desc: 'Only whitelisted players can join', prop: 'white-list', icon: 'i-lucide-list-checks' },
-                          { label: 'Enforce Whitelist', desc: 'Kick non-whitelisted players on reload', prop: 'enforce-whitelist', icon: 'i-lucide-gavel' },
-                          { label: 'Online Mode', desc: 'Verify player accounts with Mojang', prop: 'online-mode', icon: 'i-lucide-globe-lock' }
+                          { label: 'Enable Whitelist', desc: 'Only whitelisted players can join', prop: 'white-list', icon: 'i-lucide-list-checks', color: 'text-green-500' },
+                          { label: 'Enforce Whitelist', desc: 'Kick non-whitelisted players on reload', prop: 'enforce-whitelist', icon: 'i-lucide-gavel', color: 'text-red-500'  },
+                          { label: 'Online Mode', desc: 'Verify player accounts with Mojang', prop: 'online-mode', icon: 'i-lucide-globe-lock', color: 'text-violet-400' }
                         ]"
                         :key="idx"
-                        class="flex items-center justify-between p-4 bg-gray-800/30 border border-gray-800/50 rounded-xl transition-colors"
+                        class="flex items-center justify-between p-4 bg-gray-300 dark:bg-gray-800/30 border border-gray-300 dark:border-gray-800/50 rounded-xl transition-colors group"
                         :class="[
-                          (item.prop === 'enforce-whitelist' && getPropertyValue('white-list') !== 'true') ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800/50'
+                          (item.prop === 'enforce-whitelist' && getPropertyValue('white-list') !== 'true') ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300/80 dark:hover:bg-gray-800/50'
                         ]"
                       >
                         <div class="flex items-center gap-3">
-                          <UIcon
-                            :name="item.icon"
-                            class="w-5 h-5 text-gray-400"
-                          />
+                          <div class="p-2 rounded-lg bg-gray-200 group-hover:bg-gray-200 dark:bg-gray-900 dark:group-hover:bg-gray-800 flex items-center justify-center transition-colors">
+                              <UIcon
+                                :name="item.icon"
+                                class="w-5 h-5"
+                                :class="item.color"
+                              />
+                          </div>
                           <div>
-                            <p class="font-medium text-white">
+                            <p class="font-medium text-black dark:text-white">
                               {{ item.label }}
                             </p>
-                            <p class="text-xs text-gray-500">
+                            <p class="text-xs text-black/50 dark:text-gray-500">
                               {{ item.desc }}
                             </p>
                           </div>
@@ -748,7 +751,7 @@
                   </UCard>
 
                   <!-- Danger Zone -->
-                  <div class="relative overflow-hidden rounded-xl border border-error-900/50 bg-error-950/10 group">
+                  <div class="relative overflow-hidden rounded-xl border border-error-900/50 bg-error-200/50 dark:bg-error-950/10 group">
                     <div class="absolute inset-0 bg-gradient-to-r from-error-900/10 to-transparent pointer-events-none" />
                     <div class="p-6 relative z-10">
                       <h3 class="font-bold text-error-500 flex items-center gap-2 mb-4">
@@ -761,10 +764,10 @@
 
                       <div class="flex items-center justify-between bg-error-950/30 gap-4 p-4 rounded-lg border border-error-900/30 backdrop-blur-sm transition-colors hover:border-error-700/50">
                         <div>
-                          <div class="font-bold text-white text-sm">
+                          <div class="font-bold text-black dark:text-white text-sm">
                             Delete Server
                           </div>
-                          <div class="text-xs text-gray-400 mt-1 max-w-[200px] sm:max-w-xs">
+                          <div class="text-xs text-gray-700 dark:text-gray-400 mt-1 max-w-[200px] sm:max-w-xs">
                             Permanently delete this server and all its files. <br> Cannot be undone.
                           </div>
                         </div>
@@ -787,19 +790,19 @@
                 v-model:open="showDeleteModal"
                 title="Delete server"
                 description="Are you sure you want to delete?"
-                class="dark "
+                class=""
               >
                 <template #body>
                   <div class="p-6 space-y-4">
-                    <div class="flex items-center gap-3 text-error-500 mb-2">
-                      <div class="p-3 flex justify-center items-center bg-error-950 rounded-full ring-4 ring-error-900/30">
+                    <div class="flex items-center gap-3 text-error-200 dark:text-error-500 mb-2">
+                      <div class="p-3 flex justify-center items-center bg-error-400 dark:bg-error-950 rounded-full ring-4 ring-error-300 dark:ring-error-900/30">
                         <UIcon
                           name="i-lucide-alert-triangle"
                           class="w-6 h-6"
                         />
                       </div>
                       <div>
-                        <h3 class="font-bold text-lg text-white">
+                        <h3 class="font-bold text-lg text-black dark:text-white">
                           Delete Server?
                         </h3>
                         <p class="text-xs text-error-400 font-medium">
@@ -829,7 +832,7 @@
                 </template>
 
                 <template #footer>
-                  <div class="flex justify-end gap-3 p-4 bg-gray-900/50 border-t border-gray-800">
+                  <div class="flex justify-end gap-3">
                     <UButton
                       color="neutral"
                       variant="ghost"
@@ -856,21 +859,21 @@
             <div class="h-full flex flex-col p-6 max-w-6xl mx-auto w-full">
               <div class="flex items-center justify-between mb-6">
                 <div>
-                  <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                  <h2 class="text-2xl font-bold text-black dark:text-white flex items-center gap-3">
                     <UIcon
                       name="i-lucide-file-warning"
                       class="w-8 h-8 text-red-500"
                     />
                     Crash Reports
                   </h2>
-                  <p class="text-gray-400">
+                  <p class="text-gray-500 dark:text-gray-400">
                     View and analyze server crashes
                   </p>
                 </div>
                 <UButton
                   icon="i-lucide-refresh-cw"
                   color="neutral"
-                  variant="soft"
+                  variant="active"
                   :loading="loadingReports"
                   @click="loadCrashReports"
                 >
@@ -890,13 +893,13 @@
 
               <div
                 v-else-if="crashReports.length === 0"
-                class="flex-1 flex flex-col justify-center items-center text-gray-500 border-2 border-dashed border-gray-800 rounded-xl bg-gray-900/20 p-12"
+                class="flex-1 flex flex-col justify-center items-center text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-800 rounded-xl bg-gray-50 dark:bg-gray-900/20 p-12"
               >
                 <UIcon
                   name="i-lucide-check-circle-2"
                   class="w-16 h-16 text-success-500/20 mb-4"
                 />
-                <h3 class="text-xl font-bold text-gray-300">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-300">
                   No Crashes Found
                 </h3>
                 <p class="text-sm">
@@ -911,7 +914,7 @@
                 <div
                   v-for="report in crashReports"
                   :key="report.name"
-                  class="p-4 bg-gray-900/50 border border-gray-800 rounded-xl hover:bg-gray-800/50 hover:border-gray-700 transition-all cursor-pointer group"
+                  class="p-4 bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:border-gray-300 dark:hover:border-gray-700 transition-all cursor-pointer group shadow-sm"
                   @click="openCrashReport(report)"
                 >
                   <div class="flex items-center justify-between">
@@ -923,7 +926,7 @@
                         />
                       </div>
                       <div>
-                        <h4 class="font-bold text-white group-hover:text-primary-400 transition-colors">
+                        <h4 class="font-bold text-black dark:text-white group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
                           {{ report.name }}
                         </h4>
                         <p class="text-xs text-gray-500 font-mono">
@@ -933,7 +936,7 @@
                     </div>
                     <UIcon
                       name="i-lucide-chevron-right"
-                      class="w-5 h-5 text-gray-600 group-hover:text-white"
+                      class="w-5 h-5 text-gray-400 dark:text-gray-600 group-hover:text-black dark:group-hover:text-white"
                     />
                   </div>
                 </div>
@@ -943,11 +946,12 @@
               <UModal
                 v-model:open="showReportModal"
                 fullscreen
-                class="dark "
+                class=" "
+                :ui="{ base: 'bg-white dark:bg-gray-950', ring: 'ring-1 ring-gray-200 dark:ring-gray-800' }"
               >
                 <template #header>
-                  <div class="flex items-center justify-between p-4 border-b border-gray-800 bg-gray-900">
-                    <h3 class="font-bold text-white flex items-center gap-2">
+                  <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+                    <h3 class="font-bold text-black dark:text-white flex items-center gap-2">
                       <UIcon
                         name="i-lucide-file-warning"
                         class="w-5 h-5 text-red-500"
@@ -963,10 +967,326 @@
                   </div>
                 </template>
                 <template #body>
-                  <div class="p-0 h-[calc(100vh-140px)] bg-gray-950 overflow-hidden flex flex-col">
-                    <div class="flex-1 overflow-auto p-4 font-mono text-sm text-gray-300 whitespace-pre-wrap custom-scrollbar">
+                  <div class="p-0 h-[calc(100vh-140px)] bg-white dark:bg-gray-950 overflow-hidden flex flex-col">
+                    <div class="flex-1 overflow-auto p-4 font-mono text-sm text-gray-800 dark:text-gray-300 whitespace-pre-wrap custom-scrollbar">
                       {{ reportContent }}
                     </div>
+                  </div>
+                </template>
+              </UModal>
+            </div>
+          </template>
+
+          <template #backups>
+            <div class="h-full flex flex-col p-6 max-w-6xl mx-auto w-full space-y-6">
+              <!-- Header -->
+              <div class="flex items-center justify-between bg-gray-200 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-300 dark:border-gray-800">
+                <div class="flex items-center gap-4">
+                  <div class="p-3 bg-blue-500/10 rounded-lg flex justify-center items-center">
+                    <UIcon
+                      name="i-lucide-archive"
+                      class="w-6 h-6 text-blue-500 dark:text-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <h2 class="font-bold text-xl text-black dark:text-white">
+                      Server Backups
+                    </h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      Create, restore, and manage backups for your world data
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <UButton
+                    icon="i-lucide-refresh-cw"
+                    color="neutral"
+                    variant="ghost"
+                    :loading="backupLoading"
+                    @click="loadBackupList"
+                  />
+                  <UButton
+                    icon="i-lucide-plus"
+                    color="primary"
+                    :loading="backupCreating"
+                    :disabled="serverStatus !== 'offline'"
+                    @click="createManualBackup"
+                  >
+                    Create Backup
+                  </UButton>
+                </div>
+              </div>
+
+              <!-- Warning when server is running -->
+              <div
+                v-if="serverStatus !== 'offline'"
+                class="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-xl flex items-center gap-3"
+              >
+                <UIcon
+                  name="i-lucide-alert-triangle"
+                  class="w-5 h-5 text-yellow-500 flex-shrink-0"
+                />
+                <p class="text-sm text-yellow-300">
+                  Stop the server before creating or restoring backups to prevent data corruption.
+                </p>
+              </div>
+
+              <!-- Stats Bar -->
+              <div class="grid grid-cols-3 gap-4">
+                <div class="bg-gray-100 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
+                  <p class="text-xs text-gray-500 uppercase tracking-wider">
+                    Total Backups
+                  </p>
+                  <p class="text-2xl font-bold text-black dark:text-white mt-1">
+                    {{ backupList.length }}
+                  </p>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
+                  <p class="text-xs text-gray-500 uppercase tracking-wider">
+                    Storage Used
+                  </p>
+                  <p class="text-2xl font-bold text-black dark:text-white mt-1">
+                    {{ formatBackupSize(backupTotalSize) }}
+                  </p>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
+                  <p class="text-xs text-gray-500 uppercase tracking-wider">
+                    Auto-Backup
+                  </p>
+                  <p class="text-2xl font-bold mt-1" :class="backupSettings.enabled ? 'text-green-500 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'">
+                    {{ backupSettings.enabled ? 'Active' : 'Off' }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Settings Panel -->
+              <UCard :ui="{ root: 'bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm ring-1 ring-gray-200 dark:ring-gray-800', header: { base: 'border-b border-gray-200 dark:border-gray-800' } }">
+                <template #header>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <UIcon
+                        name="i-lucide-settings"
+                        class="w-5 h-5 text-gray-400"
+                      />
+                      <h3 class="font-bold text-black dark:text-white">
+                        Backup Settings
+                      </h3>
+                    </div>
+                    <USwitch
+                      v-model="backupSettings.enabled"
+                      color="primary"
+                      @update:model-value="saveBackupSettings"
+                    />
+                  </div>
+                </template>
+
+                <div class="grid grid-cols-2 gap-6">
+                  <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Interval (minutes)</label>
+                    <UInput
+                      v-model.number="backupSettings.interval_minutes"
+                      type="number"
+                      :min="5"
+                      :max="1440"
+                      placeholder="30"
+                      :disabled="!backupSettings.enabled"
+                      @change="saveBackupSettings"
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max Backups to Keep</label>
+                    <UInput
+                      v-model.number="backupSettings.max_backups"
+                      type="number"
+                      :min="1"
+                      :max="100"
+                      placeholder="5"
+                      @change="saveBackupSettings"
+                    />
+                  </div>
+                </div>
+
+                <div class="mt-4 space-y-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Folders to Backup</label>
+                  <div class="flex flex-wrap gap-2">
+                    <UButton
+                      v-for="folder in availableBackupFolders"
+                      :key="folder"
+                      size="sm"
+                      :color="backupSettings.included_folders.includes(folder) ? 'primary' : 'neutral'"
+                      :variant="backupSettings.included_folders.includes(folder) ? 'solid' : 'outline'"
+                      @click="toggleBackupFolder(folder)"
+                    >
+                      {{ folder }}
+                    </UButton>
+                  </div>
+                </div>
+              </UCard>
+
+              <!-- Backup List -->
+              <div class="flex-1 min-h-0">
+                <div
+                  v-if="backupLoading"
+                  class="flex items-center justify-center h-48"
+                >
+                  <UIcon
+                    name="i-lucide-loader-2"
+                    class="w-8 h-8 animate-spin text-primary-500"
+                  />
+                </div>
+
+                <div
+                  v-else-if="backupList.length === 0"
+                  class="flex flex-col items-center justify-center h-48 text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-800 rounded-xl"
+                >
+                  <UIcon
+                    name="i-lucide-archive-x"
+                    class="w-12 h-12 mb-3 opacity-50"
+                  />
+                  <h4 class="font-bold text-gray-900 dark:text-gray-300">
+                    No Backups Yet
+                  </h4>
+                  <p class="text-sm">
+                    Create your first backup to protect your world
+                  </p>
+                </div>
+
+                <div
+                  v-else
+                  class="space-y-2 max-h-[460px] overflow-y-auto custom-scrollbar pr-2"
+                >
+                  <div
+                    v-for="backup in backupList"
+                    :key="backup.id"
+                    class="flex items-center justify-between p-4 bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:border-gray-300 dark:hover:border-gray-700 transition-all group shadow-sm"
+                  >
+                    <div class="flex items-center gap-4">
+                      <div class="p-2 rounded-lg flex justify-center items-center" :class="backup.backup_type === 'auto' ? 'bg-blue-500/10' : backup.backup_type === 'pre-restore' ? 'bg-yellow-500/10' : 'bg-green-500/10'">
+                        <UIcon
+                          :name="backup.backup_type === 'auto' ? 'i-lucide-clock' : backup.backup_type === 'pre-restore' ? 'i-lucide-shield' : 'i-lucide-archive'"
+                          class="w-5 h-5"
+                          :class="backup.backup_type === 'auto' ? 'text-blue-500 dark:text-blue-400' : backup.backup_type === 'pre-restore' ? 'text-yellow-500 dark:text-yellow-400' : 'text-green-500 dark:text-green-400'"
+                        />
+                      </div>
+                      <div>
+                        <p class="font-bold text-black dark:text-white">
+                          {{ backup.name }}
+                        </p>
+                        <div class="flex items-center gap-3 text-xs text-gray-500">
+                          <span>{{ formatBackupDate(backup.created_at) }}</span>
+                          <span>•</span>
+                          <span>{{ formatBackupSize(backup.size_bytes) }}</span>
+                          <UBadge
+                            size="xs"
+                            :color="backup.backup_type === 'auto' ? 'primary' : backup.backup_type === 'pre-restore' ? 'warning' : 'success'"
+                            variant="subtle"
+                          >
+                            {{ backup.backup_type }}
+                          </UBadge>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <UButton
+                        icon="i-lucide-undo-2"
+                        color="primary"
+                        variant="soft"
+                        size="sm"
+                        :disabled="serverStatus !== 'offline'"
+                        @click="restoreBackupConfirm(backup)"
+                      >
+                        Restore
+                      </UButton>
+                      <UButton
+                        icon="i-lucide-trash-2"
+                        color="error"
+                        variant="ghost"
+                        size="sm"
+                        @click="deleteBackupConfirm(backup)"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Restore Confirmation Modal -->
+              <UModal v-model:open="showRestoreModal" class="">
+                <template #header>
+                  <div class="flex items-center gap-2 text-primary-500">
+                    <UIcon
+                      name="i-lucide-undo-2"
+                      class="w-5 h-5"
+                    />
+                    <h3 class="font-bold text-lg text-black dark:text-white">
+                      Restore Backup
+                    </h3>
+                  </div>
+                </template>
+                <template #body>
+                  <div class="space-y-4">
+                    <p class="text-gray-700 dark:text-gray-300">
+                      Are you sure you want to restore <span class="font-bold text-black dark:text-white">{{ selectedBackup?.name }}</span>?
+                    </p>
+                    <div class="bg-blue-500/10 border border-blue-500/30 p-3 rounded-lg text-sm text-blue-600 dark:text-blue-300">
+                      <UIcon name="i-lucide-info" class="w-4 h-4 inline mr-1" />
+                      A backup of the current state will be created automatically before restoring.
+                    </div>
+                  </div>
+                </template>
+                <template #footer>
+                  <div class="flex justify-end gap-2">
+                    <UButton
+                      color="neutral"
+                      variant="ghost"
+                      @click="showRestoreModal = false"
+                    >
+                      Cancel
+                    </UButton>
+                    <UButton
+                      color="primary"
+                      :loading="backupRestoring"
+                      @click="performRestore"
+                    >
+                      Restore Now
+                    </UButton>
+                  </div>
+                </template>
+              </UModal>
+
+              <!-- Delete Confirmation Modal -->
+              <UModal v-model:open="showDeleteBackupModal" class="">
+                <template #header>
+                  <div class="flex items-center gap-2 text-error-500">
+                    <UIcon
+                      name="i-lucide-trash-2"
+                      class="w-5 h-5"
+                    />
+                    <h3 class="font-bold text-lg text-black dark:text-white">
+                      Delete Backup
+                    </h3>
+                  </div>
+                </template>
+                <template #body>
+                  <p class="text-gray-700 dark:text-gray-300">
+                    Are you sure you want to delete <span class="font-bold text-black dark:text-white">{{ selectedBackup?.name }}</span>? This cannot be undone.
+                  </p>
+                </template>
+                <template #footer>
+                  <div class="flex justify-end gap-2">
+                    <UButton
+                      color="neutral"
+                      variant="ghost"
+                      @click="showDeleteBackupModal = false"
+                    >
+                      Cancel
+                    </UButton>
+                    <UButton
+                      color="error"
+                      :loading="backupDeleting"
+                      @click="performDelete"
+                    >
+                      Delete
+                    </UButton>
                   </div>
                 </template>
               </UModal>
@@ -976,19 +1296,19 @@
           <template #addons>
             <div class="h-full flex flex-col p-4 relative space-y-4">
               <!-- Toolbar -->
-              <div class="flex items-center justify-between bg-gray-900/50 p-4 rounded-xl border border-gray-800 backdrop-blur-sm">
+              <div class="flex items-center justify-between bg-gray-200 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-300 dark:border-gray-800 backdrop-blur-sm">
                 <div class="flex items-center gap-4">
                   <div class="p-3 bg-indigo-500/10 rounded-lg">
                     <UIcon
                       :name="addonsFolder === 'mods' ? 'i-lucide-package' : 'i-lucide-puzzle'"
-                      class="w-6 h-6 text-indigo-400"
+                      class="w-6 h-6 text-indigo-500 dark:text-indigo-400"
                     />
                   </div>
                   <div>
-                    <h3 class="font-bold text-lg text-white">
+                    <h3 class="font-bold text-lg text-black dark:text-white">
                       Installed {{ addonsFolder === 'mods' ? 'Mods' : 'Plugins' }}
                     </h3>
-                    <p class="text-sm text-gray-400 flex items-center gap-2">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
                       Manage your server extensions
                       <UBadge
                         size="xs"
@@ -1001,13 +1321,13 @@
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
-                  <div class="flex bg-gray-800 p-1 rounded-lg border border-gray-700/50">
+                  <div class="flex bg-gray-300 dark:bg-gray-800 p-1 rounded-lg border border-gray-400/50 dark:border-gray-700/50">
                     <UButton
                       variant="ghost"
                       size="xs"
                       color="neutral"
                       icon="i-lucide-grid-2x2"
-                      :class="{ 'bg-gray-700 text-white': viewMode === 'grid' }"
+                      :class="{ 'bg-white dark:bg-gray-700 text-black dark:text-white shadow-sm': viewMode === 'grid' }"
                       @click="viewMode = 'grid'"
                     />
                     <UButton
@@ -1015,11 +1335,11 @@
                       size="xs"
                       color="neutral"
                       icon="i-lucide-list"
-                      :class="{ 'bg-gray-700 text-white': viewMode === 'list' }"
+                      :class="{ 'bg-white dark:bg-gray-700 text-black dark:text-white shadow-sm': viewMode === 'list' }"
                       @click="viewMode = 'list'"
                     />
                   </div>
-                  <div class="h-8 w-px bg-gray-800 mx-2" />
+                  <div class="h-8 w-px bg-gray-300 dark:bg-gray-800 mx-2" />
                   <UButton
                     icon="i-lucide-download"
                     color="primary"
@@ -1035,28 +1355,28 @@
               <div class="flex-1 min-h-0 relative">
                 <div
                   v-if="loadingAddons"
-                  class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/50 backdrop-blur-sm z-10 rounded-xl"
+                  class="absolute inset-0 flex flex-col items-center justify-center bg-gray-100/80 dark:bg-gray-900/50 backdrop-blur-sm z-10 rounded-xl"
                 >
                   <UIcon
                     name="i-lucide-loader-2"
                     class="w-10 h-10 animate-spin text-primary-500 mb-4"
                   />
-                  <p class="text-gray-400 font-medium">
+                  <p class="text-gray-500 dark:text-gray-400 font-medium">
                     Loading extensions...
                   </p>
                 </div>
 
                 <div
                   v-else-if="addons.length === 0"
-                  class="flex flex-col items-center justify-center h-full text-gray-500 border-2 border-dashed border-gray-800 rounded-xl bg-gray-900/20"
+                  class="flex flex-col items-center justify-center h-full text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-800 rounded-xl bg-gray-50 dark:bg-gray-900/20"
                 >
-                  <div class="p-4 bg-gray-800/50 rounded-full mb-4">
+                  <div class="p-4 bg-gray-200 dark:bg-gray-800/50 rounded-full mb-4">
                     <UIcon
                       name="i-lucide-package-open"
                       class="w-10 h-10 opacity-50"
                     />
                   </div>
-                  <h4 class="text-lg font-bold text-gray-300">
+                  <h4 class="text-lg font-bold text-gray-900 dark:text-gray-300">
                     No extensions installed
                   </h4>
                   <p class="text-sm mb-6">
@@ -1083,29 +1403,29 @@
                     <div
                       v-for="mod in addons"
                       :key="mod.fileName"
-                      class="group bg-gray-900/50 border border-gray-800 rounded-xl p-4 hover:border-primary-500/50 hover:bg-gray-800/80 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 relative"
+                      class="group bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4 hover:border-primary-500/50 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 relative"
                     >
                       <div class="flex items-start gap-4 mb-3">
                         <div class="relative flex-shrink-0">
                           <img
                             v-if="mod.icon"
                             :src="mod.icon"
-                            class="w-12 h-12 rounded-lg bg-gray-800 object-cover shadow-sm group-hover:scale-105 transition-transform"
+                            class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 object-cover shadow-sm group-hover:scale-105 transition-transform"
                             alt="Icon"
                             @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
                           >
                           <div
                             v-else
-                            class="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center border border-gray-700"
+                            class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700"
                           >
                             <UIcon
                               name="i-lucide-box"
-                              class="w-6 h-6 text-gray-500"
+                              class="w-6 h-6 text-gray-400 dark:text-gray-500"
                             />
                           </div>
                           <div
                             v-if="mod.source === 'modrinth'"
-                            class="absolute -bottom-1 -right-1 bg-gray-900 rounded-full p-0.5"
+                            class="absolute -bottom-1 -right-1 bg-gray-100 dark:bg-gray-900 rounded-full p-0.5"
                           >
                             <UIcon
                               name="i-simple-icons-modrinth"
@@ -1117,7 +1437,7 @@
                         <div class="min-w-0 flex-1">
                           <div class="flex items-start justify-between gap-2">
                             <h4
-                              class="font-bold text-white truncate text-base pt-0.5"
+                              class="font-bold text-gray-900 dark:text-white truncate text-base pt-0.5"
                               :title="mod.title"
                             >
                               {{ mod.title }}
@@ -1129,7 +1449,7 @@
                         </div>
                       </div>
 
-                      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-800/50 group-hover:border-gray-700/50 transition-colors">
+                      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-800/50 group-hover:border-gray-300 dark:group-hover:border-gray-700/50 transition-colors">
                         <div class="flex gap-2">
                           <UBadge
                             v-if="mod.versionId"
@@ -1156,7 +1476,7 @@
                             color="success"
                             @update:model-value="toggleAddon(mod)"
                           />
-                          <div class="w-px h-4 bg-gray-700 mx-1" />
+                          <div class="w-px h-4 bg-gray-300 dark:bg-gray-700 mx-1" />
                           <UTooltip
                             v-if="mod.source === 'modrinth' && mod.latestVersionId"
                             :text="`Update to ${mod.latestVersionNumber}`"
@@ -1173,7 +1493,7 @@
                             v-if="mod.slug"
                             :href="`https://modrinth.com/mod/${mod.slug}`"
                             target="_blank"
-                            class="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors"
+                            class="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                           >
                             <UIcon
                               name="i-lucide-external-link"
@@ -1200,28 +1520,28 @@
                     <div
                       v-for="addon in addons"
                       :key="addon.fileName"
-                      class="group bg-gray-900/30 border border-gray-800 hover:bg-gray-800/50 hover:border-gray-700 rounded-lg p-3 flex items-center gap-4 transition-all"
+                      class="group bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:border-gray-300 dark:hover:border-gray-700 rounded-lg p-3 flex items-center gap-4 transition-all"
                     >
                       <div class="flex-shrink-0 relative">
                         <img
                           v-if="addon.icon"
                           :src="addon.icon"
-                          class="w-10 h-10 rounded-lg object-cover bg-gray-800"
+                          class="w-10 h-10 rounded-lg object-cover bg-gray-100 dark:bg-gray-800"
                         >
                         <div
                           v-else
-                          class="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center"
+                          class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center"
                         >
                           <UIcon
                             name="i-lucide-box"
-                            class="w-5 h-5 text-gray-500"
+                            class="w-5 h-5 text-gray-400 dark:text-gray-500"
                           />
                         </div>
                       </div>
 
                       <div class="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                         <div>
-                          <div class="font-bold text-white truncate flex items-center gap-2">
+                          <div class="font-bold text-gray-900 dark:text-white truncate flex items-center gap-2">
                             {{ addon.title || addon.fileName }}
                             <UIcon
                               v-if="addon.source === 'modrinth'"
@@ -1260,7 +1580,7 @@
                             size="md"
                             @update:model-value="toggleAddon(addon)"
                           />
-                          <div class="w-px h-5 bg-gray-700 mx-1" />
+                          <div class="w-px h-5 bg-gray-300 dark:bg-gray-700 mx-1" />
                           <UTooltip
                             v-if="addon.source === 'modrinth' && addon.latestVersionId"
                             :text="`Update to ${addon.latestVersionNumber}`"
@@ -1303,8 +1623,8 @@
               <UModal
                 v-model:open="showModrinthModal"
                 fullscreen
-                :ui="{ base: 'bg-gray-950', ring: 'ring-1 ring-gray-800' }"
-                class="dark "
+                :ui="{ base: 'bg-white dark:bg-gray-950', ring: 'ring-1 ring-gray-200 dark:ring-gray-800' }"
+                class=" "
               >
                 <template #header>
                   <div class="flex items-center justify-between w-full gap-4 py-2">
@@ -1316,7 +1636,7 @@
                         />
                       </div>
                       <div>
-                        <h2 class="text-lg font-bold text-white">
+                        <h2 class="text-lg font-bold text-black dark:text-white">
                           Browse {{ addonsFolder === 'mods' ? 'Mods' : 'Plugins' }}
                         </h2>
                         <p class="text-xs text-gray-500">
@@ -1325,7 +1645,7 @@
                       </div>
                     </div>
 
-                    <div class="flex items-center gap-3 flex-1 max-w-xl bg-gray-900 border border-gray-800 p-1 rounded-xl">
+                    <div class="flex items-center gap-3 flex-1 max-w-xl bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-1 rounded-xl">
                       <UInput
                         v-model="modrinthQuery"
                         icon="i-lucide-search"
@@ -1336,7 +1656,7 @@
                         autofocus
                         @keydown.enter="searchModrinth"
                       />
-                      <div class="w-px h-6 bg-gray-800" />
+                      <div class="w-px h-6 bg-gray-200 dark:bg-gray-800" />
                       <USelectMenu
                         v-model="modrinthSort"
                         :items="sortOptions"
@@ -1353,16 +1673,16 @@
                       color="neutral"
                       variant="ghost"
                       size="lg"
-                      class="hover:bg-gray-800 rounded-xl"
+                      class="hover:bg-gray-200 dark:hover:bg-gray-800 rounded-xl"
                       @click="showModrinthModal = false"
                     />
                   </div>
                 </template>
 
                 <template #body>
-                  <div class="flex h-full bg-gray-950">
+                  <div class="flex h-full bg-white dark:bg-gray-950">
                     <!-- Categories Sidebar -->
-                    <div class="w-64 border-r border-gray-800/50 bg-gray-900/20 overflow-y-auto flex-shrink-0 p-4 space-y-2 custom-scrollbar">
+                    <div class="w-64 border-r border-gray-200 dark:border-gray-800/50 bg-gray-50 dark:bg-gray-900/20 overflow-y-auto flex-shrink-0 p-4 space-y-2 custom-scrollbar">
                       <div class="mb-4">
                         <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-2">
                           Filters
@@ -1390,8 +1710,8 @@
                             :key="cat.name"
                             class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left transition-all border border-transparent"
                             :class="selectedCategory === cat.name
-                              ? 'bg-primary-500/10 text-primary-400 border-primary-500/20 shadow-sm'
-                              : 'hover:bg-gray-800 text-gray-400 hover:text-gray-200'"
+                              ? 'bg-primary-500/10 text-primary-500 dark:text-primary-400 border-primary-500/20 shadow-sm'
+                              : 'hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-gray-200'"
                             @click="selectedCategory = cat.name; searchModrinth()"
                           >
                             <span
@@ -1410,7 +1730,7 @@
                     </div>
 
                     <!-- Results Grid -->
-                    <div class="flex-1 overflow-y-auto p-6 bg-dots-dark">
+                    <div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-dots-dark">
                       <div
                         v-if="searchingModrinth"
                         class="flex flex-col items-center justify-center h-[50vh]"
@@ -1428,13 +1748,13 @@
                         v-else-if="modrinthResults.length === 0"
                         class="flex flex-col items-center justify-center h-[50vh] text-center text-gray-500"
                       >
-                        <div class="p-6 bg-gray-900 rounded-full border border-gray-800 mb-4 shadow-xl">
+                        <div class="p-6 bg-gray-100 dark:bg-gray-900 rounded-full border border-gray-200 dark:border-gray-800 mb-4 shadow-xl">
                           <UIcon
                             name="i-lucide-search"
                             class="w-12 h-12 opacity-30"
                           />
                         </div>
-                        <h3 class="text-xl font-bold text-gray-300 mb-2">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-300 mb-2">
                           No results found
                         </h3>
                         <p class="max-w-md mx-auto">
@@ -1449,21 +1769,21 @@
                         <div
                           v-for="hit in modrinthResults"
                           :key="hit.slug"
-                          class="flex gap-4 p-4 rounded-xl bg-gray-900 border border-gray-800 hover:border-primary-500/30 hover:bg-gray-800/80 transition-all hover:shadow-lg group"
+                          class="flex gap-4 p-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-primary-500/30 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-all hover:shadow-lg group"
                         >
                           <img
                             :src="hit.icon_url || 'https://cdn.modrinth.com/placeholder.svg'"
-                            class="w-20 h-20 rounded-xl bg-gray-800 object-cover flex-shrink-0 shadow-md group-hover:scale-105 transition-transform duration-300"
+                            class="w-20 h-20 rounded-xl bg-gray-100 dark:bg-gray-800 object-cover flex-shrink-0 shadow-md group-hover:scale-105 transition-transform duration-300"
                           >
                           <div class="flex-1 min-w-0 flex flex-col">
                             <div class="flex items-start justify-between gap-2 mb-1">
                               <div>
-                                <h4 class="font-bold text-lg text-white truncate group-hover:text-primary-400 transition-colors">
+                                <h4 class="font-bold text-lg text-black dark:text-white truncate group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
                                   {{ hit.title }}
                                 </h4>
-                                <div class="text-xs text-gray-400 flex items-center gap-1.5">
+                                <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
                                   <span>by {{ hit.author }}</span>
-                                  <span class="w-1 h-1 bg-gray-600 rounded-full" />
+                                  <span class="w-1 h-1 bg-gray-400 dark:bg-gray-600 rounded-full" />
                                   <span class="flex items-center gap-0.5"><UIcon
                                     name="i-lucide-download"
                                     class="w-3 h-3"
@@ -1485,16 +1805,16 @@
                               </UBadge>
                             </div>
 
-                            <p class="text-sm text-gray-400 line-clamp-2 mb-3 flex-1 leading-relaxed">
+                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3 flex-1 leading-relaxed">
                               {{ hit.description }}
                             </p>
 
-                            <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-800/50">
+                            <div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-200 dark:border-gray-800/50">
                               <div class="flex gap-1.5 flex-wrap">
                                 <span
                                   v-for="cat in (hit.categories || []).slice(0, 3)"
                                   :key="cat"
-                                  class="px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-gray-800 text-gray-400 border border-gray-700/50"
+                                  class="px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700/50"
                                 >
                                   {{ cat }}
                                 </span>
@@ -1533,9 +1853,9 @@
                     <div class="flex items-center gap-2">
                       <UIcon
                         name="i-lucide-users"
-                        class="w-5 h-5 text-indigo-400"
+                        class="w-5 h-5 text-indigo-500 dark:text-indigo-400"
                       />
-                      <h3 class="font-bold text-lg text-white">
+                      <h3 class="font-bold text-lg text-black dark:text-white">
                         Online Players
                       </h3>
                     </div>
@@ -1548,7 +1868,7 @@
                     </UBadge>
                   </div>
 
-                  <UCard class="h-[400px] flex flex-col">
+                  <UCard :ui="{ root: 'bg-gray-200 dark:bg-gray-900 ring-1 ring-gray-300 dark:ring-gray-800' }" class="h-[400px] flex flex-col">
                     <template #header>
                       <div class="flex justify-between items-center py-1">
                         <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Player List</span>
@@ -1568,7 +1888,7 @@
                         v-if="serverStatus !== 'online'"
                         class="h-full flex flex-col items-center justify-center text-gray-500"
                       >
-                        <div class="p-4 bg-gray-900/50 rounded-full mb-3">
+                        <div class="p-4 bg-gray-300 dark:bg-gray-900/50 rounded-full mb-3 flex items-center justify-center">
                           <UIcon
                             name="i-lucide-wifi-off"
                             class="w-8 h-8 opacity-40"
@@ -1582,7 +1902,7 @@
                         v-else-if="onlinePlayers.length === 0"
                         class="h-full flex flex-col items-center justify-center text-gray-500"
                       >
-                        <div class="p-4 bg-gray-900/50 rounded-full mb-3">
+                        <div class="p-4 bg-gray-300 dark:bg-gray-900/50 rounded-full mb-3">
                           <UIcon
                             name="i-lucide-user"
                             class="w-8 h-8 opacity-40"
@@ -1596,15 +1916,15 @@
                         v-for="player in onlinePlayers"
                         v-else
                         :key="player"
-                        class="flex items-center justify-between p-3 bg-gray-900/40 rounded-xl border border-transparent hover:border-gray-700/50 hover:bg-gray-800/60 transition-all group"
+                        class="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900/40 rounded-xl border border-transparent hover:border-gray-300 dark:hover:border-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-800/60 transition-all group"
                       >
                         <div class="flex items-center gap-3">
                           <img
                             :src="`https://mc-heads.net/avatar/${player}/40`"
-                            class="w-10 h-10 rounded-lg bg-gray-800 shadow-sm"
+                            class="w-10 h-10 rounded-lg bg-gray-300 dark:bg-gray-800 shadow-sm"
                             :alt="player"
                           >
-                          <span class="font-bold text-gray-200">{{ player }}</span>
+                          <span class="font-bold text-gray-700 dark:text-gray-200">{{ player }}</span>
                         </div>
                         <div class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
                           <UTooltip text="Quick Actions">
@@ -1634,9 +1954,9 @@
                     <div class="flex items-center gap-2">
                       <UIcon
                         name="i-lucide-shield-check"
-                        class="w-5 h-5 text-emerald-400"
+                        class="w-5 h-5 text-emerald-500 dark:text-emerald-400"
                       />
-                      <h3 class="font-bold text-lg text-white">
+                      <h3 class="font-bold text-lg text-black dark:text-white">
                         Whitelist
                       </h3>
                     </div>
@@ -1649,7 +1969,7 @@
                     </UBadge>
                   </div>
 
-                  <UCard class="h-[400px] flex flex-col">
+                  <UCard :ui="{ root: 'bg-gray-200 dark:bg-gray-900 ring-1 ring-gray-300 dark:ring-gray-800' }" class="h-[400px] flex flex-col">
                     <template #header>
                       <div class="flex items-center gap-2 py-1">
                         <UInput
@@ -1687,16 +2007,16 @@
                         v-for="entry in whitelist"
                         v-else
                         :key="entry.uuid"
-                        class="flex items-center justify-between p-3 bg-gray-900/40 rounded-xl border border-transparent hover:border-gray-700/50 hover:bg-gray-800/60 transition-all group"
+                        class="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900/40 rounded-xl border border-transparent hover:border-gray-300 dark:hover:border-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-800/60 transition-all group"
                       >
                         <div class="flex items-center gap-3">
                           <img
                             :src="`https://mc-heads.net/avatar/${entry.name}/40`"
-                            class="w-10 h-10 rounded-lg bg-gray-800 shadow-sm"
+                            class="w-10 h-10 rounded-lg bg-gray-300 dark:bg-gray-800 shadow-sm"
                             :alt="entry.name"
                           >
                           <div class="flex flex-col">
-                            <span class="font-bold text-gray-200">{{ entry.name }}</span>
+                            <span class="font-bold text-gray-700 dark:text-gray-200">{{ entry.name }}</span>
                             <span class="text-[10px] text-gray-500 font-mono">{{ entry.uuid.substring(0, 8) }}...</span>
                           </div>
                         </div>
@@ -1719,9 +2039,9 @@
                     <div class="flex items-center gap-2">
                       <UIcon
                         name="i-lucide-crown"
-                        class="w-5 h-5 text-amber-400"
+                        class="w-5 h-5 text-amber-500 dark:text-amber-400"
                       />
-                      <h3 class="font-bold text-lg text-white">
+                      <h3 class="font-bold text-lg text-black dark:text-white">
                         Operators
                       </h3>
                     </div>
@@ -1734,7 +2054,7 @@
                     </UBadge>
                   </div>
 
-                  <UCard class="h-[400px] flex flex-col">
+                  <UCard :ui="{ root: 'bg-gray-200 dark:bg-gray-900 ring-1 ring-gray-300 dark:ring-gray-800' }" class="h-[400px] flex flex-col">
                     <template #header>
                       <div class="flex items-center gap-2 py-1">
                         <UInput
@@ -1772,16 +2092,16 @@
                         v-for="entry in operators"
                         v-else
                         :key="entry.uuid"
-                        class="flex items-center justify-between p-3 bg-gray-900/40 rounded-xl border border-transparent hover:border-gray-700/50 hover:bg-gray-800/60 transition-all group"
+                        class="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900/40 rounded-xl border border-transparent hover:border-gray-300 dark:hover:border-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-800/60 transition-all group"
                       >
                         <div class="flex items-center gap-3">
                           <img
                             :src="`https://mc-heads.net/avatar/${entry.name}/40`"
-                            class="w-10 h-10 rounded-lg bg-gray-800 shadow-sm"
+                            class="w-10 h-10 rounded-lg bg-gray-300 dark:bg-gray-800 shadow-sm"
                             :alt="entry.name"
                           >
                           <div class="flex flex-col">
-                            <span class="font-bold text-gray-200">{{ entry.name }}</span>
+                            <span class="font-bold text-gray-700 dark:text-gray-200">{{ entry.name }}</span>
                             <UBadge
                               color="amber"
                               variant="subtle"
@@ -1811,9 +2131,9 @@
                     <div class="flex items-center gap-2">
                       <UIcon
                         name="i-lucide-gavel"
-                        class="w-5 h-5 text-rose-400"
+                        class="w-5 h-5 text-rose-500 dark:text-rose-400"
                       />
-                      <h3 class="font-bold text-lg text-white">
+                      <h3 class="font-bold text-lg text-black dark:text-white">
                         Bans
                       </h3>
                     </div>
@@ -1826,7 +2146,7 @@
                     </UBadge>
                   </div>
 
-                  <UCard class="h-[400px] flex flex-col">
+                  <UCard :ui="{ root: 'bg-gray-200 dark:bg-gray-900 ring-1 ring-gray-300 dark:ring-gray-800' }" class="h-[400px] flex flex-col">
                     <template #header>
                       <div class="flex items-center gap-2 py-1">
                         <UInput
@@ -1869,18 +2189,18 @@
                         v-for="entry in bannedPlayers"
                         v-else
                         :key="entry.uuid"
-                        class="flex items-center justify-between p-3 bg-gray-900/40 rounded-xl border border-transparent hover:border-gray-700/50 hover:bg-gray-800/60 transition-all group"
+                        class="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900/40 rounded-xl border border-transparent hover:border-gray-300 dark:hover:border-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-800/60 transition-all group"
                       >
                         <div class="flex items-center gap-3">
                           <img
                             :src="`https://mc-heads.net/avatar/${entry.name}/40`"
-                            class="w-10 h-10 rounded-lg bg-gray-800 shadow-sm"
+                            class="w-10 h-10 rounded-lg bg-gray-300 dark:bg-gray-800 shadow-sm"
                             :alt="entry.name"
                           >
                           <div class="flex flex-col min-w-0">
-                            <span class="font-bold text-gray-200">{{ entry.name }}</span>
+                            <span class="font-bold text-gray-700 dark:text-gray-200">{{ entry.name }}</span>
                             <span
-                              class="text-xs text-rose-400 truncate max-w-[150px]"
+                              class="text-xs text-rose-500 dark:text-rose-400 truncate max-w-[150px]"
                               :title="entry.reason"
                             >{{ entry.reason || 'No reason' }}</span>
                           </div>
@@ -1904,7 +2224,7 @@
         </UTabs>
       </div>
       <!-- EULA Modal -->
-      <UModal v-model:open="showEulaModal" class="dark ">
+      <UModal v-model:open="showEulaModal" class=" ">
         <template #header>
           <div class="flex items-center gap-2 text-warning-500">
             <UIcon
@@ -1952,7 +2272,7 @@
       </UModal>
 
       <!-- Properties Editor Modal -->
-      <UModal v-model:open="showPropertiesEditor" class="dark ">
+      <UModal v-model:open="showPropertiesEditor" class=" ">
         <template #header>
           <div class="flex items-center gap-2">
             <UIcon
@@ -2021,6 +2341,156 @@ const toast = useToast()
 const serverProcessStore = useServerProcessStore()
 const serversStore = useServersStore()
 const tunnelStore = useTunnelStore()
+const backupStore = useBackupStore()
+
+// ===== BACKUP SYSTEM =====
+import type { BackupInfo, BackupSettings } from '~/composables/useBackupStore'
+
+const backupList = ref<BackupInfo[]>([])
+const backupLoading = ref(false)
+const backupCreating = ref(false)
+const backupRestoring = ref(false)
+const backupDeleting = ref(false)
+const showRestoreModal = ref(false)
+const showDeleteBackupModal = ref(false)
+const selectedBackup = ref<BackupInfo | null>(null)
+const availableBackupFolders = ref<string[]>([])
+const backupSettings = reactive<BackupSettings>({
+	enabled: false,
+	interval_minutes: 30,
+	max_backups: 5,
+	custom_path: null,
+	included_folders: ['world', 'world_nether', 'world_the_end']
+})
+
+const backupTotalSize = computed(() => {
+	return backupList.value.reduce((sum, b) => sum + b.size_bytes, 0)
+})
+
+async function loadBackupList() {
+	backupLoading.value = true
+	try {
+		const folder = serverFolderName.value
+		backupList.value = await backupStore.loadBackups(folder)
+	} catch (e) {
+		console.error('Failed to load backups:', e)
+	} finally {
+		backupLoading.value = false
+	}
+}
+
+async function loadBackupSettings() {
+	try {
+		const folder = serverFolderName.value
+		const loaded = await backupStore.loadSettings(folder)
+		Object.assign(backupSettings, loaded)
+	} catch (e) {
+		console.error('Failed to load backup settings:', e)
+	}
+}
+
+async function loadAvailableBackupFolders() {
+	try {
+		const docDir = await documentDir()
+		const fullPath = await join(docDir, 'VoidLink/servers', serverFolderName.value)
+		availableBackupFolders.value = await backupStore.getAvailableFolders(fullPath)
+	} catch (e) {
+		console.error('Failed to load available folders:', e)
+		availableBackupFolders.value = ['world', 'world_nether', 'world_the_end']
+	}
+}
+
+async function saveBackupSettings() {
+	try {
+		const folder = serverFolderName.value
+		await backupStore.saveSettings(folder, { ...backupSettings })
+		toast.add({ title: 'Backup settings saved', color: 'success' })
+	} catch (e) {
+		console.error('Failed to save backup settings:', e)
+		toast.add({ title: 'Failed to save settings', description: String(e), color: 'error' })
+	}
+}
+
+function toggleBackupFolder(folder: string) {
+	const idx = backupSettings.included_folders.indexOf(folder)
+	if (idx === -1) {
+		backupSettings.included_folders.push(folder)
+	} else {
+		backupSettings.included_folders.splice(idx, 1)
+	}
+	saveBackupSettings()
+}
+
+async function createManualBackup() {
+	backupCreating.value = true
+	try {
+		const docDir = await documentDir()
+		const fullPath = await join(docDir, 'VoidLink/servers', serverFolderName.value)
+		await backupStore.createBackup(fullPath, serverFolderName.value, 'manual', backupSettings.included_folders)
+		await loadBackupList()
+		toast.add({ title: 'Backup created successfully', color: 'success' })
+	} catch (e) {
+		console.error('Failed to create backup:', e)
+		toast.add({ title: 'Failed to create backup', description: String(e), color: 'error' })
+	} finally {
+		backupCreating.value = false
+	}
+}
+
+function restoreBackupConfirm(backup: BackupInfo) {
+	selectedBackup.value = backup
+	showRestoreModal.value = true
+}
+
+async function performRestore() {
+	if (!selectedBackup.value) return
+	
+	backupRestoring.value = true
+	try {
+		const docDir = await documentDir()
+		const fullPath = await join(docDir, 'VoidLink/servers', serverFolderName.value)
+		await backupStore.restoreBackup(fullPath, serverFolderName.value, selectedBackup.value.id, backupSettings.included_folders)
+		await loadBackupList()
+		showRestoreModal.value = false
+		toast.add({ title: 'Backup restored successfully', description: 'A pre-restore backup was created automatically.', color: 'success' })
+	} catch (e) {
+		console.error('Failed to restore backup:', e)
+		toast.add({ title: 'Failed to restore backup', description: String(e), color: 'error' })
+	} finally {
+		backupRestoring.value = false
+	}
+}
+
+function deleteBackupConfirm(backup: BackupInfo) {
+	selectedBackup.value = backup
+	showDeleteBackupModal.value = true
+}
+
+async function performDelete() {
+	if (!selectedBackup.value) return
+	
+	backupDeleting.value = true
+	try {
+		await backupStore.deleteBackup(serverFolderName.value, selectedBackup.value.id)
+		await loadBackupList()
+		showDeleteBackupModal.value = false
+		toast.add({ title: 'Backup deleted', color: 'success' })
+	} catch (e) {
+		console.error('Failed to delete backup:', e)
+		toast.add({ title: 'Failed to delete backup', description: String(e), color: 'error' })
+	} finally {
+		backupDeleting.value = false
+	}
+}
+
+function formatBackupSize(bytes: number): string {
+	return backupStore.formatBytes(bytes)
+}
+
+function formatBackupDate(dateStr: string): string {
+	return backupStore.formatDate(dateStr)
+}
+// ===== END BACKUP SYSTEM =====
 
 const viewMode = ref<'grid' | 'list'>('grid')
 
@@ -3255,6 +3725,7 @@ const tabs = computed(() => {
     { label: 'Settings', icon: 'i-lucide-settings', value: 'settings', slot: 'settings' as const },
     { label: 'Mods/Plugins', icon: 'i-lucide-package', value: 'addons', slot: 'addons' as const },
     { label: 'Players', icon: 'i-lucide-users', value: 'players', slot: 'players' as const },
+    { label: 'Backups', icon: 'i-lucide-archive', value: 'backups', slot: 'backups' as const },
     { label: 'Crash Reports', icon: 'i-lucide-file-warning', value: 'crash-reports', slot: 'crash-reports' as const }
   ]
 
@@ -3288,6 +3759,11 @@ watch(selectedTab, async () => {
   }
   if (tab === 'crash-reports') {
     loadCrashReports()
+  }
+  if (tab === 'backups' && backupList.value.length === 0) {
+    loadBackupList()
+    loadBackupSettings()
+    loadAvailableBackupFolders()
   }
 })
 
@@ -4175,14 +4651,32 @@ async function confirmDeleteServer() {
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #1f2937;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #374151;
-  border-radius: 4px;
-}
+  @media (prefers-color-scheme: dark) {
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #1f2937;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #374151;
+      border-radius: 4px;
+    }
+
+  }
+
+  @media (prefers-color-scheme: light) {
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #dcebff;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #9bb2d6;
+      border-radius: 4px;
+    }
+
+  }
+
 </style>

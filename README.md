@@ -23,6 +23,8 @@ A modern, powerful, and easy-to-use desktop application for creating and managin
 
   ![server mods/plugins download](https://i.imgur.com/viQHTyq.png)
 
+  ![server backups](https://i.imgur.com/ZhFah7D.png)
+
   ![server players](https://i.imgur.com/lZQhGpH.png)
 </details>
 

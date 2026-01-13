@@ -1,5 +1,5 @@
 <template>
-  <UModal v-model:open="isOpen" class="max-w-2xl dark" description="">
+  <UModal v-model:open="isOpen" class="max-w-2xl" description="">
     <template #header>
       <div class="flex justify-between items-center w-full">
         <div class="flex items-center gap-3">
@@ -20,7 +20,7 @@
     <template #body>
       <!-- Not Authenticated -->
       <div v-if="!authStore.isAuthenticated" class="py-8 text-center">
-        <div class="p-4 bg-gray-800/60 rounded-full w-fit mx-auto mb-4">
+        <div class="p-4 flex items-center justify-center bg-gray-200 dark:bg-gray-800/60 rounded-full w-fit mx-auto mb-4">
           <UIcon name="i-lucide-lock" class="w-12 h-12 text-gray-400" />
         </div>
         <h4 class="text-lg font-medium mb-2">Sign in to use Tunnels</h4>
@@ -36,7 +36,7 @@
       <!-- Authenticated -->
       <div v-else class="space-y-4">
         <!-- User Info Bar -->
-        <div class="flex items-center justify-between p-3 bg-gray-800/60 rounded-lg border border-gray-700">
+        <div class="flex items-center justify-between p-3 bg-gray-200 dark:bg-gray-800/60 rounded-lg border border-gray-300 dark:border-gray-700">
           <div class="flex items-center gap-3">
             <div class="p-2 bg-success-500/20 rounded-lg flex justify-center items-center">
               <UIcon name="i-lucide-user-check" class="w-4 h-4 text-success-400" />
@@ -117,7 +117,7 @@
           <div 
             v-for="tunnel in tunnelStore.tunnels" 
             :key="tunnel.id"
-            class="p-4 bg-gray-800/60 rounded-lg border border-gray-700"
+            class="p-4 bg-sky-100/20 dark:bg-gray-800/60 rounded-lg border border-sky-200 dark:border-gray-700"
           >
             <!-- Tunnel Header -->
             <div class="flex items-center justify-between mb-3">
@@ -152,7 +152,7 @@
               <div 
                 v-for="port in tunnel.ports" 
                 :key="port.public_port"
-                class="flex items-center justify-between p-2 bg-gray-900/50 rounded text-sm"
+                class="flex items-center justify-between p-2 bg-sky-100 dark:bg-gray-800/50 rounded text-sm"
               >
                 <div class="flex items-center gap-2">
                   <span :class="['px-2 py-0.5 rounded text-xs font-medium', port.protocol === 'tcp' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400']">
@@ -189,7 +189,7 @@
   <AuthModal v-model:open="showAuthModal" @success="onAuthSuccess" />
 
   <!-- Create Tunnel Modal -->
-  <UModal v-model:open="showCreateModal" class="max-w-md dark">
+  <UModal v-model:open="showCreateModal" class="max-w-md">
     <template #header>
       <div class="flex justify-between items-center w-full">
         <h3 class="text-lg font-semibold">Create Tunnel</h3>
@@ -229,7 +229,7 @@
             <div 
               v-for="(port, idx) in newTunnel.ports" 
               :key="idx"
-              class="flex items-center gap-2 p-2 bg-gray-800/60 rounded-lg"
+              class="flex items-center gap-2 p-2 bg-gray-200 dark:bg-gray-800/60 rounded-lg"
             >
               <UInput 
                 v-model="port.label" 
@@ -248,7 +248,7 @@
               />
               <select 
                 v-model="port.protocol" 
-                class="px-2 py-2 bg-gray-700 rounded text-sm border border-gray-600"
+                class="px-2 py-2 bg-gray-300 dark:bg-gray-700 rounded text-sm border border-gray-400 dark:border-gray-600"
               >
                 <option value="tcp">TCP</option>
                 <option value="udp">UDP</option>
@@ -311,19 +311,19 @@
       </div>
 
       <div v-else class="space-y-4">
-        <p class="text-sm text-gray-400">Scan this QR code with your authenticator app (2FAS, Google Authenticator, etc.)</p>
+        <p class="text-sm text-gray-700 dark:text-gray-400">Scan this QR code with your authenticator app (2FAS, Google Authenticator, etc.)</p>
         
         <div class="flex justify-center">
           <img :src="totpSetupData.qr_code" alt="2FA QR Code" class="w-48 h-48 rounded-lg" />
         </div>
 
         <div class="text-center">
-          <p class="text-xs text-gray-500 mb-1">Or enter this code manually:</p>
+          <p class="text-xs text-black/50 dark:text-gray-500 mb-1">Or enter this code manually:</p>
           <code class="text-sm bg-gray-800 px-3 py-1 rounded">{{ totpSetupData.secret }}</code>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Verification Code</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Verification Code</label>
           <UInput 
             v-model="verifyCode" 
             placeholder="123456" 

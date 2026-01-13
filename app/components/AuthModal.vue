@@ -1,5 +1,5 @@
 <template>
-  <UModal v-model:open="isOpen" class="max-w-md dark">
+  <UModal v-model:open="isOpen" class="max-w-md">
     <template #header>
       <div class="flex justify-between items-center w-full">
         <div class="flex items-center gap-3">
@@ -33,7 +33,7 @@
         <template v-if="mode === 'login' || mode === 'register'">
           <!-- Email -->
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
             <UInput 
               v-model="email" 
               type="email" 
@@ -46,7 +46,7 @@
 
           <!-- Password -->
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
             <UInput 
               v-model="password" 
               type="password" 
@@ -59,7 +59,7 @@
 
           <!-- Confirm Password (Register only) -->
           <div v-if="mode === 'register'">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
             <UInput 
               v-model="confirmPassword" 
               type="password" 
@@ -72,7 +72,7 @@
 
           <!-- 2FA Code (Login only, when required) -->
           <div v-if="mode === 'login' && authStore.requires2FA">
-            <label class="block text-sm font-medium text-gray-300 mb-2">2FA Code</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">2FA Code</label>
             <UInput 
               v-model="totpCode" 
               type="text" 
@@ -107,7 +107,7 @@
           </UButton>
 
           <!-- Toggle -->
-          <div class="text-center text-sm text-gray-400">
+          <div class="text-center text-sm text-gray-500 dark:text-gray-400">
             {{ mode === 'login' ? "Don't have an account?" : "Already have an account?" }}
             <button 
               type="button" 
@@ -121,12 +121,12 @@
 
         <!-- Forgot Password Form -->
         <template v-if="mode === 'forgotPassword'">
-          <p class="text-sm text-gray-400 mb-4">
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Enter your email address and we'll send you a link to reset your password.
           </p>
 
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
             <UInput 
               v-model="email" 
               type="email" 
@@ -159,12 +159,12 @@
 
         <!-- Reset Password Form -->
         <template v-if="mode === 'resetPassword'">
-          <p class="text-sm text-gray-400 mb-4">
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Enter your new password below.
           </p>
 
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Verification Code</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Verification Code</label>
             <UInput 
               v-model="resetToken" 
               type="text" 
@@ -176,7 +176,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">New Password</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
             <UInput 
               v-model="password" 
               type="password" 
@@ -188,7 +188,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Confirm New Password</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
             <UInput 
               v-model="confirmPassword" 
               type="password" 

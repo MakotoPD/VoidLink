@@ -1,7 +1,7 @@
 <template>
   <UApp>
     <NuxtLoadingIndicator color="aqua" errorColor="red"  />
-    <div class="dark bg-gray-950 h-screen w-screen overflow-hidden">
+    <div class="bg-gray-50 dark:bg-gray-950 h-screen w-screen overflow-hidden">
       <NuxtLayout>
           <NuxtPage />
       </NuxtLayout>

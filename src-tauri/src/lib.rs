@@ -3,6 +3,7 @@ mod rcon;
 mod utils;
 mod logs;
 mod java;
+mod backup;
 
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
@@ -427,6 +428,16 @@ pub fn run() {
             // Logs commands
             logs::list_crash_reports_cmd,
             logs::read_crash_report_cmd,
+            // Backup commands
+            backup::backup_create_cmd,
+            backup::backup_list_cmd,
+            backup::backup_restore_cmd,
+            backup::backup_delete_cmd,
+            backup::backup_rotate_cmd,
+            backup::backup_stats_cmd,
+            backup::backup_get_folders_cmd,
+            backup::backup_load_settings_cmd,
+            backup::backup_save_settings_cmd,
         ])
         .on_window_event(|_window, event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event {
