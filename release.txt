@@ -1,3 +1,13 @@
+## Changes (v0.4.2)
+
+### 🐛 Bug Fixes
+- **Linux Close Button**: Fixed the window close button stopping to work after restoring from system tray. Close handling is now managed natively in the Rust backend, preventing listener loss on hide/show cycles.
+- **Linux Open Folder**: Fixed "Open Server Folder" not working on Linux. Now correctly uses `xdg-open` instead of macOS-only `open` command.
+
+### ✨ Features & Improvements
+- **Monochromatic Tray Icon**: Replaced the default app icon in the system tray with a dedicated monochromatic icon for better visibility on all desktop environments.
+- **Native Tray Menu Separators**: Replaced text-based separators with native OS separators in the system tray menu. Server status icons now use Unicode characters (● ○) for consistent rendering across platforms.
+
 ## Changes (v0.4.1)
 
 ### 🐛 Bug Fixes

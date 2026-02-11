@@ -7,25 +7,20 @@ mod backup;
 
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
 use sysinfo::{Pid, ProcessesToUpdate, System};
 use local_ip_address::local_ip;
 use tauri::{
-    menu::{Menu, MenuItem},
+    menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Manager, Emitter,
 };
 
-// ... (existing helper functions unchanged if not shown here, assuming replace_file_content target context works)
-
-// Skip to invoke_handler
-// But I need to be careful with replace_file_content. It replaces a contiguous block. 
-// I will do two edits or one large edit.
-// Let's use multi_replace for safety if I need to touch top and bottom.
-// Oh wait, replace_file_content replaces ONE block. 
-// I should use multi_replace_file_content to add `mod logs;` at top and commands at bottom.
-
 // Store app handle globally for menu updates
 static APP_HANDLE: Mutex<Option<tauri::AppHandle>> = Mutex::new(None);
+
+// Close behavior flag — synced from frontend settings
+static MINIMIZE_ON_CLOSE: AtomicBool = AtomicBool::new(true);
 
 #[derive(Serialize)]
 pub struct ProcessInfo {
@@ -51,20 +46,20 @@ pub struct TrayServer {
 fn get_process_info(pid: u32) -> Option<ProcessInfo> {
     let mut sys = System::new();
     sys.refresh_processes(ProcessesToUpdate::All, true);
-    
+
     let target_pid = Pid::from_u32(pid);
-    
+
     // Check if target exists
     if sys.process(target_pid).is_none() {
         return None;
     }
-    
+
     // Windows: Find the actual Java child process (the shell wrapper doesn't use CPU)
     #[cfg(target_os = "windows")]
     let cpu_pid = find_java_child(&sys, target_pid).unwrap_or(pid);
     #[cfg(not(target_os = "windows"))]
     let cpu_pid = pid;
-    
+
     // Get memory - sum child processes on Windows
     #[cfg(target_os = "windows")]
     let mem = {
@@ -90,19 +85,19 @@ fn get_process_info(pid: u32) -> Option<ProcessInfo> {
         }
         sum_memory(&sys, target_pid, &mut visited)
     };
-    
-    // Linux/macOS: Only main process (avoid shared lib double-counting)
+
+    // Linux/macOS: Only main process (shared libs cause double-counting in tree sum)
     #[cfg(not(target_os = "windows"))]
     let mem = match sys.process(target_pid) {
         Some(proc) => proc.memory(),
         None => return None,
     };
-    
+
     // CPU: Platform-specific measurement
     let cpu = get_process_cpu(cpu_pid);
-    
+
     log::info!("Process {} (cpu_pid={}): {} bytes, {}% CPU", pid, cpu_pid, mem, cpu);
-    
+
     Some(ProcessInfo {
         memory_bytes: mem,
         cpu_usage: cpu,
@@ -200,12 +195,12 @@ fn get_process_cpu(pid: u32) -> f32 {
     sys.refresh_processes(ProcessesToUpdate::All, true);
     std::thread::sleep(std::time::Duration::from_millis(200));
     sys.refresh_processes(ProcessesToUpdate::All, true);
-    
+
     let target_pid = Pid::from_u32(pid);
     if let Some(proc) = sys.process(target_pid) {
-        let cpu = proc.cpu_usage();
-        let cpu_count = sys.cpus().len() as f32;
-        if cpu_count > 0.0 { cpu / cpu_count } else { cpu }
+        // cpu_usage() returns per-core % (e.g. 50% = half of one core)
+        // Matches Windows GetProcessTimes behavior before normalization
+        proc.cpu_usage()
     } else {
         0.0
     }
@@ -236,37 +231,29 @@ fn update_tray_servers(servers: Vec<TrayServer>) -> Result<(), String> {
     let handle_guard = APP_HANDLE.lock().map_err(|e| e.to_string())?;
     let app = handle_guard.as_ref().ok_or("App handle not initialized")?;
     
-    let mut menu_items: Vec<MenuItem<tauri::Wry>> = vec![];
-    
-    if let Ok(item) = MenuItem::new(app, "VoidLink", false, None::<&str>) {
-        menu_items.push(item);
-    }
-    
-    if let Ok(item) = MenuItem::new(app, "─────────────", false, None::<&str>) {
-        menu_items.push(item);
-    }
-    
-    for server in &servers {
-        let status_icon = if server.status == "online" { "▶" } else { "⏹" };
+    let title = MenuItem::new(app, "VoidLink", false, None::<&str>).map_err(|e| e.to_string())?;
+    let show = MenuItem::with_id(app, "show", "Show VoidLink", true, None::<&str>).map_err(|e| e.to_string())?;
+    let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>).map_err(|e| e.to_string())?;
+    let sep = PredefinedMenuItem::separator(app).map_err(|e| e.to_string())?;
+
+    let mut items: Vec<&dyn tauri::menu::IsMenuItem<tauri::Wry>> = vec![&title, &sep];
+
+    let server_items: Vec<MenuItem<tauri::Wry>> = servers.iter().filter_map(|server| {
+        let status_icon = if server.status == "online" { "●" } else { "○" };
         let label = format!("{} {}", status_icon, server.name);
-        if let Ok(item) = MenuItem::with_id(app, format!("server_{}", server.id), label, true, None::<&str>) {
-            menu_items.push(item);
-        }
+        MenuItem::with_id(app, format!("server_{}", server.id), label, true, None::<&str>).ok()
+    }).collect();
+
+    for item in &server_items {
+        items.push(item);
     }
-    
-    if let Ok(item) = MenuItem::new(app, "─────────────", false, None::<&str>) {
-        menu_items.push(item);
-    }
-    
-    if let Ok(item) = MenuItem::with_id(app, "show", "Show VoidLink", true, None::<&str>) {
-        menu_items.push(item);
-    }
-    if let Ok(item) = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>) {
-        menu_items.push(item);
-    }
-    
-    let menu = Menu::with_items(app, &menu_items.iter().map(|i| i as &dyn tauri::menu::IsMenuItem<tauri::Wry>).collect::<Vec<_>>())
-        .map_err(|e| e.to_string())?;
+
+    let sep2 = PredefinedMenuItem::separator(app).map_err(|e| e.to_string())?;
+    items.push(&sep2);
+    items.push(&show);
+    items.push(&quit);
+
+    let menu = Menu::with_items(app, &items).map_err(|e| e.to_string())?;
     
     if let Some(tray) = app.tray_by_id("main-tray") {
         let _ = tray.set_menu(Some(menu));
@@ -305,6 +292,12 @@ fn kill_process(pid: u32) -> bool {
 }
 
 #[tauri::command]
+fn set_minimize_on_close(enabled: bool) {
+    MINIMIZE_ON_CLOSE.store(enabled, Ordering::Relaxed);
+    log::info!("minimize_on_close set to {}", enabled);
+}
+
+#[tauri::command]
 fn quit_app() {
     frp::stop_all_tunnels();
     std::process::exit(0);
@@ -333,13 +326,19 @@ pub fn run() {
                 )?;
             }
             
+            let title = MenuItem::new(app, "VoidLink", false, None::<&str>)?;
+            let sep = PredefinedMenuItem::separator(app)?;
             let show = MenuItem::with_id(app, "show", "Show VoidLink", true, None::<&str>)?;
             let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&show, &quit])?;
+            let menu = Menu::with_items(app, &[&title, &sep, &show, &quit])?;
             
+            let tray_icon_bytes = include_bytes!("../icons/tray-icon.png");
+            let tray_icon = tauri::image::Image::from_bytes(tray_icon_bytes)
+                .expect("Failed to load tray icon");
+
             let _tray = TrayIconBuilder::with_id("main-tray")
                 .tooltip("VoidLink")
-                .icon(app.default_window_icon().unwrap().clone())
+                .icon(tray_icon)
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app: &tauri::AppHandle, event| {
@@ -404,12 +403,24 @@ pub fn run() {
         }))
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                if MINIMIZE_ON_CLOSE.load(Ordering::Relaxed) {
+                    let _ = window.hide();
+                } else {
+                    // Emit event to frontend for graceful cleanup (kill servers etc.)
+                    let _ = window.emit("app-quit-requested", ());
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             get_process_info,
             get_system_info,
             get_local_ip,
             update_tray_servers,
             kill_process,
+            set_minimize_on_close,
             quit_app,
             cleanup_and_quit,
             // FRP Tunnel commands
@@ -439,12 +450,6 @@ pub fn run() {
             backup::backup_load_settings_cmd,
             backup::backup_save_settings_cmd,
         ])
-        .on_window_event(|_window, event| {
-            if let tauri::WindowEvent::CloseRequested { .. } = event {
-                // Cleanup all FRP tunnels when window closes
-                frp::stop_all_tunnels();
-            }
-        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

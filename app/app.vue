@@ -144,42 +144,26 @@ onMounted(async () => {
   // Load Global Settings
   await loadSettings()
   
-  // Setup Window Close Behavior
-  const appWindow = getCurrentWindow()
-  unlistenClose = await appWindow.onCloseRequested(async (event) => {
-      try {
-         // Check settings state directly from store
-         const minimize = settings.value.minimizeOnClose
-         
-         if (minimize) {
-            event.preventDefault()
-            await appWindow.hide()
-         } else {
-            event.preventDefault() // Prevent native close to ensure we can run cleanup and backend quit
-            // Kill all running servers before exiting
-            const processStore = useServerProcessStore()
-            await processStore.killAllServers()
-            
-            // Explicitly handle close to avoid ambiguity
-            // We must unlisten to avoid infinite loop when we call close()
-            if (unlistenClose) {
-                unlistenClose()
-                unlistenClose = null
-            }
-            // Use backend quit for reliable exit on all platforms (inc. MacOS)
-            // This also stops all FRP tunnels
-            await invoke('quit_app')
-         }
-      } catch (e) {
-         console.error('Error handling close request', e)
-         // Fallback close on error
-         if (unlistenClose) {
-            unlistenClose()
-            unlistenClose = null
-         }
-         await appWindow.close()
-      }
+  // Sync minimize-on-close setting to Rust backend (handles close natively)
+  await invoke('set_minimize_on_close', { enabled: settings.value.minimizeOnClose })
+
+  // Watch for setting changes and sync to Rust
+  watch(() => settings.value.minimizeOnClose, async (val) => {
+    await invoke('set_minimize_on_close', { enabled: val })
   })
+
+  // Listen for quit request from Rust (when minimizeOnClose is false)
+  const { listen } = await import('@tauri-apps/api/event')
+  unlistenClose = (await listen('app-quit-requested', async () => {
+    try {
+      const processStore = useServerProcessStore()
+      await processStore.killAllServers()
+      await invoke('quit_app')
+    } catch (e) {
+      console.error('Error during quit cleanup', e)
+      await invoke('quit_app')
+    }
+  })) as unknown as (() => void)
   
   // Load servers for tray menu
   await loadServers()

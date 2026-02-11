@@ -1406,7 +1406,7 @@
                       class="group bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4 hover:border-primary-500/50 hover:bg-gray-50 dark:hover:bg-gray-800/80 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 relative"
                     >
                       <div class="flex items-start gap-4 mb-3">
-                        <div class="relative flex-shrink-0">
+                        <div class="relative shrink-0">
                           <img
                             v-if="mod.icon"
                             :src="mod.icon"
@@ -1522,7 +1522,7 @@
                       :key="addon.fileName"
                       class="group bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:border-gray-300 dark:hover:border-gray-700 rounded-lg p-3 flex items-center gap-4 transition-all"
                     >
-                      <div class="flex-shrink-0 relative">
+                      <div class="shrink-0 relative">
                         <img
                           v-if="addon.icon"
                           :src="addon.icon"
@@ -1682,7 +1682,7 @@
                 <template #body>
                   <div class="flex h-full bg-white dark:bg-gray-950">
                     <!-- Categories Sidebar -->
-                    <div class="w-64 border-r border-gray-200 dark:border-gray-800/50 bg-gray-50 dark:bg-gray-900/20 overflow-y-auto flex-shrink-0 p-4 space-y-2 custom-scrollbar">
+                    <div class="w-64 border-r border-gray-200 dark:border-gray-800/50 bg-gray-50 dark:bg-gray-900/20 overflow-y-auto shrink-0 p-4 space-y-2 custom-scrollbar">
                       <div class="mb-4">
                         <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-2">
                           Filters
@@ -1715,7 +1715,7 @@
                             @click="selectedCategory = cat.name; searchModrinth()"
                           >
                             <span
-                              class="w-4 h-4 flex-shrink-0 opacity-80"
+                              class="w-4 h-4 shrink-0 opacity-80"
                               v-html="cat.icon"
                             />
                             <span class="capitalize truncate flex-1">{{ cat.name.replace(/-/g, ' ') }}</span>
@@ -1730,7 +1730,7 @@
                     </div>
 
                     <!-- Results Grid -->
-                    <div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-dots-dark">
+                    <div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-950">
                       <div
                         v-if="searchingModrinth"
                         class="flex flex-col items-center justify-center h-[50vh]"
@@ -2325,7 +2325,8 @@
 <script setup lang="ts">
 import { readTextFile, writeTextFile, readDir, remove, exists, mkdir, writeFile, rename, copyFile, readFile, BaseDirectory } from '@tauri-apps/plugin-fs'
 import { fetch } from '@tauri-apps/plugin-http'
-import { Command, type Child, open } from '@tauri-apps/plugin-shell'
+import { Command, type Child } from '@tauri-apps/plugin-shell'
+import { platform } from '@tauri-apps/plugin-os'
 import { open as openDialog } from '@tauri-apps/plugin-dialog'
 import { join, documentDir } from '@tauri-apps/api/path'
 
@@ -3701,15 +3702,15 @@ async function openServerFolder() {
     const docDir = await documentDir()
     const fullPath = await join(docDir, relative)
 
-    // Detect platform
-    const isWindows = navigator.userAgent.includes('Windows')
-
-    if (isWindows) {
+    const os = await platform()
+    if (os === 'windows') {
       const command = Command.create('run-bat', ['/C', 'start .'], { cwd: fullPath })
       await command.spawn()
-    } else {
-      // macOS/Linux
+    } else if (os === 'macos') {
       const command = Command.create('run-sh', ['-c', `open "${fullPath}"`])
+      await command.spawn()
+    } else {
+      const command = Command.create('run-sh', ['-c', `xdg-open "${fullPath}"`])
       await command.spawn()
     }
   } catch (e) {
