@@ -6,6 +6,8 @@
 .cache
 dist
 
+.claude
+
 # Node dependencies
 node_modules
 
