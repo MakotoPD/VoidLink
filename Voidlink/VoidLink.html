@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>VoidLink — Minecraft Server Manager</title>
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="components.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-0); font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--ink-0); -webkit-font-smoothing: antialiased; }
+  #root { height: 100vh; overflow: hidden; }
+  *, *::before, *::after { box-sizing: border-box; }
+  button { font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="src/icons.jsx"></script>
+<script type="text/babel" src="src/data.jsx"></script>
+<script type="text/babel" src="src/shell.jsx"></script>
+<script type="text/babel" src="src/dashboard.jsx"></script>
+<script type="text/babel" src="src/server-view.jsx"></script>
+<script type="text/babel" src="src/wizard-settings.jsx"></script>
+<script type="text/babel" src="src/tweaks-panel.jsx"></script>
+
+<script type="text/babel">
+const { useState: useStateApp, useEffect: useEffectApp, useMemo: useMemoApp } = React;
+
+// Sidebar wrapper — bridges App props to SecondaryPanel
+const Sidebar = ({ route, servers, currentServer, currentTab, onNavigate, onSetTab, onCreateServer }) => {
+  const onTab = (tab) => {
+    if (route.type === 'server') {
+      onSetTab(tab);
+    } else if (tab === 'dashboard' || tab === 'activity' || tab === 'marketplace') {
+      onNavigate({type: tab});
+    } else if (tab === 'portforward') {
+      onNavigate({type: 'forwarding'});
+    } else if (tab === 'account') {
+      onNavigate({type: 'settings'});
+    } else {
+      onSetTab(tab);
+    }
+  };
+  const ct = route.type === 'server' ? currentTab :
+             route.type === 'settings' ? currentTab :
+             route.type;
+  return <SecondaryPanel route={route} server={currentServer} onTab={onTab} currentTab={ct} />;
+};
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentHue": 230,
+  "density": "spacious",
+  "scenario": "live",
+  "showRail": true
+}/*EDITMODE-END*/;
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [route, setRoute] = useStateApp({type: 'dashboard'});
+  const [tab, setTab] = useStateApp('overview');
+  const [servers, setServers] = useStateApp(MOCK_SERVERS);
+
+  // Apply accent hue
+  useEffectApp(() => {
+    document.documentElement.style.setProperty('--accent-hue', t.accentHue);
+  }, [t.accentHue]);
+
+  // Density
+  useEffectApp(() => {
+    document.documentElement.dataset.density = t.density;
+  }, [t.density]);
+
+  // Scenario tweak: globally toggle servers on/off, etc
+  useEffectApp(() => {
+    if (t.scenario === 'allOnline') {
+      setServers(MOCK_SERVERS.map(s => ({...s, online: true})));
+    } else if (t.scenario === 'allOffline') {
+      setServers(MOCK_SERVERS.map(s => ({...s, online: false, players: 0})));
+    } else if (t.scenario === 'firstTime') {
+      setServers([]);
+    } else {
+      setServers(MOCK_SERVERS);
+    }
+  }, [t.scenario]);
+
+  const currentServer = route.type === 'server' ? servers.find(s => s.id === route.serverId) : null;
+
+  // Set page title
+  const title = useMemoApp(() => {
+    if (route.type === 'dashboard') return 'Dashboard';
+    if (route.type === 'activity') return 'Activity';
+    if (route.type === 'marketplace') return 'Marketplace';
+    if (route.type === 'create') return 'New Server';
+    if (route.type === 'settings') return 'Settings';
+    if (route.type === 'forwarding') return 'Port Forwarding';
+    if (route.type === 'server' && currentServer) return currentServer.name;
+    return '';
+  }, [route, currentServer]);
+
+  const handleAction = (a) => {
+    if (a === 'toggle-server' && currentServer) {
+      setServers(s => s.map(x => x.id === currentServer.id ? {...x, online: !x.online, players: !x.online ? x.players : 0} : x));
+    } else if (a && a.type === 'marketplace') {
+      setRoute({type:'marketplace'});
+    }
+  };
+
+  const handleCreate = (cfg) => {
+    const colors = ['#38bdf8','#a78bfa','#22d3ee','#f59e0b','#10b981','#f43f5e','#c084fc'];
+    const glyphs = ['◆','✦','✧','◈','▲','●','■','♦'];
+    const newServer = {
+      id: 'srv-' + Date.now(),
+      name: cfg.name,
+      engine: cfg.engine,
+      version: cfg.version,
+      online: cfg.autoStart,
+      glyph: glyphs[Math.floor(Math.random()*glyphs.length)],
+      color: colors[Math.floor(Math.random()*colors.length)],
+      address: '127.0.0.1:' + (25565 + servers.length),
+      publicAddress: cfg.exposeNet ? `${cfg.name.toLowerCase().replace(/\s+/g,'-')}.voidlink.io:25565` : null,
+      portStatus: cfg.exposeNet ? 'forwarded' : 'closed',
+      players: 0, maxPlayers: cfg.maxPlayers,
+      cpu: 0, ram: cfg.ram * 0.3, ramMax: cfg.ram, tps: 20,
+      uptime: '0m', motd: '§3§lWelcome to ' + cfg.name + '§r',
+      gamemode: cfg.gamemode, difficulty: cfg.difficulty,
+      pvp: cfg.pvp, flight: false, onlineMode: true, whitelist: cfg.whitelist,
+      crashCount: 0, plugins: 0,
+    };
+    setServers(s => [...s, newServer]);
+    setRoute({type:'server', serverId: newServer.id});
+    setTab('overview');
+  };
+
+  return (
+    <div className={`app ${t.showRail ? '' : 'no-rail'}`}>
+      <Titlebar title={title} />
+      <div className="frame">
+        {t.showRail && (
+          <Rail
+            servers={servers}
+            currentRoute={route}
+            onNav={(r) => setRoute(r)}
+            onSelectServer={(id) => { setRoute({type:'server', serverId: id}); setTab('overview'); }}
+            onCreateServer={() => setRoute({type:'create'})}
+          />
+        )}
+
+        <Sidebar
+          route={route}
+          servers={servers}
+          currentServer={currentServer}
+          currentTab={tab}
+          onNavigate={(r) => setRoute(r)}
+          onSetTab={setTab}
+          onCreateServer={() => setRoute({type:'create'})}
+        />
+
+        <main className="main">
+          {route.type === 'dashboard' && (
+            <Dashboard
+              servers={servers}
+              onSelectServer={(id) => { setRoute({type:'server', serverId: id}); setTab('overview'); }}
+              onCreate={() => setRoute({type:'create'})}
+            />
+          )}
+          {route.type === 'activity' && <ActivityFeed />}
+          {route.type === 'marketplace' && <Marketplace />}
+          {route.type === 'forwarding' && <PortForwarding />}
+          {route.type === 'settings' && <GlobalSettings />}
+          {route.type === 'create' && (
+            <CreateWizard onCancel={() => setRoute({type:'dashboard'})} onCreate={handleCreate} />
+          )}
+          {route.type === 'server' && currentServer && (
+            <ServerView
+              key={currentServer.id + '-' + tab}
+              server={currentServer}
+              currentTab={tab}
+              onAction={handleAction}
+            />
+          )}
+          {route.type === 'server' && !currentServer && (
+            <div className="main-inner"><h2>Server not found</h2></div>
+          )}
+        </main>
+      </div>
+
+      <TweaksPanel title="VoidLink Tweaks" defaultOpen={false}>
+        <TweakSection title="Scenario">
+          <TweakSelect
+            label="Server states"
+            value={t.scenario}
+            onChange={(v) => setTweak('scenario', v)}
+            options={[
+              {value:'live', label:'Live mix (default)'},
+              {value:'allOnline', label:'All servers online'},
+              {value:'allOffline', label:'All servers offline'},
+              {value:'firstTime', label:'First-time user (no servers)'},
+            ]}
+          />
+        </TweakSection>
+        <TweakSection title="Look & feel">
+          <TweakSlider
+            label="Accent hue"
+            value={t.accentHue}
+            onChange={(v) => setTweak('accentHue', v)}
+            min={0} max={360} step={1}
+          />
+          <TweakRadio
+            label="Density"
+            value={t.density}
+            onChange={(v) => setTweak('density', v)}
+            options={[
+              {value:'compact', label:'Compact'},
+              {value:'comfortable', label:'Comfy'},
+              {value:'spacious', label:'Spacious'},
+            ]}
+          />
+          <TweakToggle
+            label="Server rail"
+            value={t.showRail}
+            onChange={(v) => setTweak('showRail', v)}
+          />
+        </TweakSection>
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

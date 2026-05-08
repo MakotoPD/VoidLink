@@ -1,271 +1,193 @@
 <template>
-  <div class="min-h-full flex flex-col">
-    <!-- Header Section -->
-    <div data-tauri-drag-region class="relative bg-white dark:bg-gray-900/70 border-b border-gray-200 dark:border-gray-800 pb-8 pt-8 px-8 overflow-hidden">
-      <!-- Background Gradients -->
-      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-500 dark:from-primary-900/20 via-gray-50/0 dark:via-gray-900/0 to-transparent pointer-events-none"></div>
-      <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary-300 dark:via-primary-500/20 to-transparent"></div>
-      
-      <div class="relative z-10">
-        <div class="flex justify-between items-start mb-8">
-          <div>
-            <h2 class="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Overview</h2>
-            <div class="flex items-center gap-2 mt-2 text-gray-600 dark:text-gray-400">
-              <div class="w-2 h-2 rounded-full bg-success-500 animate-pulse"></div>
-              <p class="font-medium">System Online</p>
-            </div>
-          </div>
-          <div class="flex gap-3 items-center">
-            <UButton 
-              color="neutral" 
-              variant="soft" 
-              icon="i-lucide-globe" 
-              class="font-medium"
-              size="md"
-              @click="showTunnelModal = true"
-            >
-              Manage Tunnels
-            </UButton>
-            <UButton 
-              color="neutral" 
-              variant="soft" 
-              icon="i-lucide-settings" 
-              to="/settings" 
-              class="font-medium"
-              size="md"
-            >
-              Settings
-            </UButton>
-            <UButton 
-              color="primary" 
-              icon="i-lucide-plus" 
-              to="/create" 
-              class="font-bold shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30 transition-all"
-              size="md"
-            >
-              Create Server
-            </UButton>
-          </div>
+  <div>
+    <!-- Page header -->
+    <div class="page-head" data-tauri-drag-region>
+      <div class="page-head-left">
+        <span class="eyebrow">Dashboard</span>
+        <h1 class="page-title">Overview</h1>
+        <p class="page-sub">
+          <span class="dot" :style="activeServersCount > 0 ? 'color: var(--ok)' : 'color: var(--ink-3)'" />
+          {{ activeServersCount > 0 ? `${activeServersCount} server${activeServersCount !== 1 ? 's' : ''} running` : 'No servers running' }}
+        </p>
+      </div>
+      <div class="page-head-right">
+        <NuxtLink to="/create" class="btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Create Server
+        </NuxtLink>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="grid-3 mb-24">
+      <!-- Active Servers -->
+      <div class="stat">
+        <div class="stat-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" /><rect x="2" y="14" width="20" height="8" rx="2" /><line x1="6" y1="6" x2="6.01" y2="6" /><line x1="6" y1="18" x2="6.01" y2="18" /></svg>
+          Active Servers
         </div>
+        <div class="stat-value">
+          {{ activeServersCount }}<span class="unit">/ {{ servers.length }}</span>
+        </div>
+        <div class="stat-trend">
+          <span class="delta" :class="activeServersCount > 0 ? 'up' : ''">
+            {{ activeServersCount > 0 ? `${servers.length - activeServersCount} offline` : 'all offline' }}
+          </span>
+        </div>
+      </div>
 
-        <!-- Stats Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <!-- Active Servers Card -->
-          <div class="relative group overflow-hidden bg-white dark:bg-gray-900/50 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-primary-400 dark:hover:border-primary-500/30 transition-all duration-300">
-             <div class="absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] from-blue-500/5 dark:from-blue-500/10 to-transparent to-75%"></div>
+      <!-- CPU -->
+      <div class="stat">
+        <div class="stat-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" /><rect x="9" y="9" width="6" height="6" /><line x1="9" y1="2" x2="9" y2="4" /><line x1="15" y1="2" x2="15" y2="4" /><line x1="9" y1="20" x2="9" y2="22" /><line x1="15" y1="20" x2="15" y2="22" /><line x1="20" y1="9" x2="22" y2="9" /><line x1="20" y1="14" x2="22" y2="14" /><line x1="2" y1="9" x2="4" y2="9" /><line x1="2" y1="14" x2="4" y2="14" /></svg>
+          Total CPU Usage
+        </div>
+        <div class="stat-value">
+          {{ totalCpuUsage.toFixed(1) }}<span class="unit">%</span>
+        </div>
+        <div class="stat-trend">
+          <span class="delta" :class="totalCpuUsage > 80 ? 'down' : totalCpuUsage > 0 ? 'up' : ''">
+            {{ totalCpuUsage > 80 ? 'high load' : totalCpuUsage > 0 ? 'normal' : 'idle' }}
+          </span>
+        </div>
+      </div>
 
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <UIcon name="i-lucide-server" class="w-24 h-24 text-primary-500" />
-             </div>
-             <div class="relative z-10">
-                <div class="flex items-center gap-3 mb-3">
-                   <div class="p-2 bg-primary-500/10 rounded-lg ring-1 ring-primary-500/20">
-                      <UIcon name="i-lucide-server" class="w-5 h-5 text-primary-400" />
-                   </div>
-                   <span class="text-gray-600 dark:text-gray-400 font-medium text-sm">Active Servers</span>
-                </div>
-                <div class="flex items-baseline gap-2">
-                   <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ activeServersCount }}</span>
-                   <span class="text-gray-500 text-sm">/ {{ servers.length }} total</span>
-                </div>
-             </div>
-          </div>
-
-          <!-- CPU Usage Card -->
-          <div class="relative group overflow-hidden bg-white dark:bg-gray-900/50 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-error-400 dark:hover:border-error-500/30 transition-all duration-300">
-            <div class="absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] from-red-500/5 dark:from-red-500/10 to-transparent to-75%"></div>
-
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <UIcon name="i-lucide-cpu" class="w-24 h-24 text-error-500" />
-             </div>
-             <div class="relative z-10">
-                <div class="flex items-center gap-3 mb-3">
-                   <div class="p-2 bg-error-500/10 rounded-lg ring-1 ring-error-500/20">
-                      <UIcon name="i-lucide-cpu" class="w-5 h-5 text-error-400" />
-                   </div>
-                   <span class="text-gray-600 dark:text-gray-400 font-medium text-sm">Total Server CPU</span>
-                </div>
-                <div class="flex items-baseline gap-2">
-                   <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ totalCpuUsage.toFixed(1) }}%</span>
-                </div>
-             </div>
-          </div>
-
-          <!-- RAM Usage Card -->
-          <div class="relative group overflow-hidden bg-white dark:bg-gray-900/50 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-xl p-5 hover:border-success-400 dark:hover:border-success-500/30 transition-all duration-300">
-            <div class="absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] from-green-500/5 dark:from-green-500/10 to-transparent to-75%"></div>
-
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <UIcon name="i-lucide-memory-stick" class="w-24 h-24 text-success-500" />
-            </div>
-            <div class="relative z-10">
-              <div class="flex items-center gap-3 mb-3">
-                  <div class="p-2 bg-success-500/10 rounded-lg ring-1 ring-success-500/20">
-                    <UIcon name="i-lucide-memory-stick" class="w-5 h-5 text-success-400" />
-                  </div>
-                  <span class="text-gray-600 dark:text-gray-400 font-medium text-sm">Total Server RAM</span>
-              </div>
-              <div class="flex items-baseline gap-2">
-                  <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ formatBytes(totalRamUsage) }}</span>
-                  <span class="text-gray-500 text-sm">/ {{ formatBytes(systemInfo.total_memory_bytes) }} system</span>
-              </div>
-            </div>
-          </div>
+      <!-- RAM -->
+      <div class="stat">
+        <div class="stat-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 19v-3" /><path d="M10 19v-3" /><path d="M14 19v-3" /><path d="M18 19v-3" /><rect x="2" y="12" width="20" height="4" rx="1" /><path d="M4 12V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4" /></svg>
+          Total RAM Usage
+        </div>
+        <div class="stat-value">
+          {{ formatBytes(totalRamUsage) }}
+        </div>
+        <div class="stat-trend">
+          <span class="delta">/ {{ formatBytes(systemInfo.total_memory_bytes) }} system</span>
         </div>
       </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="flex-1 p-8">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-           <UIcon name="i-lucide-layout-grid" class="w-5 h-5 text-gray-500" />
-           Your Servers
-        </h2>
-        <div class="text-sm text-gray-500">
-           Showing {{ servers.length }} server{{ servers.length !== 1 ? 's' : '' }}
-        </div>
-      </div>
+    <!-- Servers section -->
+    <div class="between mb-16">
+      <h2 class="section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--ink-3)"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
+        Your Servers
+      </h2>
+      <span class="text-faint text-mono" style="font-size: 12px">{{ servers.length }} server{{ servers.length !== 1 ? 's' : '' }}</span>
+    </div>
 
-      <!-- Server Grid -->
-      <template v-if="servers.length > 0">
+    <!-- Server grid -->
+    <template v-if="servers.length > 0">
       <ClientOnly>
-         <draggable 
-         v-model="serversList" 
-         item-key="id"
-         group="servers"
-         class="flex flex-wrap gap-6"
-         :animation="200"
-         @change="onServerDragChange"
-         handle=".drag-handle"
-         >
-            <template #item="{ element: server }">
-               <div class="w-full md:w-[calc(50%-12px)] xl:w-[calc(33.333%-16px)] 3xl:w-[calc(25%-16px)]">
-                  <div 
-                     class="group relative flex flex-col bg-white dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full"
-                     
-                  >
-                     <!-- Status Line -->
-                     <div :class="'h-1 w-full ' + 'bg-' + getStatusColor(getServerStatus(server.path.split('/').pop() || '')) + '-500'"></div>
-                     
-                     <div class="p-5 flex-1 flex flex-col">
-                        <!-- Header -->
-                        <div class="flex items-start gap-4 mb-4 cursor-pointer " @click="navigateTo(`/server/${server.path.split('/').pop()}`)">
-                           <!-- Drag Handle -->
-                           <div class="hidden group-hover:flex absolute top-2 right-2 cursor-grab justify-center items-center active:cursor-grabbing drag-handle p-2 z-20 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors" @click.stop>
-                              <UIcon name="i-lucide-grip-vertical" class="w-5 h-5 text-gray-400 group-hover:text-black dark:group-hover:text-white pointer-events-none" />
-                           </div>
-
-                           <div class="relative shrink-0">
-                              <!-- Server Icon -->
-                              <img 
-                                 v-if="serverIcons[server.path]" 
-                                 :src="serverIcons[server.path]" 
-                                 class="w-14 h-14 rounded-xl bg-gray-100 dark:bg-gray-800 object-cover shadow-sm ring-1 ring-gray-200 dark:ring-gray-800 group-hover:ring-gray-300 dark:group-hover:ring-gray-700 transition-all" 
-                              />
-                              <div v-else class="w-14 h-14 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center ring-1 ring-gray-200 dark:ring-gray-800 group-hover:ring-gray-300 dark:group-hover:ring-gray-700 transition-all">
-                                 <UIcon :name="server.icon || 'i-lucide-box'" class="w-7 h-7 text-gray-500 group-hover:text-primary-400 transition-colors" />
-                              </div>
-                              
-                              <!-- Status Indicator Dot -->
-                              <div 
-                                 :class="'absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-gray-900 flex items-center justify-center ' + 'bg-' + getStatusColor(getServerStatus(server.path.split('/').pop() || '')) + '-500'"
-                              >
-                                 <div v-if="getServerStatus(server.path.split('/').pop() || '') === 'online'" class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
-                              </div>
-                           </div>
-                           
-                           <div class="min-w-0 flex-1">
-                              <h3 class="font-bold text-lg text-gray-900 dark:text-white truncate group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">{{ server.name }}</h3>
-                              <div class="flex items-center gap-2 mt-1">
-                                 <UBadge color="neutral" variant="subtle" size="sm">{{ server.type }}</UBadge>
-                                 <span class="text-xs text-gray-500">{{ server.version }}</span>
-                              </div>
-                           </div>
-                        </div>
-
-                        <!-- Quick Stats or Info -->
-                        <div class="mt-auto space-y-3">
-                           <!-- IP Address -->
-                           <div class="space-y-2">
-                              <div class="flex items-center justify-between py-2 px-3 bg-gray-100/60 dark:bg-gray-950/30 rounded-lg border border-gray-300 dark:border-gray-800/50">
-                                 <span class="text-xs text-gray-500 font-medium uppercase tracking-wider">Local Address</span>
-                                 <div class="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300 font-mono select-all">
-                                    <UIcon name="i-lucide-network" class="w-3 h-3 text-gray-500" /> 
-                                    {{ localIp }}:{{ server.port }}
-                                 </div>
-                              </div>
-
-                              <!-- Tunnel Address -->
-                              <div v-if="getServerTunnelAddress(server.port)" class="flex items-center justify-between py-2 px-3 bg-primary-500/10 dark:bg-primary-900/10 rounded-lg border border-primary-500/20 group-hover:border-primary-500/40 transition-colors">
-                                 <span class="text-xs text-primary-400 font-medium uppercase tracking-wider flex items-center gap-1">
-                                    <UIcon name="i-lucide-globe" class="w-3 h-3" />
-                                    Public
-                                 </span>
-                                 <div class="flex items-center gap-1.5 text-xs text-primary-500 dark:text-primary-200 font-mono select-all font-bold">
-                                    {{ getServerTunnelAddress(server.port) }}
-                                 </div>
-                              </div>
-                           </div>
-
-                           <!-- Online Stats (Only when online) -->
-                           <div v-if="getServerStatus(server.path.split('/').pop() || '') === 'online'" class="space-y-3 pt-2">
-                              <!-- CPU -->
-                              <div class="space-y-1">
-                                 <div class="flex justify-between text-xs">
-                                    <span class="text-gray-500">CPU</span>
-                                    <span class="text-gray-700 dark:text-gray-300">{{ getServerCpu(server.path.split('/').pop() || '').toFixed(1) }}%</span>
-                                 </div>
-                                 <div class="h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
-                                    <div class="h-full bg-error-500 rounded-full transition-all duration-500" :style="{ width: Math.min(getServerCpu(server.path.split('/').pop() || ''), 100) + '%' }"></div>
-                                 </div>
-                              </div>
-                              
-                              <!-- RAM -->
-                              <div class="space-y-1">
-                                 <div class="flex justify-between text-xs">
-                                    <span class="text-gray-500">RAM</span>
-                                    <span class="text-gray-700 dark:text-gray-300">{{ formatBytes(getServerMemory(server.path.split('/').pop() || '')) }}</span>
-                                 </div>
-                                 <div class="h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
-                                    <div class="h-full bg-yellow-500 rounded-full transition-all duration-500" :style="{ width: Math.min(getRamPercent(server), 100) + '%' }"></div>
-                                 </div>
-                              </div>
-                           </div>
-                           
-                           <!-- Offline Placeholder -->
-                           <div v-else class="py-4 flex items-center justify-center text-gray-600 gap-2">
-                              <UIcon name="i-lucide-power-off" class="w-4 h-4" />
-                              <span class="text-xs font-medium">Server is offline</span>
-                           </div>
-                        </div>
-                     </div>
+        <draggable
+          v-model="serversList"
+          item-key="id"
+          group="servers"
+          class="grid-3"
+          :animation="200"
+          @change="onServerDragChange"
+          handle=".drag-handle"
+        >
+          <template #item="{ element: server }">
+            <div
+              class="server-card"
+              @click="navigateTo(`/server/${server.path.split('/').pop()}`)"
+            >
+              <!-- Card head -->
+              <div class="sc-head">
+                <div class="sc-icon" :style="getStatusIconBg(getServerStatus(server.path.split('/').pop() || ''))">
+                  <img
+                    v-if="serverIcons[server.path]"
+                    :src="serverIcons[server.path]"
+                    alt=""
+                  />
+                  <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--ink-3)"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /></svg>
+                </div>
+                <div style="min-width: 0; flex: 1">
+                  <p class="sc-name">{{ server.name }}</p>
+                  <div class="sc-meta">
+                    <span class="pill" style="font-size: 10px; padding: 1px 6px">{{ server.type }}</span>
+                    <span>{{ server.version }}</span>
+                    <span
+                      class="pill"
+                      :class="getServerStatus(server.path.split('/').pop() || '') === 'online' ? 'ok' : ''"
+                      style="font-size: 10px; padding: 1px 6px; margin-left: auto"
+                    >
+                      <span class="dot" />
+                      {{ getServerStatus(server.path.split('/').pop() || '') }}
+                    </span>
                   </div>
-               </div>
-            </template>
-         </draggable>
+                </div>
+                <!-- Drag handle -->
+                <div class="drag-handle btn ghost icon-only sm" style="cursor: grab; opacity: 0" @click.stop>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" /><circle cx="9" cy="12" r="1" /><circle cx="9" cy="19" r="1" /><circle cx="15" cy="5" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="19" r="1" /></svg>
+                </div>
+              </div>
+
+              <!-- Stats row (when online) -->
+              <div v-if="getServerStatus(server.path.split('/').pop() || '') === 'online'" class="sc-stats">
+                <div class="sc-stat">
+                  <div class="l">CPU</div>
+                  <div class="v">{{ getServerCpu(server.path.split('/').pop() || '').toFixed(1) }}%</div>
+                </div>
+                <div class="sc-stat">
+                  <div class="l">RAM</div>
+                  <div class="v">{{ formatBytes(getServerMemory(server.path.split('/').pop() || '')) }}</div>
+                </div>
+                <div class="sc-stat">
+                  <div class="l">Port</div>
+                  <div class="v">{{ server.port }}</div>
+                </div>
+              </div>
+
+              <!-- Offline placeholder stats -->
+              <div v-else class="sc-stats" style="opacity: 0.4">
+                <div class="sc-stat">
+                  <div class="l">CPU</div>
+                  <div class="v">—</div>
+                </div>
+                <div class="sc-stat">
+                  <div class="l">RAM</div>
+                  <div class="v">—</div>
+                </div>
+                <div class="sc-stat">
+                  <div class="l">Port</div>
+                  <div class="v">{{ server.port }}</div>
+                </div>
+              </div>
+
+              <!-- Address -->
+              <div class="sc-addr">
+                <span class="l">Local</span>
+                <span class="v">{{ localIp }}:{{ server.port }}</span>
+              </div>
+
+              <!-- Tunnel address (if active) -->
+              <div v-if="getServerTunnelAddress(server.port)" class="sc-addr" style="background: var(--accent-soft); border-color: var(--accent-line)">
+                <span class="l" style="color: var(--accent)">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+                  Public
+                </span>
+                <span class="v">{{ getServerTunnelAddress(server.port) }}</span>
+              </div>
+            </div>
+          </template>
+        </draggable>
       </ClientOnly>
-      </template>
+    </template>
 
-     
-
-      <!-- Empty State -->
-      <div v-else class="flex flex-col items-center justify-center py-20 bg-gray-100 dark:bg-gray-900/20 border border-dashed border-gray-300 dark:border-gray-800 rounded-3xl">
-         <div class="p-6 bg-white dark:bg-gray-900 rounded-full mb-6 relative group">
-            <div class="absolute inset-0 bg-primary-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-            <UIcon name="i-lucide-box" class="w-16 h-16 text-gray-400 dark:text-gray-600 group-hover:text-primary-500 transition-colors duration-500 relative z-10" />
-         </div>
-         <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">No Servers Found</h3>
-         <p class="text-gray-500 max-w-sm text-center mb-8">It looks quiet here. Start your journey by creating your first Minecraft server.</p>
-         <UButton 
-            size="xl" 
-            color="primary" 
-            icon="i-lucide-rocket" 
-            to="/create"
-            class="font-bold px-8 shadow-xl shadow-primary-900/20"
-         >
-            Create Your First Server
-         </UButton>
+    <!-- Empty state -->
+    <div v-else class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 14px; display: block; color: var(--ink-3)"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /></svg>
+      <h5>No servers yet</h5>
+      <p>Create your first Minecraft server to get started.</p>
+      <div style="margin-top: 20px">
+        <NuxtLink to="/create" class="btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline points="13 2 13 9 20 9" /></svg>
+          Create Server
+        </NuxtLink>
       </div>
     </div>
 
@@ -282,77 +204,58 @@ import { join } from '@tauri-apps/api/path'
 import { readFile, BaseDirectory } from '@tauri-apps/plugin-fs'
 import draggable from 'vuedraggable'
 
-// Page meta for transitions later if needed
 definePageMeta({
   layout: 'default'
 })
 
-
-// Use centralized servers store
 const serversStore = useServersStore()
 const { servers, loading } = storeToRefs(serversStore)
-const { loadServers, getServerStatus, getStatusColor, getServerMemory, getServerCpu, formatBytes, updateServerOrder } = serversStore
+const { loadServers, getServerStatus, getServerMemory, getServerCpu, formatBytes, updateServerOrder } = serversStore
 
-// Local list for vuedraggable (synced with store)
 const serversList = ref<typeof servers.value>([])
 const isDragging = ref(false)
 
-// Sync from store to local list (skip during drag to prevent interruption)
 watch(servers, (newVal) => {
-    if (!isDragging.value) {
-        serversList.value = [...newVal]
-    }
+  if (!isDragging.value) {
+    serversList.value = [...newVal]
+  }
 }, { immediate: true, deep: true })
 
-// Called when drag changes - use fractional ordering
 function onServerDragChange(event: any) {
-   console.log(event)
-    if (event.moved) {
-         
-        const { element, newIndex } = event.moved
-        const list = serversList.value
-        
-        let newOrder = 0
-        const prevServer = list[newIndex - 1]
-        const nextServer = list[newIndex + 1]
+  if (event.moved) {
+    const { element, newIndex } = event.moved
+    const list = serversList.value
 
-        if (!prevServer && nextServer) {
-            // Moved to first position
-            newOrder = nextServer.order / 2
-        } else if (prevServer && !nextServer) {
-            // Moved to last position
-            newOrder = prevServer.order + 1000 
-        } else if (prevServer && nextServer) {
-            // Moved between two items
-            newOrder = (prevServer.order + nextServer.order) / 2
-        } else {
-            // Only item
-            newOrder = 1000
-        }
-        
-        // Temporarily prevent watch from overwriting
-        isDragging.value = true
-        updateServerOrder(element.id, newOrder)
-        // Re-enable sync after a short delay
-        setTimeout(() => {
-            isDragging.value = false
-        }, 100)
+    let newOrder = 0
+    const prevServer = list[newIndex - 1]
+    const nextServer = list[newIndex + 1]
+
+    if (!prevServer && nextServer) {
+      newOrder = nextServer.order / 2
+    } else if (prevServer && !nextServer) {
+      newOrder = prevServer.order + 1000
+    } else if (prevServer && nextServer) {
+      newOrder = (prevServer.order + nextServer.order) / 2
+    } else {
+      newOrder = 1000
     }
+
+    isDragging.value = true
+    updateServerOrder(element.id, newOrder)
+    setTimeout(() => { isDragging.value = false }, 100)
+  }
 }
 
 const tunnelStore = useTunnelStore()
 const { isManagerOpen } = storeToRefs(tunnelStore)
 
-// Helper to open modal (replacing local ref)
 const showTunnelModal = computed({
   get: () => tunnelStore.isManagerOpen,
-  set: (val: boolean) => tunnelStore.isManagerOpen = val
+  set: (val: boolean) => { tunnelStore.isManagerOpen = val }
 })
 
-// Process store for refreshing memory info
 const processStore = useServerProcessStore()
 
-// System info
 interface SystemInfo {
   total_memory_bytes: number
   used_memory_bytes: number
@@ -365,56 +268,41 @@ const serverIcons = ref<Record<string, string>>({})
 let pollInterval: ReturnType<typeof setInterval> | null = null
 
 async function loadServerIcon(serverPath: string) {
-   const serverId = serverPath.split('/').pop() || ''
-   if (!serverId) return
-
-   // Check if we already have it (though we should support updates, maybe clearing cache is better)
-   // But for now prevent double loading if already valid
-   
-   try {
-      const iconPath = await join('VoidLink/servers', serverId, 'server-logo.png')
-      // Try to read file to check existence/load it
-      const fileBytes = await readFile(iconPath, { baseDir: BaseDirectory.Document })
-      const blob = new Blob([fileBytes], { type: 'image/png' })
-      const url = URL.createObjectURL(blob)
-      
-      // Revoke old URL if exists to save memory
-      if (serverIcons.value[serverPath]) {
-         URL.revokeObjectURL(serverIcons.value[serverPath])
-      }
-      
-      serverIcons.value[serverPath] = url
-   } catch (e) {
-      // No icon found or error reading, ignore (will fallback to default UI icon)
-   }
+  const serverId = serverPath.split('/').pop() || ''
+  if (!serverId) return
+  try {
+    const iconPath = await join('VoidLink/servers', serverId, 'server-logo.png')
+    const fileBytes = await readFile(iconPath, { baseDir: BaseDirectory.Document })
+    const blob = new Blob([fileBytes], { type: 'image/png' })
+    const url = URL.createObjectURL(blob)
+    if (serverIcons.value[serverPath]) {
+      URL.revokeObjectURL(serverIcons.value[serverPath])
+    }
+    serverIcons.value[serverPath] = url
+  } catch (_e) {
+    // no icon
+  }
 }
 
-// Load all icons
 async function loadAllIcons() {
-   for (const server of servers.value) {
-      // Only load if not already loaded or if we want to refresh
-      await loadServerIcon(server.path)
-   }
+  for (const server of servers.value) {
+    await loadServerIcon(server.path)
+  }
 }
 
 onMounted(async () => {
   await loadServers()
   await loadAllIcons()
-  
-  // Watch for new servers to load icons
-  watch(servers, async () => {
-     await loadAllIcons()
-  }, { deep: true })
-  
-  // Fetch system info and local IP
+
+  watch(servers, async () => { await loadAllIcons() }, { deep: true })
+
   try {
     systemInfo.value = await invoke<SystemInfo>('get_system_info')
     localIp.value = await invoke<string>('get_local_ip')
-  } catch (e) {
-    console.error('Failed to get system info:', e)
+  } catch (_e) {
+    console.error('Failed to get system info')
   }
-  
-  // Poll process info every 2 seconds for running servers
+
   pollInterval = setInterval(() => {
     for (const server of servers.value) {
       const serverId = server.path.split('/').pop() || ''
@@ -427,56 +315,45 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (pollInterval) clearInterval(pollInterval)
-  
-  // Revoke all object URLs
-  Object.values(serverIcons.value).forEach(url => {
-     URL.revokeObjectURL(url)
-  })
+  Object.values(serverIcons.value).forEach(url => URL.revokeObjectURL(url))
 })
 
-// Computed stats for overview cards
-const activeServersCount = computed(() => {
-  return servers.value.filter(s => getServerStatus(s.path.split('/').pop() || '') === 'online').length
-})
+const activeServersCount = computed(() =>
+  servers.value.filter(s => getServerStatus(s.path.split('/').pop() || '') === 'online').length
+)
 
-const totalCpuUsage = computed(() => {
-  return servers.value.reduce((total, server) => {
+const totalCpuUsage = computed(() =>
+  servers.value.reduce((total, server) => {
     const serverId = server.path.split('/').pop() || ''
-    if (getServerStatus(serverId) === 'online') {
-      return total + getServerCpu(serverId)
-    }
-    return total
+    return getServerStatus(serverId) === 'online' ? total + getServerCpu(serverId) : total
   }, 0)
-})
+)
 
-const totalRamUsage = computed(() => {
-  return servers.value.reduce((total, server) => {
+const totalRamUsage = computed(() =>
+  servers.value.reduce((total, server) => {
     const serverId = server.path.split('/').pop() || ''
-    if (getServerStatus(serverId) === 'online') {
-      return total + getServerMemory(serverId)
-    }
-    return total
+    return getServerStatus(serverId) === 'online' ? total + getServerMemory(serverId) : total
   }, 0)
-})
+)
 
-// Calculate RAM usage percentage based on server memory limit
-function getRamPercent(server: { path: string; javaSettings?: { memory: number } }): number {
-  const serverId = server.path.split('/').pop() || ''
-  const memoryBytes = getServerMemory(serverId)
-  const limitGB = server.javaSettings?.memory || 4
-  const limitBytes = limitGB * 1024 * 1024 * 1024
-  return (memoryBytes / limitBytes) * 100
+
+function getStatusIconBg(status: string): string {
+  if (status === 'online') return 'background: var(--ok-soft); border: 1px solid rgba(52,211,153,0.2)'
+  return 'background: var(--bg-3); border: 1px solid var(--line-1)'
 }
 
 function getServerTunnelAddress(serverPort: number): string | null {
-   for (const tunnel of tunnelStore.tunnels) {
-      if (!tunnel.is_active) continue
-      
-      const port = tunnel.ports.find(p => p.local_port === serverPort && p.protocol === 'tcp')
-      if (port) {
-         return port.address
-      }
-   }
-   return null
+  for (const tunnel of tunnelStore.tunnels) {
+    if (!tunnel.is_active) continue
+    const port = tunnel.ports.find(p => p.local_port === serverPort && p.protocol === 'tcp')
+    if (port) return port.address
+  }
+  return null
 }
 </script>
+
+<style scoped>
+.server-card:hover .drag-handle {
+  opacity: 1 !important;
+}
+</style>

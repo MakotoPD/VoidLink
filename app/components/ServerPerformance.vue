@@ -1,58 +1,64 @@
 <template>
-  <div class="h-full flex flex-col gap-6 p-4">
+  <div class="h-full flex flex-col gap-12 p-4">
     <!-- Top Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
       <!-- CPU Card -->
-      <div class="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between">
-        <div class="absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] from-red-500/5 dark:from-red-500/10 to-transparent to-75%"></div>
-        <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">CPU Usage</p>
-          <p class="text-2xl font-bold text-red-500 mt-1">{{ cpuUsage.toFixed(1) }}%</p>
+
+      <div class="stat">
+        <div class="stat-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" /><rect x="9" y="9" width="6" height="6" /><line x1="9" y1="2" x2="9" y2="4" /><line x1="15" y1="2" x2="15" y2="4" /><line x1="9" y1="20" x2="9" y2="22" /><line x1="15" y1="20" x2="15" y2="22" /><line x1="20" y1="9" x2="22" y2="9" /><line x1="20" y1="14" x2="22" y2="14" /><line x1="2" y1="9" x2="4" y2="9" /><line x1="2" y1="14" x2="4" y2="14" /></svg>
+          Total CPU Usage
         </div>
-        <div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-          <UIcon name="i-lucide-cpu" class="w-6 h-6 text-red-500" />
+        <div class="stat-value">
+          {{ cpuUsage.toFixed(1) }}<span class="unit">%</span>
+        </div>
+        <div class="stat-trend">
+          <span class="delta" :class="cpuUsage > 80 ? 'down' : cpuUsage > 0 ? 'up' : ''">
+            {{ cpuUsage > 80 ? 'high load' : cpuUsage > 0 ? 'normal' : 'idle' }}
+          </span>
         </div>
       </div>
 
       <!-- RAM Card -->
-      <div class="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between">
-        <div class="absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] from-yellow-500/5 dark:from-yellow-500/10 to-transparent to-75%"></div>
-        <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">RAM Usage</p>
-          <div class="mt-1">
-            <p class="text-2xl font-bold text-yellow-500">{{ formatBytes(memoryBytes) }}</p>
-          </div>
+      <div class="stat">
+        <div class="stat-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 19v-3" /><path d="M10 19v-3" /><path d="M14 19v-3" /><path d="M18 19v-3" /><rect x="2" y="12" width="20" height="4" rx="1" /><path d="M4 12V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4" /></svg>
+          Total RAM Usage
         </div>
-        <div class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center">
-          <UIcon name="i-lucide-memory-stick" class="w-6 h-6 text-yellow-500" />
+        <div class="stat-value">
+          {{ formatBytes(memoryBytes) }}
         </div>
       </div>
 
       <!-- Uptime / Status Card -->
-      <div class="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between">
-        <div :class="['absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] to-75% ',statusColorClassGradient]" class=""></div>
-        <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Server Status</p>
-          <div class="mt-1 flex items-center gap-2">
-            <div :class="['w-2 h-2 rounded-full', statusColorClass]"></div>
-            <p class="text-xl font-bold text-gray-900 dark:text-white capitalize">{{ status }}</p>
-          </div>
-           <p v-if="status === 'online'" class="text-xs text-green-500 mt-1 font-mono">Online</p>
+
+      <div class="stat">
+        <div class="stat-label">
+          <UIcon name="i-lucide-activity" :class="['w-3 h-3']" />
+          Server Status
         </div>
-        <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-           <UIcon name="i-lucide-activity" :class="['w-6 h-6', statusIconClass]" />
+        <div class="stat-value">
+          <div class="mt-1 flex items-center gap-2">
+            <p class="text-gray-900 dark:text-white capitalize">{{ status }}</p>
+          </div>
         </div>
       </div>
 
       <!-- TPS Card -->
-      <div class="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center justify-between">
-        <div :class="['absolute right-0 top-0 w-full h-full rounded-lg bg-radial-[at_75%_25%] to-transparent to-75% ' ,tpsColorClassGradient]"></div>
-        <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">TPS</p>
-          <p :class="['text-2xl font-bold mt-1', tpsColorClass]">{{ tps.toFixed(1) }}</p>
+      <div class="stat">
+        <div class="stat-label">
+          <UIcon name="i-lucide-gauge" :class="['w-3 h-3']" />
+          TPS
         </div>
-        <div :class="['w-10 h-10 rounded-lg flex items-center justify-center', tpsBgClass]">
-          <UIcon name="i-lucide-gauge" :class="['w-6 h-6', tpsColorClass]" />
+        <div class="stat-value">
+          <div class="mt-1 flex items-center gap-2">
+            <p class="text-gray-900 dark:text-white capitalize">{{ tps.toFixed(1) }}</p>
+          </div>
+        </div>
+        <div class="stat-trend">
+          <span class="delta" :class="tps > 19.0 ? 'up' : tps > 15.0 ? 'neutral' : 'down'">
+            {{ tps > 19.0 ? 'excellent' : tps > 15.0 ? 'good' : 'poor' }}
+          </span>
         </div>
       </div>
     </div>

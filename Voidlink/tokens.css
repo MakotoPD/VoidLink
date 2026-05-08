@@ -1,0 +1,50 @@
+:root {
+  /* Accent — driven by tweak hue */
+  --accent-hue: 28;
+  --accent: oklch(0.72 0.16 var(--accent-hue));
+  --accent-2: oklch(0.62 0.18 var(--accent-hue));
+  --accent-soft: oklch(0.72 0.16 var(--accent-hue) / 0.12);
+  --accent-line: oklch(0.72 0.16 var(--accent-hue) / 0.3);
+
+  /* Backgrounds — deep slate */
+  --bg-0: #07090c;
+  --bg-1: #0b0f14;
+  --bg-2: #11171f;
+  --bg-3: #1a212b;
+  --bg-4: #232b37;
+
+  /* Lines */
+  --line-0: #0d1219;
+  --line-1: #1c242f;
+  --line-2: #2a3340;
+
+  /* Text */
+  --ink-0: #e8edf3;
+  --ink-1: #c9d2dd;
+  --ink-2: #8a96a5;
+  --ink-3: #5c6675;
+  --ink-4: #3a424d;
+
+  /* Status */
+  --ok: #34d399;
+  --ok-soft: rgba(52, 211, 153, 0.12);
+  --warn: #f59e0b;
+  --warn-soft: rgba(245, 158, 11, 0.12);
+  --bad: #f87171;
+  --bad-soft: rgba(248, 113, 113, 0.12);
+  --purple: #a78bfa;
+  --purple-soft: rgba(167, 139, 250, 0.12);
+
+  /* Sizing */
+  --rail-w: 60px;
+  --sidebar-w: 250px;
+  --titlebar-h: 32px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-2: 0 8px 24px rgba(0,0,0,0.35);
+}
+
+[data-density="compact"] { --sidebar-w: 220px; --rail-w: 52px; }
+[data-density="spacious"] { --sidebar-w: 280px; --rail-w: 68px; }

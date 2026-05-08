@@ -31,7 +31,10 @@
           "url": "https://fill-data.papermc.io/*"
         },
         {
-          "url": "https://mcjarfiles.com/**"
+          "url": "https://mcjars.app/**"
+        },
+        {
+          "url": "https://files.mcjars.app/**"
         },
         {
           "url": "https://api.modrinth.com/**"
@@ -181,11 +184,6 @@
           "name": "run-java",
           "cmd": "java",
           "args": true
-        },
-        {
-          "name": "frpc",
-          "cmd": "frpc",
-          "args": true
         }
       ]
     },
@@ -205,11 +203,6 @@
         {
           "name": "run-sh",
           "cmd": "sh",
-          "args": true
-        },
-        {
-          "name": "frpc",
-          "cmd": "frpc",
           "args": true
         }
       ]

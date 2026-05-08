@@ -3,12 +3,7 @@ import { ref, computed } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { useAuthStore } from './useAuthStore'
-
-const API_BASE = 'https://tunnel.makoto.com.pl/api'
-
-// FRP Config for Rust backend
-const FRP_SERVER = 'eu.makoto.com.pl'
-const FRP_PORT = 7000
+import { useServerConfigStore } from './useServerConfigStore'
 
 export interface TunnelPort {
 	label: string
@@ -44,7 +39,8 @@ export interface CreateTunnelPort {
 
 interface FRPConfig {
 	server_addr: string
-	server_port: number
+	server_port: number   // legacy field
+	control_port: number
 	token: string
 	proxies: Array<{
 		name: string
@@ -62,6 +58,7 @@ interface FRPStartResult {
 
 export const useTunnelStore = defineStore('tunnels', () => {
 	const authStore = useAuthStore()
+	const serverStore = useServerConfigStore()
 
 	// State
 	const tunnels = ref<Tunnel[]>([])
@@ -121,7 +118,7 @@ export const useTunnelStore = defineStore('tunnels', () => {
 			const controller = new AbortController()
 			const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-			const response = await fetch(`${API_BASE}/tunnels`, {
+			const response = await fetch(`${serverStore.selectedServer.apiBaseUrl}/tunnels`, {
 				headers: authStore.getAuthHeaders(),
 				signal: controller.signal
 			})
@@ -135,7 +132,7 @@ export const useTunnelStore = defineStore('tunnels', () => {
 					const refreshed = await authStore.refresh()
 					if (refreshed) {
 						// Retry the request once with new token
-						const retryResponse = await fetch(`${API_BASE}/tunnels`, {
+						const retryResponse = await fetch(`${serverStore.selectedServer.apiBaseUrl}/tunnels`, {
 							headers: authStore.getAuthHeaders()
 						})
 
@@ -236,7 +233,7 @@ export const useTunnelStore = defineStore('tunnels', () => {
 		error.value = null
 
 		try {
-			const response = await fetch(`${API_BASE}/tunnels`, {
+			const response = await fetch(`${serverStore.selectedServer.apiBaseUrl}/tunnels`, {
 				method: 'POST',
 				headers: {
 					...authStore.getAuthHeaders(),
@@ -273,7 +270,7 @@ export const useTunnelStore = defineStore('tunnels', () => {
 		error.value = null
 
 		try {
-			const response = await fetch(`${API_BASE}/tunnels/${tunnelId}`, {
+			const response = await fetch(`${serverStore.selectedServer.apiBaseUrl}/tunnels/${tunnelId}`, {
 				method: 'DELETE',
 				headers: authStore.getAuthHeaders()
 			})
@@ -303,7 +300,7 @@ export const useTunnelStore = defineStore('tunnels', () => {
 
 		try {
 			// 1. Notify API that tunnel is starting
-			const response = await fetch(`${API_BASE}/tunnels/${tunnelId}/start`, {
+			const response = await fetch(`${serverStore.selectedServer.apiBaseUrl}/tunnels/${tunnelId}/start`, {
 				method: 'POST',
 				headers: authStore.getAuthHeaders()
 			})
@@ -347,7 +344,7 @@ export const useTunnelStore = defineStore('tunnels', () => {
 			await stopFRPClient(tunnelId)
 
 			// 2. Notify API
-			const response = await fetch(`${API_BASE}/tunnels/${tunnelId}/stop`, {
+			const response = await fetch(`${serverStore.selectedServer.apiBaseUrl}/tunnels/${tunnelId}/stop`, {
 				method: 'POST',
 				headers: authStore.getAuthHeaders()
 			})
@@ -385,19 +382,13 @@ export const useTunnelStore = defineStore('tunnels', () => {
 		}
 
 		try {
+			const server = serverStore.selectedServer
 			const config: FRPConfig = {
-				server_addr: FRP_SERVER,
-				server_port: FRP_PORT,
+				server_addr: server.controlHost,
+				server_port: server.controlPort,
+				control_port: server.controlPort,
 				token: authStore.frpToken,
-				proxies: tunnel.ports.map(p => {
-					const isVoice = p.label.toLowerCase().includes('voice')
-					return {
-						name: `${tunnel.subdomain}-${p.label.toLowerCase().replace(/\s+/g, '-')}-${p.protocol}-${p.public_port}`,
-						proxy_type: p.protocol,
-						local_port: isVoice ? p.public_port : p.local_port,
-						remote_port: p.public_port
-					}
-				})
+				proxies: []
 			}
 
 			const result = await invoke<FRPStartResult>('frp_start_tunnel', {

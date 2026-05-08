@@ -8,63 +8,38 @@ A modern, powerful, and easy-to-use desktop application for creating and managin
 
 ##  Images
 
-![main menu](https://i.imgur.com/SW6SLiH.png)
+![main menu](https://i.imgur.com/lDFr5am.png)
 
 <details>
   <summary>Server Dashboard</summary>
 
-  ![server performance](https://i.imgur.com/s5PjaC9.png)
+  Dashboard allows you to monitor your server, view console, and manage server settings.
+
+  ![server performance](https://i.imgur.com/mqfCDIm.png)
   
-  ![server console](https://i.imgur.com/sdbFnFh.png)
+  ![server console](https://i.imgur.com/YJdoSDG.png)
 
-  ![server settings](https://i.imgur.com/cJO2yr1.png)
+  ![server settings](https://i.imgur.com/fEZkcRv.png)
 
-  ![server mods/plugins](https://i.imgur.com/K7C2wRa.png)
+  ![server mods/plugins](https://i.imgur.com/lMmEFit.png)
 
-  ![server mods/plugins download](https://i.imgur.com/viQHTyq.png)
-
-  ![server backups](https://i.imgur.com/ZhFah7D.png)
-
-  ![server players](https://i.imgur.com/lZQhGpH.png)
-</details>
-
-
-<details>
-  <summary>App Settings</summary>
-
-  ![app settings](https://i.imgur.com/qWaLMWY.png)
+  ![server mods/plugins download](https://i.imgur.com/9mu7y7u.png)
 
 </details>
-
-<details>
-  <summary>Accound & Tunnels</summary>
-
-  ![main](https://i.imgur.com/2Dx6CmH.png)
-
-  ![create tunnel](https://i.imgur.com/1o9B3VI.png)
-
-</details>
-
 
 <details>
   <summary>Create Server</summary>
-
-  ![select engine](https://i.imgur.com/WT4MkwN.png)
-
-  ![selected engine](https://i.imgur.com/nIaLQBj.png)
-
-  ![download modpack](https://i.imgur.com/BlgE13j.png)
-
-  ![world](https://i.imgur.com/HXLIa5O.png)
-
-  ![server settings](https://i.imgur.com/yHIZauR.png)
-
-  ![launch server](https://i.imgur.com/E8Znz8D.png)
+  
+  You can create servers with different game engines like Vanilla, Forge, Fabric, Quilt, and Modrinth modpacks.
+  
+  ![select engine](https://i.imgur.com/A8gz34G.png)
 
 </details>
 
 <details>
   <summary>System Tray</summary>
+
+  Manage your servers from the system tray.
 
   ![system tray](https://i.imgur.com/GLJoCnn.png)
 
@@ -119,7 +94,7 @@ Here is what we plan to add in upcoming updates:
 - [X] **Backup System**: Automated and manual world backups with restore functionality.
 - [X] **Player Manager**: GUI for managing Whitelist, Ops, and Banned players.
 - [ ] **Scheduled Tasks**: Auto-restart and scheduled commands.
-- [X] **Advanced Network**: Tunnel integration.
+- [ ] **Advanced Network**: Tunnel integration.
 - [X] **Multi-Version Support**: Better handling of Java versions manager for older Minecraft versions.
 - [ ] **Multi-Games Support**: Support for multiple Games. Not only Minecraft.
 

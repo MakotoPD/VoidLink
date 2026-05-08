@@ -431,6 +431,7 @@ pub fn run() {
             rcon::rcon_send_command,
             rcon::rcon_stop_server,
             utils::read_log_tail,
+            utils::extract_zip_to_dir,
             // Java commands
             java::detect_java_installations_cmd,
             java::validate_java_path_cmd,

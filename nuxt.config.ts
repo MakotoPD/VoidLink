@@ -12,7 +12,8 @@ export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt'],
 
   colorMode: {
-    preference: 'system',
+    preference: 'dark',
+    fallback: 'dark',
   },
 
   css: ['~/assets/css/main.css'],
@@ -34,8 +35,15 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      // Zapobiega błędnemu skalowaniu na urządzeniach mobilnych/tabletach
       viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+      link: [
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap'
+        }
+      ]
     }
   },
 

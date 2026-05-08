@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { useServerConfigStore } from './useServerConfigStore'
 
-const API_BASE = 'https://tunnel.makoto.com.pl/api' // Will be configurable
+const FALLBACK_API_BASE = 'https://tunnel.makoto.com.pl/api'
 
 export interface User {
 	id: string
@@ -18,6 +19,14 @@ export interface AuthResponse {
 }
 
 export const useAuthStore = defineStore('auth', () => {
+	function apiBase(): string {
+		try {
+			return useServerConfigStore().selectedServer.apiBaseUrl
+		} catch {
+			return FALLBACK_API_BASE
+		}
+	}
+
 	// State
 	const accessToken = ref<string | null>(null)
 	const refreshToken = ref<string | null>(null)
@@ -40,7 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
 		error.value = null
 
 		try {
-			const response = await fetch(`${API_BASE}/auth/register`, {
+			const response = await fetch(`${apiBase()}/auth/register`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, password })
@@ -68,7 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
 		requires2FA.value = false
 
 		try {
-			const response = await fetch(`${API_BASE}/auth/login`, {
+			const response = await fetch(`${apiBase()}/auth/login`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -120,7 +129,7 @@ export const useAuthStore = defineStore('auth', () => {
 		if (!refreshToken.value) return false
 
 		try {
-			const response = await fetch(`${API_BASE}/auth/refresh`, {
+			const response = await fetch(`${apiBase()}/auth/refresh`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ refresh_token: refreshToken.value })
@@ -166,7 +175,7 @@ export const useAuthStore = defineStore('auth', () => {
 
 		// Call logout endpoint (fire and forget)
 		if (refreshToken.value) {
-			fetch(`${API_BASE}/auth/logout`, {
+			fetch(`${apiBase()}/auth/logout`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ refresh_token: refreshToken.value })
@@ -200,7 +209,7 @@ export const useAuthStore = defineStore('auth', () => {
 		if (!accessToken.value) return false
 
 		try {
-			const response = await fetch(`${API_BASE}/auth/me`, {
+			const response = await fetch(`${apiBase()}/auth/me`, {
 				headers: { 'Authorization': `Bearer ${accessToken.value}` }
 			})
 
@@ -218,7 +227,7 @@ export const useAuthStore = defineStore('auth', () => {
 		if (!accessToken.value) return null
 
 		try {
-			const response = await fetch(`${API_BASE}/auth/2fa/setup`, {
+			const response = await fetch(`${apiBase()}/auth/2fa/setup`, {
 				method: 'POST',
 				headers: { 'Authorization': `Bearer ${accessToken.value}` }
 			})
@@ -240,7 +249,7 @@ export const useAuthStore = defineStore('auth', () => {
 		if (!accessToken.value) return false
 
 		try {
-			const response = await fetch(`${API_BASE}/auth/2fa/verify`, {
+			const response = await fetch(`${apiBase()}/auth/2fa/verify`, {
 				method: 'POST',
 				headers: {
 					'Authorization': `Bearer ${accessToken.value}`,
@@ -270,7 +279,7 @@ export const useAuthStore = defineStore('auth', () => {
 		if (!accessToken.value) return false
 
 		try {
-			const response = await fetch(`${API_BASE}/auth/2fa/disable`, {
+			const response = await fetch(`${apiBase()}/auth/2fa/disable`, {
 				method: 'POST',
 				headers: {
 					'Authorization': `Bearer ${accessToken.value}`,
@@ -307,7 +316,7 @@ export const useAuthStore = defineStore('auth', () => {
 		error.value = null
 
 		try {
-			const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+			const response = await fetch(`${apiBase()}/auth/forgot-password`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ email })
@@ -334,7 +343,7 @@ export const useAuthStore = defineStore('auth', () => {
 		error.value = null
 
 		try {
-			const response = await fetch(`${API_BASE}/auth/reset-password`, {
+			const response = await fetch(`${apiBase()}/auth/reset-password`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ token, new_password: newPassword })

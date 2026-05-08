@@ -1,61 +1,30 @@
 <template>
-  <div v-if="isWindows" class="flex items-center justify-between h-full ml-auto px-2 space-x-1" data-tauri-drag-region>
-    <div>
-      <p class="font-bold text-gray-700/40 dark:text-white/40">VoidLink</p>
-    </div>
-    <div class="flex justify-end items-center">
-      <button
-        class="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-md transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-        title="Minimize"
-        @click="minimize"
-      >
-        <svg width="10" height="1" viewBox="0 0 10 1">
-          <rect width="10" height="1" fill="currentColor" />
-        </svg>
-      </button>
-      
-      <button
-        class="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-md transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-        :title="isMaximized ? 'Restore' : 'Maximize'"
-        @click="toggleMaximize"
-      >
-        <svg v-if="isMaximized" width="10" height="10" viewBox="0 0 10 10">
-          <path
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1"
-            d="M2.5,0.5 L9.5,0.5 L9.5,7.5 L7.5,7.5 L7.5,9.5 L0.5,9.5 L0.5,2.5 L2.5,2.5 Z M2.5,2.5 L7.5,2.5 L7.5,7.5"
-          />
-        </svg>
-        <svg v-else width="10" height="10" viewBox="0 0 10 10">
-          <rect
-            x="0.5"
-            y="0.5"
-            width="9"
-            height="9"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1"
-          />
-        </svg>
-      </button>
+  <div v-if="isWindows" class="win-btns" style="-webkit-app-region: no-drag">
+    <button class="win-btn" title="Minimize" @click="minimize">
+      <svg width="8" height="1" viewBox="0 0 10 1">
+        <rect width="10" height="1" fill="currentColor" />
+      </svg>
+    </button>
 
-      <button
-        class="p-2 hover:bg-red-500 hover:text-white rounded-md transition-colors text-gray-500 dark:text-gray-400"
-        title="Close"
-        @click="close"
-      >
-        <svg width="10" height="10" viewBox="0 0 10 10">
-          <path
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.2"
-            d="M1,1 L9,9 M9,1 L1,9"
-          />
-        </svg>
-      </button>
-    </div>
+    <button class="win-btn" :title="isMaximized ? 'Restore' : 'Maximize'" @click="toggleMaximize">
+      <svg v-if="isMaximized" width="8" height="8" viewBox="0 0 10 10">
+        <path
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1"
+          d="M2.5,0.5 L9.5,0.5 L9.5,7.5 L7.5,7.5 L7.5,9.5 L0.5,9.5 L0.5,2.5 L2.5,2.5 Z M2.5,2.5 L7.5,2.5 L7.5,7.5"
+        />
+      </svg>
+      <svg v-else width="8" height="8" viewBox="0 0 10 10">
+        <rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1" />
+      </svg>
+    </button>
 
+    <button class="win-btn close" title="Close" @click="close">
+      <svg width="8" height="8" viewBox="0 0 10 10">
+        <path fill="none" stroke="currentColor" stroke-width="1.2" d="M1,1 L9,9 M9,1 L1,9" />
+      </svg>
+    </button>
   </div>
 </template>
 
@@ -68,9 +37,7 @@ const isWindows = ref(false)
 const isMaximized = ref(false)
 const appWindow = getCurrentWindow()
 
-const minimize = async () => {
-  await appWindow.minimize()
-}
+const minimize = async () => { await appWindow.minimize() }
 
 const toggleMaximize = async () => {
   if (isMaximized.value) {
@@ -80,22 +47,16 @@ const toggleMaximize = async () => {
   }
 }
 
-const close = async () => {
-  await appWindow.close()
-}
+const close = async () => { await appWindow.close() }
 
 let unlistenResize: (() => void) | null = null
 
 onMounted(async () => {
-  const os = await platform() // plugin-os platform() returns Promise or string? standard plugin-os is synchronous usually but check docs if unsure. 
-  // checking VoidLink usage: imports { platform } from '@tauri-apps/plugin-os'
-  // checking tauri v2 docs: platform() returns Platform enum or string synchronously.
-  
+  const os = await platform()
   isWindows.value = os === 'windows'
 
   if (isWindows.value) {
     isMaximized.value = await appWindow.isMaximized()
-    
     unlistenResize = await appWindow.onResized(async () => {
       isMaximized.value = await appWindow.isMaximized()
     })
@@ -103,8 +64,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  if (unlistenResize) {
-    unlistenResize()
-  }
+  if (unlistenResize) unlistenResize()
 })
 </script>

@@ -1,358 +1,314 @@
 <template>
-  <div class="min-h-full flex flex-col">
-  <!-- Header Section -->
-    <div data-tauri-drag-region class="relative bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 pb-8 pt-8 px-8 overflow-hidden">
-      <!-- Background Gradients -->
-      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gray-100 dark:from-neutral-900/20 via-gray-50/0 dark:via-gray-900/0 to-transparent pointer-events-none"></div>
-      <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gray-300 dark:via-neutral-500/20 to-transparent"></div>
-
-      <div class="relative z-10">
-        <div class="flex items-center gap-4 mb-2">
-           <UButton
-             icon="i-lucide-arrow-left"
-             color="neutral"
-             variant="ghost"
-             to="/"
-             class="hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-           />
-           <div class="flex items-center gap-2 text-sm text-gray-500 font-medium uppercase tracking-wider">
-              <span class="w-1.5 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500"></span>
-              Global Configuration
-           </div>
-        </div>
-        
-        <div class="ml-12">
-            <h1 class="text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-2">Settings</h1>
-            <p class="text-gray-600 dark:text-gray-400 text-lg max-w-2xl">Configure global defaults for your servers and manage application preferences.</p>
-        </div>
+  <div>
+    <!-- Page header -->
+    <div class="page-head" data-tauri-drag-region>
+      <div class="page-head-left">
+        <span class="eyebrow">Global Configuration</span>
+        <h1 class="page-title">Settings</h1>
+        <p class="page-sub">Configure global defaults for your servers and application preferences.</p>
+      </div>
+      <div class="page-head-right">
+        <button class="btn" :disabled="saving" @click="handleManualSave">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
+          {{ saving ? 'Saving…' : 'Save Settings' }}
+        </button>
       </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="flex-1 p-8">
-       <div class="max-w-4xl mx-auto space-y-8">
+    <div class="col gap-16 mx-auto" style="max-width: 820px">
 
-         <!-- App Colormode Card -->
-          <div class="bg-white dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden p-6 hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
-             <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800/50">
-                <div class="p-3 bg-yellow-500/10 rounded-xl ring-1 ring-yellow-500/20 flex jsutify-center items-center">
-                   <UIcon name="i-lucide-sun" class="w-6 h-6 text-yellow-400" />
+      <!-- Java Configuration -->
+      <div class="card">
+        <div class="card-head">
+          <h4>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent)"><path d="M2 16.1A5 5 0 0 1 5.5 8h.5a5 5 0 0 1 10 0h.5a5 5 0 0 1 1.9 8.1" /><circle cx="12" cy="16" r="2" /><path d="M12 18v4" /></svg>
+            Java Configuration
+          </h4>
+          <span class="text-faint" style="font-size: 12px">Manage Java versions and startup parameters</span>
+        </div>
+
+        <div class="card-pad col gap-20">
+          <!-- Java Status -->
+          <div class="card" style="background: var(--bg-2)">
+            <div class="card-pad">
+              <div class="between mb-12">
+                <div class="row gap-8">
+                  <span style="font-size: 13px; font-weight: 500; color: var(--ink-0)">System Java Status</span>
+                  <span class="pill" :class="javaStatus.installed ? 'ok' : 'warn'">
+                    <span class="dot" />
+                    {{ javaStatus.installed ? 'Detected' : 'Not Found' }}
+                  </span>
                 </div>
+                <button class="btn ghost sm" :disabled="checkingJava" @click="checkJava">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>
+                  Refresh
+                </button>
+              </div>
+              <div v-if="javaStatus.installed" class="input mono" style="cursor: default; background: var(--bg-3); color: var(--ok)">
+                {{ javaStatus.version }}
+              </div>
+              <div v-else class="pill bad" style="padding: 8px 12px; border-radius: 8px; width: 100%; display: block">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 6px"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                Java not detected — install below or add to system PATH
+              </div>
+            </div>
+          </div>
+
+          <!-- Default RAM -->
+          <div class="field">
+            <div class="between mb-8">
+              <label style="font-size: 13px; color: var(--ink-0); font-weight: 500">Default Memory (RAM)</label>
+              <span class="text-mono" style="font-size: 20px; color: var(--accent); font-family: 'Instrument Serif', serif">{{ settings.defaultMemory }} <span style="font-size: 12px; color: var(--ink-3); font-family: 'Geist', sans-serif">GB</span></span>
+            </div>
+            <USlider v-model="settings.defaultMemory" :min="1" :max="systemRamGB" :step="0.5" color="primary" size="lg" />
+            <div class="between mt-8">
+              <span class="text-faint text-mono" style="font-size: 11px">1 GB</span>
+              <span class="text-faint text-mono" style="font-size: 11px">{{ systemRamGB }} GB system</span>
+            </div>
+          </div>
+
+          <!-- Default Flags -->
+          <div class="field">
+            <label>Global Startup Flags</label>
+            <textarea
+              v-model="settings.defaultFlags"
+              class="textarea"
+              rows="3"
+              placeholder="-XX:+UseG1GC -XX:+ParallelRefProcEnabled ..."
+            />
+            <span class="hint">Arguments added to every server launch command</span>
+          </div>
+
+          <!-- Install Java -->
+          <div class="card" style="background: var(--accent-soft); border-color: var(--accent-line)">
+            <div class="card-pad">
+              <div class="between mb-8">
                 <div>
-                   <h3 class="text-xl font-bold text-gray-900 dark:text-white">Color Mode</h3>
-                   <p class="text-sm text-gray-500 dark:text-gray-400">Change color mode of application</p>
+                  <div class="section-title mb-4">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                    Install Java
+                  </div>
+                  <span class="text-faint" style="font-size: 12px">Download official Eclipse Temurin runtimes</span>
                 </div>
-             </div>
-             
-             <div class="space-y-6">
-                <div class="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-950/30 rounded-xl border border-gray-200 dark:border-gray-800/50">
-                   <div class="flex items-start gap-4">
-                      <div class="p-2 bg-white dark:bg-gray-900 rounded-lg flex jsutify-center items-center">
-                         <UIcon name="i-lucide-moon" class="w-5 h-5 text-gray-400" />
-                      </div>
-                      <div>
-                         <h4 class="font-medium text-gray-900 dark:text-white">Select color mode</h4>
-                         <p class="text-xs text-gray-500 mt-1">Select color mode of application</p>
-                      </div>
-                   </div>
-                   <div>
-                     <UColorModeSelect />
-                   </div>
+                <div class="row gap-6">
+                  <button
+                    v-for="ver in [8, 11, 17, 21]"
+                    :key="ver"
+                    class="btn sm"
+                    :disabled="downloadingVersion !== null && downloadingVersion !== ver"
+                    @click="handleJavaDownload(ver)"
+                  >
+                    {{ downloadingVersion === ver ? '…' : `Java ${ver}` }}
+                  </button>
                 </div>
-             </div>
-          </div>
-          
-          <!-- Java Defaults Card -->
-          <div class="bg-white dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden p-6 hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
-             <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800/50">
-                <div class="p-3 bg-primary-500/10 rounded-xl ring-1 ring-primary-500/20 flex jsutify-center items-center">
-                   <UIcon name="i-lucide-coffee" class="w-6 h-6 text-primary-400" />
+              </div>
+              <div v-if="downloadingVersion !== null" class="col gap-6">
+                <div class="between">
+                  <span class="text-dim" style="font-size: 12px">Downloading Java {{ downloadingVersion }}…</span>
                 </div>
-                <div>
-                   <h3 class="text-xl font-bold text-gray-900 dark:text-white">Java Configuration</h3>
-                   <p class="text-sm text-gray-500 dark:text-gray-400">Manage Java versions and default startup parameters</p>
-                </div>
-             </div>
-
-             <div class="space-y-8">
-                <!-- Java Status --> 
-                <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950/50">
-                    <div class="flex items-center justify-between mb-3">
-                       <div class="flex items-center gap-3">
-                          <h4 class="font-semibold text-gray-800 dark:text-gray-200">System Java Status</h4>
-                          <UBadge :color="javaStatus.installed ? 'success' : 'warning'" variant="subtle" size="xs">
-                             {{ javaStatus.installed ? 'Detected' : 'Not Found' }}
-                          </UBadge>
-                       </div>
-                       <UButton size="xs" color="neutral" variant="ghost" :loading="checkingJava" @click="checkJava" icon="i-lucide-refresh-cw">
-                          Refresh
-                       </UButton>
-                    </div>
-                    
-                    <div v-if="javaStatus.installed" class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/50 p-2 rounded-lg border border-gray-200 dark:border-gray-800/50 font-mono ">
-                       <UIcon name="i-lucide-terminal" class="w-4 h-4 text-gray-500" />
-                       {{ javaStatus.version }}
-                    </div>
-                    <div v-else class="flex items-start gap-3 p-3 bg-error-500/10 border border-error-500/20 rounded-lg">
-                       <UIcon name="i-lucide-alert-circle" class="w-5 h-5 text-error-400 shrink-0 mt-0.5" />
-                       <div class="text-sm text-error-400">
-                          <p class="font-medium">Java not detected</p>
-                          <p class="opacity-80 mt-1">Please ensure Java is installed and added to your system PATH, or manually configure paths below.</p>
-                       </div>
-                    </div>
-                </div>
-
-                <!-- Default RAM -->
-                <div class="space-y-4">
-                   <div class="flex justify-between items-center">
-                     <div>
-                        <label class="text-base font-medium text-gray-900 dark:text-white">Default Memory (RAM)</label>
-                        <p class="text-xs text-gray-500 mt-1">Allocated memory for new servers</p>
-                     </div>
-                     <span class="text-2xl font-bold text-primary-500 dark:text-primary-400">{{ settings.defaultMemory }} <span class="text-sm text-gray-500 font-normal">GB</span></span>
-                   </div>
-                   <div class="px-2">
-                      <USlider v-model="settings.defaultMemory" :min="1" :max="systemRamGB" :step="0.5" color="primary" size="lg" />
-                   </div>
-                   <div class="flex justify-between text-xs text-gray-500 font-mono px-1">
-                      <span>1 GB</span>
-                      <span>{{ systemRamGB }} GB (System Total)</span>
-                   </div>
-                </div>
-
-                <!-- Default Flags -->
-                <div class="space-y-3">
-                   <div>
-                      <label class="text-base font-medium text-gray-900 dark:text-white">Global Startup Flags</label>
-                      <p class="text-xs text-gray-500 mt-1">Arguments added to every server launch command</p>
-                   </div>
-                   <UTextarea 
-                      v-model="settings.defaultFlags" 
-                      :rows="3" 
-                      placeholder="-XX:+UseG1GC ..." 
-                      variant="outline"
-                      color="neutral"
-                      class="font-mono text-sm w-full"
-                   />
-                </div>
-
-                <!-- Install Java Section -->
-                <div class="p-4 rounded-xl border border-primary-500/30 bg-primary-500/5 relative overflow-hidden">
-                    <div class="flex items-center justify-between relative z-10">
-                       <div>
-                          <h4 class="font-semibold text-black dark:text-white flex items-center gap-2">
-                             <UIcon name="i-lucide-download-cloud" class="w-4 h-4 text-primary-400" />
-                             Install Java
-                          </h4>
-                          <p class="text-xs text-primary-500/70 dark:text-primary-200/70 mt-0.5">Download official Eclipse Temurin runtimes</p>
-                       </div>
-                       <div class="flex gap-2">
-                          <UButton 
-                             v-for="ver in [8, 11, 17, 21]" 
-                             :key="ver"
-                             size="xs"
-                             color="primary" 
-                             variant="soft"
-                             :loading="downloadingVersion === ver"
-                             :disabled="downloadingVersion !== null && downloadingVersion !== ver"
-                             @click="handleJavaDownload(ver)"
-                          >
-                             Java {{ ver }}
-                          </UButton>
-                       </div>
-                    </div>
-                    
-                    <!-- Progress Overlay -->
-                     <div v-if="downloadingVersion !== null" class="mt-4 space-y-2">
-                        <div class="flex justify-between text-xs text-primary-200">
-                           <span>Downloading Java {{ downloadingVersion }}...</span>
-                           <span class="animate-pulse">Please wait</span>
-                        </div>
-                        <div v-if="currentInstallPath" class="text-[10px] bg-primary-900/40 p-1.5 rounded border border-primary-500/20 font-mono text-primary-300 break-all">
-                           <span class="opacity-50">Target:</span> {{ currentInstallPath }}
-                        </div>
-                        <UProgress animation="carousel" color="primary" size="sm" />
-                    </div>
-                </div>
-                
-                <!-- Java Installations -->
-                <div class="pt-6 border-t border-gray-200 dark:border-gray-800/50">
-                    <div class="flex items-center justify-between mb-4">
-                       <div>
-                          <h4 class="font-semibold text-gray-900 dark:text-white">Java Installations</h4>
-                          <p class="text-xs text-gray-500">Configure paths for specific Java versions</p>
-                       </div>
-                       <UButton size="sm" color="neutral" variant="soft" icon="i-lucide-scan" @click="detectAllJavaVersions" :loading="detectingJava">
-                          Auto-Detect
-                       </UButton>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       <!-- Java 8 -->
-                       <div class="p-4 bg-gray-100 dark:bg-gray-950/30 rounded-xl border border-gray-200 dark:border-gray-800/50 group hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
-                          <div class="flex items-center justify-between mb-3">
-                             <div class="flex items-center gap-2">
-                                <span class="font-medium text-gray-800 dark:text-gray-200">Java 8</span>
-                                <UBadge color="neutral" variant="subtle" size="xs">MC 1.12.x-</UBadge>
-                             </div>
-                             <div v-if="settings.javaInstallations.java8" class="w-2 h-2 rounded-full bg-success-500"></div>
-                          </div>
-                          <UInput v-model="settings.javaInstallations.java8" class="w-full" placeholder="Path to java.exe" size="sm" color="neutral" variant="outline" :ui="{ trailing: 'pointer-events-auto' }">
-                             <template #trailing>
-                                <UButton color="neutral" variant="link" icon="i-lucide-folder" :padded="false" @click="browseJavaPath('java8')" />
-                             </template>
-                          </UInput>
-                       </div>
-
-                       <!-- Java 11 -->
-                       <div class="p-4 bg-gray-100 dark:bg-gray-950/30 rounded-xl border border-gray-200 dark:border-gray-800/50 group hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
-                          <div class="flex items-center justify-between mb-3">
-                             <div class="flex items-center gap-2">
-                                <span class="font-medium text-gray-800 dark:text-gray-200">Java 11</span>
-                                <UBadge color="neutral" variant="subtle" size="xs">MC 1.13-1.16</UBadge>
-                             </div>
-                             <div v-if="settings.javaInstallations.java11" class="w-2 h-2 rounded-full bg-success-500"></div>
-                          </div>
-                          <UInput v-model="settings.javaInstallations.java11" class="w-full" placeholder="Path to java.exe" size="sm" color="neutral" variant="outline" :ui="{ trailing: 'pointer-events-auto' }">
-                             <template #trailing>
-                                <UButton color="neutral" variant="link" icon="i-lucide-folder" :padded="false" @click="browseJavaPath('java11')" />
-                             </template>
-                          </UInput>
-                       </div>
-
-                       <!-- Java 17 -->
-                       <div class="p-4 bg-gray-100 dark:bg-gray-950/30 rounded-xl border border-gray-200 dark:border-gray-800/50 group hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
-                          <div class="flex items-center justify-between mb-3">
-                             <div class="flex items-center gap-2">
-                                <span class="font-medium text-gray-800 dark:text-gray-200">Java 17</span>
-                                <UBadge color="primary" variant="subtle" size="xs">MC 1.17-1.20.4</UBadge>
-                             </div>
-                             <div v-if="settings.javaInstallations.java17" class="w-2 h-2 rounded-full bg-success-500"></div>
-                          </div>
-                          <UInput v-model="settings.javaInstallations.java17" class="w-full" placeholder="Path to java.exe" size="sm" color="neutral" variant="outline" :ui="{ trailing: 'pointer-events-auto' }">
-                             <template #trailing>
-                                <UButton color="neutral" variant="link" icon="i-lucide-folder" :padded="false" @click="browseJavaPath('java17')" />
-                             </template>
-                          </UInput>
-                       </div>
-
-                       <!-- Java 21 -->
-                       <div class="p-4 bg-gray-100 dark:bg-gray-950/30 rounded-xl border border-gray-200 dark:border-gray-800/50 group hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
-                          <div class="flex items-center justify-between mb-3">
-                             <div class="flex items-center gap-2">
-                                <span class="font-medium text-gray-800 dark:text-gray-200">Java 21</span>
-                                <UBadge color="neutral" variant="subtle" size="xs">MC 1.20.5+</UBadge>
-                             </div>
-                             <div v-if="settings.javaInstallations.java21" class="w-2 h-2 rounded-full bg-success-500"></div>
-                          </div>
-                          <UInput v-model="settings.javaInstallations.java21" class="w-full" placeholder="Path to java.exe" size="sm" color="neutral" variant="outline" :ui="{ trailing: 'pointer-events-auto' }">
-                             <template #trailing>
-                                <UButton color="neutral" variant="link" icon="i-lucide-folder" :padded="false" @click="browseJavaPath('java21')" />
-                             </template>
-                          </UInput>
-                       </div>
-                    </div>
-                </div>
-             </div>
-          </div>
-          
-          <!-- App Settings Card -->
-          <div class="bg-white dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden p-6 hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
-             <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800/50">
-                <div class="p-3 bg-violet-500/10 rounded-xl ring-1 ring-violet-500/20 flex jsutify-center items-center">
-                   <UIcon name="i-lucide-monitor" class="w-6 h-6 text-violet-400" />
-                </div>
-                <div>
-                   <h3 class="text-xl font-bold text-gray-900 dark:text-white">Application</h3>
-                   <p class="text-sm text-gray-500 dark:text-gray-400">Customize MineDash behavior</p>
-                </div>
-             </div>
-             
-             <div class="space-y-6">
-                <div class="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-950/30 rounded-xl border border-gray-200 dark:border-gray-800/50">
-                   <div class="flex items-start gap-4">
-                      <div class="p-2 bg-white dark:bg-gray-900 rounded-lg flex jsutify-center items-center">
-                         <UIcon name="i-lucide-minimize-2" class="w-5 h-5 text-gray-400" />
-                      </div>
-                      <div>
-                         <h4 class="font-medium text-gray-900 dark:text-white">Minimize to Tray</h4>
-                         <p class="text-xs text-gray-500 mt-1">Keep the application running in the background when closed</p>
-                      </div>
-                   </div>
-                   <USwitch v-model="settings.minimizeOnClose" color="primary" size="lg" />
-                </div>
-             </div>
+                <div v-if="currentInstallPath" class="input mono" style="cursor: default; font-size: 10px; background: var(--bg-2)">{{ currentInstallPath }}</div>
+                <UProgress animation="carousel" color="primary" size="sm" />
+              </div>
+            </div>
           </div>
 
-          <!-- About Card -->
-          <div class="bg-white dark:bg-gray-900/40 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden p-6 hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
-             <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800/50">
-                <div class="p-3 bg-pink-500/10 rounded-xl ring-1 ring-pink-500/20 flex jsutify-center items-center">
-                   <UIcon name="i-lucide-info" class="w-6 h-6 text-pink-400" />
+          <!-- Java Installations -->
+          <div>
+            <div class="between mb-16">
+              <div>
+                <div class="section-title mb-4">Java Installations</div>
+                <span class="text-faint" style="font-size: 12px">Configure paths for specific Java versions</span>
+              </div>
+              <button class="btn ghost sm" :disabled="detectingJava" @click="detectAllJavaVersions">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" /><path d="M13 13l6 6" /></svg>
+                Auto-Detect
+              </button>
+            </div>
+            <div class="grid-2 gap-12">
+              <div v-for="(jver) in javaVersions" :key="jver.key" class="card" style="background: var(--bg-2)">
+                <div class="card-pad col gap-8">
+                  <div class="between">
+                    <div class="row gap-8">
+                      <span style="font-size: 13px; font-weight: 500; color: var(--ink-0)">Java {{ jver.label }}</span>
+                      <span class="pill" style="font-size: 10px; padding: 1px 6px">{{ jver.mc }}</span>
+                    </div>
+                    <span v-if="settings.javaInstallations[jver.key]" class="dot" style="color: var(--ok)" />
+                  </div>
+                  <div class="row gap-6">
+                    <input
+                      v-model="settings.javaInstallations[jver.key]"
+                      class="input mono"
+                      :placeholder="`Path to java${jver.key === 'java8' || jver.key === 'java11' ? '.exe' : ''}`"
+                      style="flex: 1"
+                    />
+                    <button class="btn ghost sm icon-only" @click="browseJavaPath(jver.key)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+                    </button>
+                  </div>
                 </div>
-                <div>
-                   <h3 class="text-xl font-bold text-gray-900 dark:text-white">About VoidLink</h3>
-                   <p class="text-sm text-gray-500 dark:text-gray-400">Version information and updates</p>
-                </div>
-             </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-             <div class="space-y-6">
-                <div class="flex items-center justify-between">
-                   <div class="space-y-1">
-                      <p class="text-sm text-gray-600 dark:text-gray-400">Current Version: <span class="text-gray-900 dark:text-white font-mono ml-1">{{ currentAppVersion }}</span></p>
-                      <p class="text-xs text-gray-500">Developed by <a href="http://makoto.com.pl" target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:text-primary-300 hover:underline transition-colors">MakotoPD</a></p>
-                   </div>
-                   <UButton 
-                      icon="i-lucide-refresh-cw" 
-                      color="neutral" 
-                      variant="soft" 
-                      :loading="checkingUpdate"
-                      @click="checkUpdate"
-                   >
-                      Check for Updates
-                   </UButton>
-                </div>
-                
-                <!-- Update Available Banner -->
-                <div v-if="updateAvailable" class="p-6 bg-gradient-to-br from-primary-900/20 to-primary-900/5 border border-primary-500/30 rounded-xl relative overflow-hidden group">
-                   <div class="absolute inset-0 bg-primary-500/5 group-hover:bg-primary-500/10 transition-colors"></div>
-                   
-                   <div class="relative z-10 flex items-start gap-4">
-                      <div class="p-3 bg-primary-500/20 rounded-full animate-pulse flex jsutify-center items-center">
-                         <UIcon name="i-lucide-download" class="w-6 h-6 text-primary-400" />
-                      </div>
-                      <div class="flex-1">
-                         <h4 class="text-lg font-bold text-white mb-1">New Version Available!</h4>
-                         <p class="text-primary-200 mb-4">
-                            Version <strong>{{ updateAvailable.version }}</strong> is ready to download.
-                         </p>
-                         <UButton 
-                            color="primary"
-                            icon="i-lucide-download-cloud"
-                            @click="handleUpdateDownload"
-                            :loading="isDownloadingUpdate"
-                            class="shadow-lg shadow-primary-900/20"
-                         >
-                            {{ isDownloadingUpdate ? 'Downloading & Installing...' : 'Update & Restart' }}
-                         </UButton>
-                      </div>
-                   </div>
-                </div>
-                
-                <!-- Up to date message -->
-                <div v-else-if="!checkingUpdate" class="flex items-center gap-3 p-4 bg-success-500/5 border border-success-500/20 rounded-xl">
-                   <div class="p-1 bg-success-500/10 rounded-full flex justify-center items-center">
-                      <UIcon name="i-lucide-check-circle" class="w-5 h-5 text-success-500" />
-                   </div>
-                   <span class="text-sm font-medium text-success-400">You are running the latest version of VoidLink.</span>
-                </div>
-             </div>
+      <!-- Application Settings -->
+      <div class="card">
+        <div class="card-head">
+          <h4>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent)"><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>
+            Application
+          </h4>
+        </div>
+        <div class="card-pad col gap-12">
+          <div class="between" style="padding: 12px 16px; background: var(--bg-2); border-radius: 10px; border: 1px solid var(--line-1)">
+            <div class="row gap-12">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--ink-2)"><polyline points="4 14 10 14 10 20" /><polyline points="20 10 14 10 14 4" /><line x1="10" y1="14" x2="21" y2="3" /><line x1="3" y1="21" x2="14" y2="10" /></svg>
+              <div>
+                <div style="font-size: 13px; font-weight: 500; color: var(--ink-0)">Minimize to Tray</div>
+                <div class="text-faint" style="font-size: 11px; margin-top: 2px">Keep running in background when closed</div>
+              </div>
+            </div>
+            <div
+              class="toggle"
+              :class="{ on: settings.minimizeOnClose }"
+              @click="settings.minimizeOnClose = !settings.minimizeOnClose"
+            />
           </div>
-          
-          <div class="flex justify-end pt-4">
-             <UButton color="primary" size="xl" :loading="saving" @click="saveSettings" icon="i-lucide-save" class="font-bold shadow-lg shadow-primary-500/20 px-8">Save All Settings</UButton>
+        </div>
+      </div>
+
+      <!-- Tunnel Servers -->
+      <div class="card">
+        <div class="card-head">
+          <h4>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent)"><rect x="2" y="2" width="20" height="8" rx="2" /><rect x="2" y="14" width="20" height="8" rx="2" /><line x1="6" y1="6" x2="6.01" y2="6" /><line x1="6" y1="18" x2="6.01" y2="18" /></svg>
+            Tunnel Servers
+          </h4>
+          <span class="text-faint" style="font-size: 12px">Configure custom or self-hosted tunnel servers</span>
+        </div>
+        <div class="card-pad col gap-8">
+          <!-- Server list -->
+          <div
+            v-for="server in serverStore.serverConfigs"
+            :key="server.id"
+            class="between"
+            style="padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line-1); background: var(--bg-2)"
+            :style="server.id === serverStore.selectedServerId ? 'border-color: var(--accent-line); background: var(--accent-soft)' : ''"
+          >
+            <div class="col gap-4" style="min-width: 0; flex: 1">
+              <div class="row gap-8">
+                <span style="font-size: 13px; font-weight: 500; color: var(--ink-0)">{{ server.name }}</span>
+                <span v-if="server.isDefault" class="pill" style="font-size: 10px; padding: 1px 6px">Official</span>
+                <span v-if="server.id === serverStore.selectedServerId" class="pill accent" style="font-size: 10px; padding: 1px 6px">Active</span>
+              </div>
+              <span class="text-mono text-faint" style="font-size: 11px">{{ server.controlHost }}:{{ server.controlPort }}</span>
+            </div>
+            <div class="row gap-6">
+              <button
+                v-if="server.id !== serverStore.selectedServerId"
+                class="btn sm"
+                @click="serverStore.setSelectedServer(server.id)"
+              >
+                Set Active
+              </button>
+              <button
+                v-if="!server.isDefault"
+                class="btn ghost sm icon-only"
+                style="color: var(--bad)"
+                @click="serverStore.removeServerConfig(server.id)"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
+              </button>
+            </div>
           </div>
-       </div>
+
+          <!-- Add Server Form -->
+          <div class="card" style="background: var(--bg-2); border-style: dashed">
+            <div class="card-pad col gap-12">
+              <span class="section-title" style="font-size: 12px">Add Custom Server</span>
+              <div class="grid-2 gap-8">
+                <div class="field">
+                  <label>Display Name</label>
+                  <input v-model="newServer.name" class="input" placeholder="My Tunnel Server" />
+                </div>
+                <div class="field">
+                  <label>API Base URL</label>
+                  <input v-model="newServer.apiBaseUrl" class="input" placeholder="https://tunnel.example.com" />
+                </div>
+                <div class="field">
+                  <label>Control Host</label>
+                  <input v-model="newServer.controlHost" class="input" placeholder="tunnel.example.com" />
+                </div>
+                <div class="field">
+                  <label>Control Port</label>
+                  <input v-model="newServer.controlPort" class="input" placeholder="7001" type="number" />
+                </div>
+              </div>
+              <div style="display: flex; justify-content: flex-end">
+                <button
+                  class="btn sm"
+                  :disabled="!newServer.name || !newServer.apiBaseUrl || !newServer.controlHost"
+                  @click="handleAddServer"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                  Add Server
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- About -->
+      <div class="card">
+        <div class="card-head">
+          <h4>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent)"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+            About VoidLink
+          </h4>
+          <span class="text-mono text-faint" style="font-size: 12px">v{{ currentAppVersion }}</span>
+        </div>
+        <div class="card-pad col gap-16">
+          <div class="between">
+            <div class="col gap-6">
+              <div class="row gap-8">
+                <span style="font-size: 13px; color: var(--ink-1)">Version</span>
+                <span class="tag-mono">{{ currentAppVersion }}</span>
+              </div>
+              <span class="text-faint" style="font-size: 12px">
+                Developed by
+                <a href="http://makoto.com.pl" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none">MakotoPD</a>
+              </span>
+            </div>
+            <button class="btn ghost sm" :disabled="checkingUpdate" @click="checkUpdate">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>
+              Check for Updates
+            </button>
+          </div>
+
+          <!-- Update available -->
+          <div v-if="updateAvailable" class="card" style="background: var(--accent-soft); border-color: var(--accent-line)">
+            <div class="card-pad row gap-16">
+              <div>
+                <div class="section-title mb-8" style="color: var(--accent)">New version available — {{ updateAvailable.version }}</div>
+                <span class="text-faint" style="font-size: 12px">A new version of VoidLink is ready to install.</span>
+              </div>
+              <button class="btn" :disabled="isDownloadingUpdate" @click="handleUpdateDownload" style="flex-shrink: 0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                {{ isDownloadingUpdate ? 'Installing…' : 'Update & Restart' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Up to date -->
+          <div v-else-if="!checkingUpdate" class="row gap-8" style="padding: 10px 14px; background: var(--ok-soft); border: 1px solid rgba(52,211,153,0.3); border-radius: 8px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--ok); flex-shrink: 0"><polyline points="20 6 9 17 4 12" /></svg>
+            <span style="font-size: 13px; color: var(--ok)">You're on the latest version of VoidLink.</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -363,241 +319,182 @@ import { open } from '@tauri-apps/plugin-shell'
 import { useJava } from '~/composables/useJava'
 import { GITHUB_RELEASES_URL } from '~/utils/version'
 import { useSettingsStore } from '~/stores/useSettingsStore'
+import { useServerConfigStore } from '~/stores/useServerConfigStore'
 import { storeToRefs } from 'pinia'
 import { check, type Update } from '@tauri-apps/plugin-updater'
 import { relaunch } from '@tauri-apps/plugin-process'
 import { getVersion } from '@tauri-apps/api/app'
+import { join, appDataDir } from '@tauri-apps/api/path'
+
+definePageMeta({ layout: 'default' })
 
 const loading = ref(true)
 const saving = ref(false)
 const checkingJava = ref(false)
 const javaStatus = ref({ installed: false, version: '', details: '' })
 
-const { installations, scanJava, validateJavaPath, downloadJava, fetchAdoptiumRelease } = useJava()
+const { installations, scanJava, downloadJava } = useJava()
 
 const downloadingVersion = ref<number | null>(null)
 const currentInstallPath = ref<string>('')
-import { join, downloadDir, appDataDir } from '@tauri-apps/api/path'
 
-// Update state
 const checkingUpdate = ref(false)
 const updateAvailable = ref<Update | null>(null)
 const currentAppVersion = ref('')
 const isDownloadingUpdate = ref(false)
 const updateDownloadProgress = ref(0)
 
-// Settings Store
 const settingsStore = useSettingsStore()
 const { settings, systemRamGB } = storeToRefs(settingsStore)
 const { loadSettings, saveSettings } = settingsStore
+
+const serverStore = useServerConfigStore()
+
+const newServer = reactive({
+  name: '',
+  apiBaseUrl: '',
+  controlHost: '',
+  controlPort: 7001 as number | string
+})
+
+const javaVersions = [
+  { key: 'java8' as const, label: '8', mc: 'MC 1.12.x-' },
+  { key: 'java11' as const, label: '11', mc: 'MC 1.13-1.16' },
+  { key: 'java17' as const, label: '17', mc: 'MC 1.17-1.20.4' },
+  { key: 'java21' as const, label: '21', mc: 'MC 1.20.5+' }
+]
+
+function handleAddServer() {
+  const port = Number(newServer.controlPort)
+  if (!newServer.name || !newServer.apiBaseUrl || !newServer.controlHost || !port) return
+  serverStore.addServerConfig({
+    name: newServer.name,
+    apiBaseUrl: newServer.apiBaseUrl,
+    controlHost: newServer.controlHost,
+    controlPort: port
+  })
+  newServer.name = ''
+  newServer.apiBaseUrl = ''
+  newServer.controlHost = ''
+  newServer.controlPort = 7001
+}
 
 const detectingJava = ref(false)
 const toast = useToast()
 
 onMounted(async () => {
-   loading.value = true
-   currentAppVersion.value = await getVersion()
-   await loadSettings()
-   loading.value = false
-   
-   checkJava()
-   checkUpdate()
+  loading.value = true
+  currentAppVersion.value = await getVersion()
+  await loadSettings()
+  await serverStore.loadConfigs()
+  loading.value = false
+  checkJava()
+  checkUpdate()
 })
 
 async function checkUpdate() {
-   checkingUpdate.value = true
-   try {
-      const update = await check()
-      if (update) {
-         updateAvailable.value = update
-      } else {
-         updateAvailable.value = null
-      }
-   } catch (err) {
-      console.error('Failed to check for updates', err)
-   } finally {
-      checkingUpdate.value = false
-   }
+  checkingUpdate.value = true
+  try {
+    const update = await check()
+    updateAvailable.value = update || null
+  } catch (err) {
+    console.error('Failed to check for updates', err)
+  } finally {
+    checkingUpdate.value = false
+  }
 }
 
 async function handleUpdateDownload() {
-   if (!updateAvailable.value) return
-   
-   isDownloadingUpdate.value = true
-   try {
-      await updateAvailable.value.downloadAndInstall((event) => {
-         if (event.event === 'Progress') {
-            updateDownloadProgress.value += event.data.chunkLength
-         } else if (event.event === 'Finished') {
-            updateDownloadProgress.value = 100 // Just visual
-         }
-      })
-      await relaunch()
-   } catch (err) {
-      console.error('Failed to install update', err)
-      isDownloadingUpdate.value = false
-      
-      // Show helpful error to user
-      const errorMessage = String(err)
-      
-      // Check if this is a Linux permission issue (common with .deb)
-      if (errorMessage.includes('permission') || errorMessage.includes('sudo') || errorMessage.includes('root')) {
-         toast.add({
-            title: 'Update requires elevated permissions',
-            description: 'Please download and install the update manually, or use the AppImage version for auto-updates.',
-            icon: 'i-lucide-alert-triangle',
-            color: 'warning',
-            duration: 10000
-         })
-      } else {
-         toast.add({
-            title: 'Update failed',
-            description: 'Auto-update failed. Opening releases page for manual download...',
-            icon: 'i-lucide-alert-circle',
-            color: 'error',
-            duration: 5000
-         })
+  if (!updateAvailable.value) return
+  isDownloadingUpdate.value = true
+  try {
+    await updateAvailable.value.downloadAndInstall((event) => {
+      if (event.event === 'Progress') {
+        updateDownloadProgress.value += event.data.chunkLength
       }
-      
-      // Open releases page as fallback
-      await open(GITHUB_RELEASES_URL)
-   }
-}
-
-async function openReleasePage() {
-   await open(GITHUB_RELEASES_URL)
+    })
+    await relaunch()
+  } catch (err) {
+    console.error('Failed to install update', err)
+    isDownloadingUpdate.value = false
+    const errorMessage = String(err)
+    if (errorMessage.includes('permission') || errorMessage.includes('sudo') || errorMessage.includes('root')) {
+      toast.add({ title: 'Update requires elevated permissions', description: 'Please download and install the update manually.', icon: 'i-lucide-alert-triangle', color: 'warning', duration: 10000 })
+    } else {
+      toast.add({ title: 'Update failed', description: 'Auto-update failed. Opening releases page...', icon: 'i-lucide-alert-circle', color: 'error', duration: 5000 })
+    }
+    await open(GITHUB_RELEASES_URL)
+  }
 }
 
 async function checkJava() {
-   checkingJava.value = true
-   await scanJava()
-   
-   // Find the "best" system java (latest version)
-   const latest = installations.value[0] // Sorted by backend
-   
-   if (latest && latest.is_valid) {
-      javaStatus.value = {
-         installed: true,
-         version: `Java ${latest.major} (${latest.version})`,
-         details: latest.path
-      }
-   } else {
-      javaStatus.value = {
-         installed: false,
-         version: '',
-         details: 'No Java detected'
-      }
-   }
-   checkingJava.value = false
+  checkingJava.value = true
+  await scanJava()
+  const latest = installations.value[0]
+  if (latest && latest.is_valid) {
+    javaStatus.value = { installed: true, version: `Java ${latest.major} (${latest.version})`, details: latest.path }
+  } else {
+    javaStatus.value = { installed: false, version: '', details: 'No Java detected' }
+  }
+  checkingJava.value = false
 }
 
 async function browseJavaPath(key: 'java8' | 'java11' | 'java17' | 'java21') {
-   try {
-      const selected = await openDialog({
-         multiple: false,
-         filters: [{
-            name: 'Java',
-            extensions: ['exe', '']
-         }]
-      })
-
-      if (selected && typeof selected === 'string') {
-         settings.value.javaInstallations[key] = selected
-      }
-   } catch (e) {
-      console.error('Failed to open file dialog', e)
-   }
+  try {
+    const selected = await openDialog({ multiple: false, filters: [{ name: 'Java', extensions: ['exe', ''] }] })
+    if (selected && typeof selected === 'string') {
+      settings.value.javaInstallations[key] = selected
+    }
+  } catch (_e) {
+    console.error('Failed to open file dialog')
+  }
 }
 
 async function detectAllJavaVersions() {
-   detectingJava.value = true
-   try {
-      await scanJava()
-      
-      // Auto-assign known versions
-      for (const java of installations.value) {
-         if (!java.is_valid || !java.major) continue
-         
-         if (java.major === 8 && !settings.value.javaInstallations.java8) {
-            settings.value.javaInstallations.java8 = java.path
-         } else if (java.major === 11 && !settings.value.javaInstallations.java11) {
-            settings.value.javaInstallations.java11 = java.path
-         } else if (java.major === 17 && !settings.value.javaInstallations.java17) {
-            settings.value.javaInstallations.java17 = java.path
-         } else if (java.major >= 21 && !settings.value.javaInstallations.java21) {
-             settings.value.javaInstallations.java21 = java.path
-         }
-      }
-      
-   } catch (e) {
-      console.error('Failed to detect Java versions', e)
-   } finally {
-      detectingJava.value = false
-   }
+  detectingJava.value = true
+  try {
+    await scanJava()
+    for (const java of installations.value) {
+      if (!java.is_valid || !java.major) continue
+      if (java.major === 8 && !settings.value.javaInstallations.java8) settings.value.javaInstallations.java8 = java.path
+      else if (java.major === 11 && !settings.value.javaInstallations.java11) settings.value.javaInstallations.java11 = java.path
+      else if (java.major === 17 && !settings.value.javaInstallations.java17) settings.value.javaInstallations.java17 = java.path
+      else if (java.major >= 21 && !settings.value.javaInstallations.java21) settings.value.javaInstallations.java21 = java.path
+    }
+  } catch (_e) {
+    console.error('Failed to detect Java versions')
+  } finally {
+    detectingJava.value = false
+  }
 }
 
 async function handleJavaDownload(major: number) {
-   if (downloadingVersion.value !== null) return
-   
-   downloadingVersion.value = major
-   try {
-      // 1. Get Install Dir
-      const appData = await appDataDir()
-      const installDir = await join(appData, 'java', major.toString())
-      currentInstallPath.value = installDir
-      
-      console.log(`Downloading Java ${major} to ${installDir}`)
-
-      toast.add({
-         title: `Downloading Java ${major}`,
-         description: `Installation target: ${installDir}`,
-         icon: 'i-lucide-download',
-         color: 'primary',
-         duration: 5000
-      })
-      
-      // 2. Start Download
-      const javaPath = await downloadJava(major, installDir)
-      
-      // 3. Update Settings
-      if (major === 8) settings.value.javaInstallations.java8 = javaPath
-      if (major === 11) settings.value.javaInstallations.java11 = javaPath
-      if (major === 17) settings.value.javaInstallations.java17 = javaPath
-      if (major === 21) settings.value.javaInstallations.java21 = javaPath
-      
-      // 4. Refresh List
-      await scanJava()
-      checkJava()
-      
-      // Notify
-      console.log('Java installed successfully!')
-      toast.add({
-         title: 'Java Installed Successfully',
-         description: `Java ${major} is ready to use. Path updated in settings.`,
-         icon: 'i-lucide-check-circle',
-         color: 'success',
-         duration: 6000
-      })
-      
-   } catch (e) {
-      console.error('Download failed', e)
-      toast.add({
-         title: 'Download Failed',
-         description: String(e),
-         icon: 'i-lucide-alert-circle',
-         color: 'error'
-      })
-   } finally {
-      downloadingVersion.value = null
-      currentInstallPath.value = ''
-   }
+  if (downloadingVersion.value !== null) return
+  downloadingVersion.value = major
+  try {
+    const appData = await appDataDir()
+    const installDir = await join(appData, 'java', major.toString())
+    currentInstallPath.value = installDir
+    toast.add({ title: `Downloading Java ${major}`, description: `Target: ${installDir}`, icon: 'i-lucide-download', color: 'primary', duration: 5000 })
+    const javaPath = await downloadJava(major, installDir)
+    if (major === 8) settings.value.javaInstallations.java8 = javaPath
+    if (major === 11) settings.value.javaInstallations.java11 = javaPath
+    if (major === 17) settings.value.javaInstallations.java17 = javaPath
+    if (major === 21) settings.value.javaInstallations.java21 = javaPath
+    await scanJava()
+    checkJava()
+    toast.add({ title: 'Java Installed', description: `Java ${major} is ready to use.`, icon: 'i-lucide-check-circle', color: 'success', duration: 6000 })
+  } catch (_e) {
+    toast.add({ title: 'Download Failed', description: String(_e), icon: 'i-lucide-alert-circle', color: 'error' })
+  } finally {
+    downloadingVersion.value = null
+    currentInstallPath.value = ''
+  }
 }
 
-// Wrapper for manual save button (although auto-save is active)
 async function handleManualSave() {
-   saving.value = true
-   await saveSettings()
-   saving.value = false
+  saving.value = true
+  await saveSettings()
+  saving.value = false
 }
-
 </script>

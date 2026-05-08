@@ -1,3 +1,15 @@
+## Changes (v0.5.0)
+
+### ✨ Features & Improvements
+- **Automatic Java Detection**: The `Auto-Detect` feature now intelligently scans the application's local data directory. Java versions downloaded via VoidLink are now automatically discovered and configured without manual path selection.
+- **Better Installation Feedback**: Added clear visual feedback during Java installation, including exact download paths and success/failure system notifications (Toasts).
+- **Linux/Tray Logic**: Fixed a race condition that prevented the application from closing correctly on Linux (and other platforms) when "Minimize to Tray" was disabled.
+- **UI**: New design application!
+- **Migration**: Migration to mcjars.app for downloading jars files
+
+### 🐛 Bug Fixes
+- **Java Installation**: Fixed modded Minecraft servers not starting after Java installation.
+
 ## Changes (v0.4.2)
 
 ### 🐛 Bug Fixes

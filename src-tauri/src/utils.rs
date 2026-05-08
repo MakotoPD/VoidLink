@@ -1,5 +1,5 @@
-use std::fs::File;
-use std::io::{Read, Seek, SeekFrom};
+use std::fs::{self, File};
+use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::PathBuf;
 
 #[derive(serde::Serialize)]
@@ -39,4 +39,62 @@ pub async fn read_log_tail(path: String, offset: u64) -> Result<TailResult, Stri
         // Return new offset (current + read bytes)
         new_offset: current_offset + buffer.len() as u64,
     })
+}
+
+/// Extract a ZIP archive (provided as raw bytes) into `dest_dir`.
+///
+/// Used for MCJars server engines distributed as ZIPs (Forge, NeoForge, Mohist,
+/// Magma, etc.). The archive root is extracted directly into `dest_dir`, so
+/// server.jar and libraries/ land at the server folder root.
+#[tauri::command]
+pub async fn extract_zip_to_dir(bytes: Vec<u8>, dest_dir: String) -> Result<(), String> {
+    let dest = PathBuf::from(&dest_dir);
+    fs::create_dir_all(&dest).map_err(|e| format!("Failed to create dest dir: {}", e))?;
+
+    let cursor = Cursor::new(bytes);
+    let mut archive =
+        zip::ZipArchive::new(cursor).map_err(|e| format!("Failed to open ZIP: {}", e))?;
+
+    for i in 0..archive.len() {
+        let mut entry = archive
+            .by_index(i)
+            .map_err(|e| format!("ZIP entry error: {}", e))?;
+
+        // Sanitise path — strip leading slashes and any ".." components
+        let raw_name = entry.name().replace('\\', "/");
+        let rel_path: PathBuf = raw_name
+            .split('/')
+            .filter(|s| !s.is_empty() && *s != "..")
+            .collect();
+
+        if rel_path.as_os_str().is_empty() {
+            continue;
+        }
+
+        let out_path = dest.join(&rel_path);
+
+        if entry.is_dir() {
+            fs::create_dir_all(&out_path)
+                .map_err(|e| format!("Failed to create dir {:?}: {}", out_path, e))?;
+        } else {
+            if let Some(parent) = out_path.parent() {
+                fs::create_dir_all(parent)
+                    .map_err(|e| format!("Failed to create parent {:?}: {}", parent, e))?;
+            }
+
+            let mut outfile = File::create(&out_path)
+                .map_err(|e| format!("Failed to create {:?}: {}", out_path, e))?;
+
+            let mut buf = Vec::new();
+            entry
+                .read_to_end(&mut buf)
+                .map_err(|e| format!("Failed to read ZIP entry: {}", e))?;
+
+            outfile
+                .write_all(&buf)
+                .map_err(|e| format!("Failed to write {:?}: {}", out_path, e))?;
+        }
+    }
+
+    Ok(())
 }

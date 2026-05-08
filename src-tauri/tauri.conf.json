@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "VoidLink",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "identifier": "pl.makotopd.voidlink",
   "build": {
     "frontendDist": "../.output/public",
@@ -49,10 +49,7 @@
     "active": true,
     "createUpdaterArtifacts": true,
     "targets": "all",
-    "externalBin": [
-      "binaries/frpc"
-    ],
-    "icon": [
+"icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
