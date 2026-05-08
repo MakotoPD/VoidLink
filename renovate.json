@@ -9,5 +9,6 @@
     "matchDepTypes": ["resolutions"],
     "enabled": false
   }],
-  "postUpdateOptions": ["pnpmDedupe"]
+  "postUpdateOptions": ["pnpmDedupe"],
+  "dependencyDashboard": false
 }
