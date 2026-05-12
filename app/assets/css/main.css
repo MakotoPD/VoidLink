@@ -116,10 +116,13 @@ html, body {
    App shell
    ============================================================ */
 .app { display: flex; flex-direction: column; height: 100vh; background: var(--bg-0); overflow: hidden; }
-.titlebar { height: var(--titlebar-h); background: var(--bg-1); border-bottom: 1px solid var(--line-1); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; -webkit-app-region: drag; flex-shrink: 0; }
+.titlebar { height: var(--titlebar-h); background: var(--bg-1); border-bottom: 1px solid var(--line-1); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 12px; -webkit-app-region: drag; flex-shrink: 0; }
+.titlebar-left { display: flex; align-items: center; justify-content: flex-start; }
+.titlebar-center { display: flex; align-items: center; justify-content: center; }
+.titlebar-title { font-size: 12px; font-weight: 600; color: var(--ink-1); letter-spacing: 0.01em; }
+.titlebar-right { display: flex; align-items: center; justify-content: flex-end; }
 .brand { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-2); font-weight: 500; -webkit-app-region: drag; }
 .brand img { width: 16px; height: 16px; border-radius: 4px; }
-.brand span { color: var(--ink-0); font-weight: 600; }
 .win-btns { display: flex; gap: 8px; -webkit-app-region: no-drag; }
 .win-btn { width: 12px; height: 12px; border-radius: 50%; border: none; background: var(--bg-3); color: transparent; cursor: pointer; padding: 0; display: grid; place-items: center; }
 .win-btn:hover { color: var(--ink-2); }

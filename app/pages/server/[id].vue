@@ -733,7 +733,7 @@
                         <div>
                           <div style="font-size: 13px; font-weight: 500; color: var(--ink-0); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
                             {{ addon.title || addon.fileName }}
-                            <UIcon v-if="addon.source === 'modrinth'" name="i-simple-icons-modrinth" class="w-3 h-3 text-[#1bd96a] flex-shrink-0" />
+                            <UIcon v-if="addon.source === 'modrinth'" name="i-simple-icons-modrinth" class="w-3 h-3 text-[#1bd96a] shrink-0" />
                           </div>
                           <div style="font-size: 10px; font-family: 'Geist Mono', monospace; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ addon.fileName }}</div>
                         </div>
@@ -912,7 +912,7 @@
                         >
                           <img
                             :src="hit.icon_url || 'https://cdn.modrinth.com/placeholder.svg'"
-                            class="w-20 h-20 rounded-xl bg-gray-100 dark:bg-gray-800 object-cover flex-shrink-0 shadow-md group-hover:scale-105 transition-transform duration-300"
+                            class="w-20 h-20 rounded-xl bg-gray-100 dark:bg-gray-800 object-cover shrink-0 shadow-md group-hover:scale-105 transition-transform duration-300"
                           >
                           <div class="flex-1 min-w-0 flex flex-col">
                             <div class="flex items-start justify-between gap-2 mb-1">
@@ -966,7 +966,7 @@
                                 icon="i-lucide-download"
                                 :loading="installingSlug === hit.slug"
                                 :disabled="installingSlug !== null"
-                                class="flex-shrink-0 shadow-lg shadow-primary-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                                class="shrink-0 shadow-lg shadow-primary-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
                                 @click="installFromModrinth(hit)"
                               >
                                 Install
@@ -3313,6 +3313,12 @@ async function startServer() {
           manualJavas.push({ path: javaInstallations.java21, major: 21, version: validation.version, is_valid: true })
         }
       }
+      if (javaInstallations.java25) {
+        const validation = await validateJavaPath(javaInstallations.java25)
+        if (validation.is_valid) {
+          manualJavas.push({ path: javaInstallations.java25, major: 25, version: validation.version, is_valid: true })
+        }
+      }
 
       // Merge: remove duplicates, prefer manual configs
       const mergedInstallations = [...manualJavas]
@@ -3349,10 +3355,19 @@ async function startServer() {
           // Detect new format: first number >= 25 (year 2025+)
           if (firstNum >= 25) {
             // NEW FORMAT: 25.X, 26.X, etc.
-            // All new versions require Java 21+
-            requiredMajor = 21
-            maxMajor = 999
-            consoleLines.value.push(`Detected new MC version format: ${v} -> Java 21+`)
+            const secondNum = parts[1] || 0
+
+            if (firstNum >= 27 || (firstNum === 26 && secondNum >= 1)) {
+              // MC 26.1+ requires Java 25
+              requiredMajor = 25
+              maxMajor = 999
+              consoleLines.value.push(`Detected new MC version format: ${v} -> Java 25+`)
+            } else {
+              // MC 25.X, 26.0 -> Java 21
+              requiredMajor = 21
+              maxMajor = 999
+              consoleLines.value.push(`Detected new MC version format: ${v} -> Java 21+`)
+            }
           } else if (firstNum === 1) {
             // LEGACY FORMAT: 1.X.Y
             const minor = parts[1] || 0

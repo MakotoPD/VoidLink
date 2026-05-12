@@ -1,3 +1,9 @@
+## Changes (v0.5.1)
+
+### ✨ Features & Improvements
+- **Java Version**: Added support for java 25 for minecraft 26+
+
+
 ## Changes (v0.5.0)
 
 ### ✨ Features & Improvements

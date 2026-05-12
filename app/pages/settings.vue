@@ -92,7 +92,7 @@
                 </div>
                 <div class="row gap-6">
                   <button
-                    v-for="ver in [8, 11, 17, 21]"
+                    v-for="ver in [8, 11, 17, 21, 25]"
                     :key="ver"
                     class="btn sm"
                     :disabled="downloadingVersion !== null && downloadingVersion !== ver"
@@ -361,7 +361,8 @@ const javaVersions = [
   { key: 'java8' as const, label: '8', mc: 'MC 1.12.x-' },
   { key: 'java11' as const, label: '11', mc: 'MC 1.13-1.16' },
   { key: 'java17' as const, label: '17', mc: 'MC 1.17-1.20.4' },
-  { key: 'java21' as const, label: '21', mc: 'MC 1.20.5+' }
+  { key: 'java21' as const, label: '21', mc: 'MC 1.20.5+' },
+  { key: 'java25' as const, label: '25', mc: 'MC 26.1+' }
 ]
 
 function handleAddServer() {
@@ -439,7 +440,7 @@ async function checkJava() {
   checkingJava.value = false
 }
 
-async function browseJavaPath(key: 'java8' | 'java11' | 'java17' | 'java21') {
+async function browseJavaPath(key: 'java8' | 'java11' | 'java17' | 'java21' | 'java25') {
   try {
     const selected = await openDialog({ multiple: false, filters: [{ name: 'Java', extensions: ['exe', ''] }] })
     if (selected && typeof selected === 'string') {
@@ -459,6 +460,7 @@ async function detectAllJavaVersions() {
       if (java.major === 8 && !settings.value.javaInstallations.java8) settings.value.javaInstallations.java8 = java.path
       else if (java.major === 11 && !settings.value.javaInstallations.java11) settings.value.javaInstallations.java11 = java.path
       else if (java.major === 17 && !settings.value.javaInstallations.java17) settings.value.javaInstallations.java17 = java.path
+      else if (java.major === 25 && !settings.value.javaInstallations.java25) settings.value.javaInstallations.java25 = java.path
       else if (java.major >= 21 && !settings.value.javaInstallations.java21) settings.value.javaInstallations.java21 = java.path
     }
   } catch (_e) {
@@ -481,6 +483,7 @@ async function handleJavaDownload(major: number) {
     if (major === 11) settings.value.javaInstallations.java11 = javaPath
     if (major === 17) settings.value.javaInstallations.java17 = javaPath
     if (major === 21) settings.value.javaInstallations.java21 = javaPath
+    if (major === 25) settings.value.javaInstallations.java25 = javaPath
     await scanJava()
     checkJava()
     toast.add({ title: 'Java Installed', description: `Java ${major} is ready to use.`, icon: 'i-lucide-check-circle', color: 'success', duration: 6000 })

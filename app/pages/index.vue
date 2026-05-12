@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Page header -->
-    <div class="page-head" data-tauri-drag-region>
+    <div class="page-head" >
       <div class="page-head-left">
         <span class="eyebrow">Dashboard</span>
         <h1 class="page-title">Overview</h1>

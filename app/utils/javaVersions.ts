@@ -3,13 +3,14 @@
  * Maps Minecraft versions to required Java versions and provides path selection
  */
 
-export type JavaVersionKey = 'java8' | 'java11' | 'java17' | 'java21'
+export type JavaVersionKey = 'java8' | 'java11' | 'java17' | 'java21' | 'java25'
 
 export interface JavaInstallations {
 	java8?: string
 	java11?: string
 	java17?: string
 	java21?: string
+	java25?: string
 }
 
 /**
@@ -18,8 +19,26 @@ export interface JavaInstallations {
 export function getRequiredJavaVersion(mcVersion: string): JavaVersionKey {
 	if (!mcVersion) return 'java17' // Default to Java 17
 
-	// Parse version number (e.g., "1.20.4" -> 20.4)
-	const versionMatch = mcVersion.match(/^1\.(\d+)(?:\.(\d+))?/)
+	// Strip snapshot/pre-release suffixes (e.g., "26.1-snapshot-2" -> "26.1")
+	const cleanVersion = mcVersion.split('-')[0]
+
+	// Try parsing new format (YY.X) — first number >= 25
+	const newFormatMatch = cleanVersion.match(/^(\d+)\.(\d+)/)
+	if (newFormatMatch) {
+		const firstNum = parseInt(newFormatMatch[1])
+		const secondNum = parseInt(newFormatMatch[2])
+
+		if (firstNum >= 25) {
+			// New MC format: 26.1+ requires Java 25, rest requires Java 21
+			if (firstNum >= 27 || (firstNum === 26 && secondNum >= 1)) {
+				return 'java25'
+			}
+			return 'java21'
+		}
+	}
+
+	// Legacy format: 1.X.Y
+	const versionMatch = cleanVersion.match(/^1\.(\d+)(?:\.(\d+))?/)
 	if (!versionMatch) return 'java17'
 
 	const major = parseInt(versionMatch[1])
@@ -49,7 +68,8 @@ export function getJavaVersionLabel(version: JavaVersionKey): string {
 		java8: 'Java 8',
 		java11: 'Java 11',
 		java17: 'Java 17',
-		java21: 'Java 21'
+		java21: 'Java 21',
+		java25: 'Java 25'
 	}
 	return labels[version]
 }
@@ -71,10 +91,11 @@ export function getJavaPathForVersion(
 
 	// Fallback: try higher versions (compatible)
 	const fallbackOrder: Record<JavaVersionKey, JavaVersionKey[]> = {
-		java8: ['java8', 'java11', 'java17', 'java21'],
-		java11: ['java11', 'java17', 'java21'],
-		java17: ['java17', 'java21'],
-		java21: ['java21', 'java17'] // Java 21 required, 17 won't work but try anyway
+		java8: ['java8', 'java11', 'java17', 'java21', 'java25'],
+		java11: ['java11', 'java17', 'java21', 'java25'],
+		java17: ['java17', 'java21', 'java25'],
+		java21: ['java21', 'java25', 'java17'],
+		java25: ['java25', 'java21']
 	}
 
 	for (const version of fallbackOrder[required]) {
@@ -104,7 +125,8 @@ export function getMcVersionRange(version: JavaVersionKey): string {
 		java8: '1.12.x and older',
 		java11: '1.13 - 1.16.x',
 		java17: '1.17 - 1.20.4',
-		java21: '1.20.5+'
+		java21: '1.20.5+',
+		java25: 'MC 26.1+'
 	}
 	return ranges[version]
 }

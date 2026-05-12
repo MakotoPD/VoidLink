@@ -1,14 +1,18 @@
 <template>
   <div class="app">
     <!-- Titlebar -->
-    <div class="titlebar">
-      <div class="brand">
-        <div class="w-4 h-4 bg-linear-to-br from-sky-700 to-blue-700 rounded-sm p-0.5 flex items-center justify-center">
-          <img src="/tray-icon.svg" alt="VoidLink">
-        </div>
-        <span>VoidLink</span>
+    <div data-tauri-drag-region class="titlebar">
+      <div class="titlebar-left">
       </div>
-      <WindowControls />
+      <div class="titlebar-center gap-1">
+        <div class="w-4 h-4 bg-linear-to-br from-sky-700 to-blue-700 rounded-sm p-0.5 flex items-center justify-center">
+            <img src="/tray-icon.svg" alt="VoidLink">
+          </div>
+        <span class="titlebar-title">VoidLink</span>
+      </div>
+      <div class="titlebar-right">
+        <WindowControls />
+      </div>
     </div>
 
     <!-- Frame -->

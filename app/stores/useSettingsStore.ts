@@ -6,6 +6,7 @@ interface JavaInstallations {
 	java11: string
 	java17: string
 	java21: string
+	java25: string
 }
 
 export interface Settings {
@@ -26,7 +27,8 @@ export const useSettingsStore = defineStore('settings', () => {
 			java8: '',
 			java11: '',
 			java17: '',
-			java21: ''
+			java21: '',
+			java25: ''
 		}
 	})
 
@@ -50,7 +52,8 @@ export const useSettingsStore = defineStore('settings', () => {
 						java8: data.javaInstallations.java8 ?? '',
 						java11: data.javaInstallations.java11 ?? '',
 						java17: data.javaInstallations.java17 ?? '',
-						java21: data.javaInstallations.java21 ?? ''
+						java21: data.javaInstallations.java21 ?? '',
+						java25: data.javaInstallations.java25 ?? ''
 					}
 				}
 			}
